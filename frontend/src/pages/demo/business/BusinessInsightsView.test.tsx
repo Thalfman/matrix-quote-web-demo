@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, fireEvent, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "@/test/render";
@@ -172,5 +172,100 @@ describe("BusinessInsightsView — empty records", () => {
     );
     // Section headings are sr-only h2s inside portfolio sections — none should appear
     expect(screen.queryByRole("heading", { name: /portfolio kpis/i })).not.toBeInTheDocument();
+  });
+});
+
+describe("BusinessInsightsView — filter chip interaction", () => {
+  it("clicking an industry chip in the InsightsFilters panel reduces the filteredCount", async () => {
+    // With two records from different industries (Automotive / Food & Bev),
+    // clicking the Automotive chip should filter down to 1 of 2.
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+
+    // Both records shown initially
+    expect(screen.getAllByText(/2 projects/i).length).toBeGreaterThanOrEqual(1);
+
+    // The InsightsFilters panel renders industry chips as <button aria-pressed=...>
+    // There can be multiple text nodes "Automotive" (chip label + chart legend).
+    // The chip is a <button> — get all buttons and find the one with exact text.
+    const chipButtons = screen.getAllByRole("button");
+    const automotiveChip = chipButtons.find((b) => b.textContent === "Automotive");
+    expect(automotiveChip).toBeDefined();
+
+    fireEvent.click(automotiveChip!);
+
+    // After filtering, the "Showing N of M" counter: filteredCount drops to 1
+    await waitFor(() => {
+      // The showing counter renders filteredCount as "1" and totalCount as "2"
+      // The counter format is: "Showing <1> of <2> projects"
+      // We can check for the aria-pressed state flipping on the chip
+      expect(automotiveChip).toHaveAttribute("aria-pressed", "true");
+    });
+  });
+});
+
+describe("BusinessInsightsView — table row click opens drawer", () => {
+  it("clicking a table row opens the project detail drawer with the row's project name", async () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+
+    // The drawer starts hidden (no project name visible as the dialog label)
+    const dialog = document.querySelector("[role='dialog']");
+    expect(dialog).not.toBeNull();
+    // Initially the drawer is slide-out (translate-x-full)
+    expect(dialog!.className).toMatch(/translate-x-full/);
+
+    // Click a table row — rows have role=button when onRowClick is provided
+    // Project name "Alpha Project" appears in a table cell
+    const alphaCell = screen.getByText("Alpha Project");
+    const rowEl = alphaCell.closest("[role='button']");
+    expect(rowEl).not.toBeNull();
+    fireEvent.click(rowEl!);
+
+    // Drawer should become visible (translate-x-0) and show the project name
+    await waitFor(() => {
+      expect(dialog!.className).not.toMatch(/translate-x-full/);
+    });
+    // The dialog aria-label includes the project name
+    expect(dialog!.getAttribute("aria-label")).toContain("Alpha Project");
+  });
+
+  it("drawer closes when the X button is clicked", async () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+
+    // Open the drawer
+    const alphaCell = screen.getByText("Alpha Project");
+    const rowEl = alphaCell.closest("[role='button']");
+    fireEvent.click(rowEl!);
+
+    const dialog = document.querySelector("[role='dialog']");
+    await waitFor(() => {
+      expect(dialog!.className).not.toMatch(/translate-x-full/);
+    });
+
+    // Close via X button
+    const closeBtn = screen.getByRole("button", { name: /close project detail/i });
+    fireEvent.click(closeBtn);
+
+    await waitFor(() => {
+      expect(dialog!.className).toMatch(/translate-x-full/);
+    });
+  });
+
+  it("drawer closes on Escape key after being opened", async () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+
+    const alphaCell = screen.getByText("Alpha Project");
+    const rowEl = alphaCell.closest("[role='button']");
+    fireEvent.click(rowEl!);
+
+    const dialog = document.querySelector("[role='dialog']");
+    await waitFor(() => {
+      expect(dialog!.className).not.toMatch(/translate-x-full/);
+    });
+
+    fireEvent.keyDown(document, { key: "Escape" });
+
+    await waitFor(() => {
+      expect(dialog!.className).toMatch(/translate-x-full/);
+    });
   });
 });

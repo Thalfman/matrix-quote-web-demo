@@ -37,4 +37,16 @@ describe("SystemCategoryMix", () => {
     renderWithProviders(<SystemCategoryMix data={CATEGORY_DATA} />);
     expect(screen.queryByText(/no data available/i)).not.toBeInTheDocument();
   });
+
+  it("shows 'Click slice to filter' hint when onCategoryClick is provided", () => {
+    renderWithProviders(
+      <SystemCategoryMix data={CATEGORY_DATA} onCategoryClick={vi.fn()} />,
+    );
+    expect(screen.getByText(/click slice to filter/i)).toBeInTheDocument();
+  });
+
+  it("does not show click hint when onCategoryClick is not provided", () => {
+    renderWithProviders(<SystemCategoryMix data={CATEGORY_DATA} />);
+    expect(screen.queryByText(/click slice to filter/i)).not.toBeInTheDocument();
+  });
 });

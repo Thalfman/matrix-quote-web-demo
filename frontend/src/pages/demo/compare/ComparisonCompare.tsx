@@ -2,7 +2,7 @@ import { AlertTriangle } from "lucide-react";
 
 import { PageHeader } from "@/components/PageHeader";
 import { useRealProjects } from "@/demo/realProjects";
-import { CompareFindSimilarTab } from "@/pages/demo/CompareFindSimilarTab";
+import { CompareBrowseTab } from "@/pages/demo/CompareBrowseTab";
 
 function Skeleton() {
   return (
@@ -25,16 +25,16 @@ function Skeleton() {
   );
 }
 
-export function ComparisonQuote() {
+export function ComparisonCompare() {
   const { data, isLoading, error } = useRealProjects();
 
   return (
     <>
       <PageHeader
-        eyebrow="Real Data · Quote"
-        title="Real Data Quote Tool"
-        description="Enter project parameters to surface the three closest historical matches by weighted distance across features."
-        chips={data ? [{ label: `${data.length} projects loaded`, tone: "accent" }] : []}
+        eyebrow="Real Data · Compare"
+        title="Compare Projects"
+        description="Browse the real historical pool and select two or three projects to compare side-by-side across buckets, inputs, and actuals."
+        chips={data ? [{ label: `${data.length} projects`, tone: "accent" }] : []}
       />
 
       {error ? (
@@ -52,7 +52,7 @@ export function ComparisonQuote() {
         <Skeleton />
       ) : (
         <div className="mt-6 fade-in">
-          <CompareFindSimilarTab records={data} />
+          <CompareBrowseTab records={data} />
         </div>
       )}
     </>

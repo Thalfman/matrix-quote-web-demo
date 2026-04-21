@@ -12,6 +12,9 @@ import { DemoApp } from "./DemoApp";
 vi.mock("@/pages/demo/compare/ComparisonQuote", () => ({
   ComparisonQuote: () => <h1>Comparison Quote Tool</h1>,
 }));
+vi.mock("@/pages/demo/compare/ComparisonCompare", () => ({
+  ComparisonCompare: () => <h1>Comparison Compare Browse</h1>,
+}));
 vi.mock("@/pages/demo/compare/ComparisonInsights", () => ({
   ComparisonInsights: () => <h1>Business Insights (Compare)</h1>,
 }));
@@ -20,6 +23,9 @@ vi.mock("@/pages/demo/ml/MachineLearningQuote", () => ({
 }));
 vi.mock("@/pages/demo/ml/MachineLearningInsights", () => ({
   MachineLearningInsights: () => <h1>Business Insights (ML)</h1>,
+}));
+vi.mock("@/pages/demo/ml/MachineLearningCompare", () => ({
+  MachineLearningCompare: () => <h1>ML Compare Browse</h1>,
 }));
 
 // DemoHome is not lazy-loaded; mock it too so it renders a stable heading.
@@ -112,6 +118,48 @@ describe("DemoApp direct routes", () => {
     await waitFor(() =>
       expect(
         screen.getByRole("heading", { name: /business insights \(ml\)/i }),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  it("/compare/compare renders the browse-only Compare page", async () => {
+    renderAt("/compare/compare");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: /comparison compare browse/i }),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  it("/ml/compare renders the ML Compare browse page", async () => {
+    renderAt("/ml/compare");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: /ml compare browse/i }),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  it("/compare/quote renders the Find-Similar-only Quote page (no Browse tab)", async () => {
+    renderAt("/compare/quote");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: /comparison quote tool/i }),
+      ).toBeInTheDocument(),
+    );
+    // ComparisonQuote renders CompareFindSimilarTab only — there is no Browse heading
+    expect(
+      screen.queryByRole("heading", { name: /comparison compare browse/i }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("DemoApp — /compare/browse legacy redirect", () => {
+  it("/compare/browse redirects to /compare/compare", async () => {
+    renderAt("/compare/browse");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: /comparison compare browse/i }),
       ).toBeInTheDocument(),
     );
   });

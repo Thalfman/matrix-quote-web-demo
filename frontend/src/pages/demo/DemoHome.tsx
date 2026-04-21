@@ -98,36 +98,36 @@ export function DemoHome() {
       <PageHeader
         eyebrow="Matrix · Demo"
         title="Pick a tool"
-        description="Two ways to explore the quoting engine. The comparison tool ranks real historical projects against your inputs. The machine-learning tool runs twelve trained models in your browser and returns a live estimate."
+        description="Two lenses on the quoting engine. Real Data surfaces patterns from today's historical book. Synthetic Data shows what the models can do at scale — trained on generated data, running live in your browser."
       />
 
       <div className="mt-6 grid gap-6 md:grid-cols-3">
         <ToolCard
           to="/compare/quote"
-          eyebrow="Comparison · Real data"
+          eyebrow="Real Data · Quote"
           eyebrowTone="teal"
-          title="Comparison Quote Tool"
-          description="Browse the historical pool or enter inputs to surface the three closest matches by weighted distance."
+          title="Real Data Quote Tool"
+          description="Enter project parameters to surface the three closest historical matches by weighted distance. Today's book, exactly as billed."
           ctaTone="teal"
           chip={<CountChip tone="teal" value={manifest?.real_count} unit="projects" />}
         />
 
         <ToolCard
           to="/ml/quote"
-          eyebrow="Machine Learning · Synthetic"
+          eyebrow="Synthetic Data · Quote"
           eyebrowTone="amber"
-          title="Machine Learning Quote Tool"
-          description="Fill in project parameters. Twelve Gradient Boosting models run locally and return P10–P90 confidence intervals."
+          title="Synthetic Data Quote Tool"
+          description="Fill in project parameters. Twelve Gradient Boosting models run locally and return P10–P90 confidence intervals. Trained on a generated pool at scale."
           ctaTone="amber"
           chip={<CountChip tone="amber" value={manifest?.synthetic_count} unit="training rows" />}
         />
 
         <ToolCard
           to="/compare/insights"
-          eyebrow="Insights · Portfolio"
+          eyebrow="Real Data · Insights"
           eyebrowTone="teal"
           title="Business Insights"
-          description="Portfolio-level view — hours by discipline, industry mix, and complexity drivers across the historical book."
+          description="Portfolio-level view — hours by discipline, industry mix, complexity drivers, and ranked projects across the real historical book."
           ctaTone="teal"
           chip={<CountChip tone="teal" value={manifest?.real_count} unit="projects" />}
         />

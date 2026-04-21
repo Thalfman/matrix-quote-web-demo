@@ -35,16 +35,24 @@ function KpiCard({
   );
 }
 
-export function PortfolioKpis({ kpis }: { kpis: PortfolioKpisType }) {
+export function PortfolioKpis({
+  kpis,
+  source = "real",
+}: {
+  kpis: PortfolioKpisType;
+  source?: "real" | "synthetic";
+}) {
   const costDisplay =
     kpis.avgMaterialsCost != null ? fmtCurrency.format(kpis.avgMaterialsCost) : "—";
+
+  const projectsMeta = source === "synthetic" ? "synthetic pool" : "real historical";
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <KpiCard
         label="Projects"
         value={fmtInt.format(kpis.projectCount)}
-        meta="real historical"
+        meta={projectsMeta}
         accent
       />
       <KpiCard

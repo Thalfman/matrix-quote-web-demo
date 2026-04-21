@@ -9,6 +9,11 @@ const ComparisonQuote = lazy(() =>
     default: m.ComparisonQuote,
   })),
 );
+const ComparisonCompare = lazy(() =>
+  import("@/pages/demo/compare/ComparisonCompare").then((m) => ({
+    default: m.ComparisonCompare,
+  })),
+);
 const ComparisonInsights = lazy(() =>
   import("@/pages/demo/compare/ComparisonInsights").then((m) => ({
     default: m.ComparisonInsights,
@@ -22,6 +27,11 @@ const MachineLearningQuote = lazy(() =>
 const MachineLearningInsights = lazy(() =>
   import("@/pages/demo/ml/MachineLearningInsights").then((m) => ({
     default: m.MachineLearningInsights,
+  })),
+);
+const MachineLearningCompare = lazy(() =>
+  import("@/pages/demo/ml/MachineLearningCompare").then((m) => ({
+    default: m.MachineLearningCompare,
   })),
 );
 
@@ -41,14 +51,17 @@ export function DemoApp() {
           {/* Home */}
           <Route index element={<DemoHome />} />
 
-          {/* Comparison Tool */}
+          {/* Comparison Tool — Real Data */}
           <Route path="compare" element={<Navigate to="/compare/quote" replace />} />
           <Route path="compare/quote" element={<ComparisonQuote />} />
+          <Route path="compare/compare" element={<ComparisonCompare />} />
+          <Route path="compare/browse" element={<Navigate to="/compare/compare" replace />} />
           <Route path="compare/insights" element={<ComparisonInsights />} />
 
-          {/* Machine Learning Tool */}
+          {/* Machine Learning Tool — Synthetic Data */}
           <Route path="ml" element={<Navigate to="/ml/quote" replace />} />
           <Route path="ml/quote" element={<MachineLearningQuote />} />
+          <Route path="ml/compare" element={<MachineLearningCompare />} />
           <Route path="ml/insights" element={<MachineLearningInsights />} />
 
           {/* Legacy redirects — preserve shareable links */}

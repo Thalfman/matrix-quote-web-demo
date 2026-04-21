@@ -1,4 +1,6 @@
-# Business Insights — static demo dashboard
+# Business Insights — static demo dashboard (original design)
+
+> **Note:** This document describes the initial static implementation. The interactive iteration — filters, cross-filter, detail drawer, sort/search, CSV export, Real/Synthetic Data sidebar framing, and the Compare tab added to both sections — is documented in `commands/business-insights-interactivity.md`.
 
 ## Context
 

@@ -7,6 +7,7 @@ export function MachineLearningInsights() {
     <BusinessInsightsView
       records={data}
       datasetLabel="ML · Synthetic training pool"
+      source="synthetic"
       isLoading={isLoading}
       error={error instanceof Error ? error : error ? new Error(String(error)) : null}
       emptyMessage="No synthetic records found. Make sure synthetic-pool.json is present in demo assets."

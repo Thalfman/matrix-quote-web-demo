@@ -50,6 +50,16 @@ describe("PortfolioKpis", () => {
     expect(screen.getByText(/median 490/i)).toBeInTheDocument();
   });
 
+  it("renders 'real historical' meta on Projects card when source is real (default)", () => {
+    renderWithProviders(<PortfolioKpis kpis={BASE_KPIS} />);
+    expect(screen.getByText("real historical")).toBeInTheDocument();
+  });
+
+  it("renders 'synthetic pool' meta on Projects card when source is synthetic", () => {
+    renderWithProviders(<PortfolioKpis kpis={BASE_KPIS} source="synthetic" />);
+    expect(screen.getByText("synthetic pool")).toBeInTheDocument();
+  });
+
   it("renders accent stripe only on the Projects card", () => {
     const { container } = renderWithProviders(<PortfolioKpis kpis={BASE_KPIS} />);
     const stripes = container.querySelectorAll('[aria-hidden="true"]');
