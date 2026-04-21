@@ -9,6 +9,11 @@ const ComparisonQuote = lazy(() =>
     default: m.ComparisonQuote,
   })),
 );
+const ComparisonCompare = lazy(() =>
+  import("@/pages/demo/compare/ComparisonCompare").then((m) => ({
+    default: m.ComparisonCompare,
+  })),
+);
 const ComparisonInsights = lazy(() =>
   import("@/pages/demo/compare/ComparisonInsights").then((m) => ({
     default: m.ComparisonInsights,
@@ -41,9 +46,11 @@ export function DemoApp() {
           {/* Home */}
           <Route index element={<DemoHome />} />
 
-          {/* Comparison Tool */}
+          {/* Comparison Tool — Real Data */}
           <Route path="compare" element={<Navigate to="/compare/quote" replace />} />
           <Route path="compare/quote" element={<ComparisonQuote />} />
+          <Route path="compare/compare" element={<ComparisonCompare />} />
+          <Route path="compare/browse" element={<Navigate to="/compare/compare" replace />} />
           <Route path="compare/insights" element={<ComparisonInsights />} />
 
           {/* Machine Learning Tool */}
