@@ -29,7 +29,7 @@ export function Quotes() {
     industry: industry ?? undefined,
     search: search || undefined,
   });
-  const rows = query.data?.rows ?? [];
+  const rows = useMemo(() => query.data?.rows ?? [], [query.data?.rows]);
 
   const projects = useMemo(
     () => Array.from(new Set(rows.map((r) => r.project_name))).sort(),
