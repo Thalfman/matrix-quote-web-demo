@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import { Search, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { DEFAULT_FILTER, isDefaultFilter } from "./insightsFilterDefaults";
@@ -34,12 +34,13 @@ function Chip({
     <button
       type="button"
       onClick={onClick}
+      aria-pressed={active}
       className={cn(
-        "inline-flex items-center px-2 py-1 rounded-sm text-[11px] eyebrow",
+        "inline-flex items-center px-2 py-1 rounded-sm text-[10px] eyebrow",
         "transition-colors duration-150 ease-out",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-1",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-1 focus-visible:ring-offset-paper",
         active
-          ? "bg-teal text-white"
+          ? "bg-teal text-white hover:bg-tealDark"
           : "bg-line text-muted hover:bg-line2 hover:text-ink",
       )}
     >
@@ -92,14 +93,23 @@ export function InsightsFilters({
   const isDefault = isDefaultFilter(filter);
 
   return (
-    <div className="card p-4 mb-6 space-y-4 sticky top-4 z-10 bg-paper/95 backdrop-blur">
-      <div className="flex items-center justify-between gap-3">
-        <div className="text-[11px] text-muted mono tnum">
-          Showing{" "}
-          <span className="text-ink font-medium">{filteredCount}</span>
-          {" "}of{" "}
-          <span className="text-ink">{totalCount}</span>
-          {" "}projects
+    <div
+      className={cn(
+        "card p-4 mb-6 space-y-4 sticky top-4 z-20",
+        "bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/80",
+        "shadow-[0_1px_0_rgba(13,27,42,0.04)]",
+      )}
+    >
+      <div className="flex items-center justify-between gap-x-4 gap-y-1.5 flex-wrap">
+        <div className="eyebrow text-[10px] text-muted">
+          Filters
+          <span className="ml-2 mono tnum normal-case tracking-normal text-muted">
+            Showing{" "}
+            <span className="text-ink font-medium">{filteredCount}</span>
+            {" "}of{" "}
+            <span className="text-ink">{totalCount}</span>
+            {" "}projects
+          </span>
         </div>
         {!isDefault && (
           <button
@@ -107,8 +117,8 @@ export function InsightsFilters({
             onClick={handleReset}
             className={cn(
               "inline-flex items-center gap-1 text-[11px] text-muted hover:text-danger",
-              "transition-colors duration-150 ease-out",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal rounded-sm",
+              "transition-colors duration-150 ease-out rounded-sm px-1 -mx-1",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
             )}
           >
             <X size={12} strokeWidth={1.75} aria-hidden="true" />
@@ -118,16 +128,22 @@ export function InsightsFilters({
       </div>
 
       {/* Search */}
-      <div>
+      <div className="relative">
+        <Search
+          size={14}
+          strokeWidth={1.75}
+          aria-hidden="true"
+          className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
+        />
         <input
           type="search"
           placeholder="Search projects..."
           defaultValue={filter.search}
           onChange={(e) => handleSearch(e.target.value)}
           className={cn(
-            "w-full text-sm px-3 py-2 rounded-sm border hairline bg-surface",
+            "w-full text-sm pl-8 pr-3 py-2 rounded-sm border hairline bg-surface",
             "placeholder:text-muted text-ink",
-            "focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0",
+            "focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 focus:border-teal",
             "transition-colors duration-150",
           )}
           aria-label="Search projects"
@@ -170,14 +186,14 @@ export function InsightsFilters({
 
       {/* Complexity range */}
       <div>
-        <div className="eyebrow text-[10px] text-muted mb-2">
-          Complexity range:{" "}
-          <span className="text-ink tnum">
+        <div className="flex items-baseline justify-between mb-2 gap-2">
+          <div className="eyebrow text-[10px] text-muted">Complexity range</div>
+          <div className="text-[11px] text-ink mono tnum">
             {filter.complexityMin}–{filter.complexityMax}
-          </span>
+          </div>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[11px] text-muted mono">1</span>
+          <span className="text-[10px] text-muted mono tnum w-2 text-center">1</span>
           <input
             type="range"
             min={1}
@@ -192,7 +208,7 @@ export function InsightsFilters({
                 complexityMax: Math.max(val, filter.complexityMax),
               });
             }}
-            className="flex-1 accent-teal"
+            className="flex-1 accent-teal cursor-pointer"
             aria-label="Minimum complexity"
           />
           <input
@@ -209,10 +225,10 @@ export function InsightsFilters({
                 complexityMin: Math.min(val, filter.complexityMin),
               });
             }}
-            className="flex-1 accent-teal"
+            className="flex-1 accent-teal cursor-pointer"
             aria-label="Maximum complexity"
           />
-          <span className="text-[11px] text-muted mono">5</span>
+          <span className="text-[10px] text-muted mono tnum w-2 text-center">5</span>
         </div>
       </div>
     </div>

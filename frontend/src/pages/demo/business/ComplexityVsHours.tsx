@@ -121,7 +121,7 @@ export function ComplexityVsHours({ data, onPointClick }: Props) {
       ) : (
         <>
           {/* Custom compact legend so the chart keeps its full plot area */}
-          <div className="flex flex-wrap gap-x-3 gap-y-1 mb-2">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
             {uniqueIndustries.map((industry) => (
               <span
                 key={industry}
@@ -140,6 +140,11 @@ export function ComplexityVsHours({ data, onPointClick }: Props) {
                 {industry}
               </span>
             ))}
+            {onPointClick && (
+              <span className="ml-auto text-[10px] eyebrow text-muted">
+                Click a dot for detail
+              </span>
+            )}
           </div>
           <div className="flex-1 min-h-0">
             <ResponsiveContainer width="100%" height="100%">

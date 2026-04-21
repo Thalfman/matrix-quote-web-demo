@@ -9,12 +9,27 @@ type Props = {
   onClose: () => void;
 };
 
-function Field({ label, value }: { label: string; value: string | number | null | undefined }) {
+function Field({
+  label,
+  value,
+  mono = true,
+}: {
+  label: string;
+  value: string | number | null | undefined;
+  mono?: boolean;
+}) {
   if (value == null || value === "" || value === 0) return null;
   return (
-    <div className="flex items-baseline justify-between gap-3 py-2 border-b hairline last:border-b-0">
-      <span className="text-[11px] eyebrow text-muted shrink-0">{label}</span>
-      <span className="text-sm text-ink text-right mono tnum">{String(value)}</span>
+    <div className="flex items-baseline justify-between gap-4 py-2 border-b hairline last:border-b-0">
+      <span className="text-[10px] eyebrow text-muted shrink-0">{label}</span>
+      <span
+        className={cn(
+          "text-sm text-ink text-right break-words min-w-0",
+          mono ? "mono tnum" : "",
+        )}
+      >
+        {String(value)}
+      </span>
     </div>
   );
 }
@@ -51,9 +66,9 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
         aria-modal="true"
         aria-label={row ? `Project detail: ${row.project_name}` : "Project detail"}
         className={cn(
-          "fixed right-0 top-0 bottom-0 z-50 w-[420px] max-w-full bg-paper",
+          "fixed right-0 top-0 bottom-0 z-50 w-full sm:w-[420px] max-w-full bg-paper",
           "border-l hairline shadow-2xl overflow-y-auto",
-          "transition-transform duration-250 ease-out",
+          "transition-transform duration-200 ease-out",
           row ? "translate-x-0" : "translate-x-full",
         )}
       >
@@ -61,9 +76,11 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
           <div className="flex flex-col h-full">
             {/* Header */}
             <div className="flex items-start justify-between gap-3 p-5 border-b hairline sticky top-0 bg-paper z-10">
-              <div>
+              <div className="min-w-0">
                 <div className="eyebrow text-[10px] text-muted mb-1">Project detail</div>
-                <div className="display-hero text-lg leading-tight text-ink">{row.project_name}</div>
+                <div className="display-hero text-lg leading-tight text-ink break-words">
+                  {row.project_name}
+                </div>
               </div>
               <button
                 type="button"
@@ -73,9 +90,10 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
                   "transition-colors duration-150 ease-out",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
                 )}
-                aria-label="Close project detail"
+                aria-label="Close project detail (Esc)"
+                title="Close (Esc)"
               >
-                <X size={16} strokeWidth={1.75} />
+                <X size={16} strokeWidth={1.75} aria-hidden="true" />
               </button>
             </div>
 
@@ -85,10 +103,10 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
               <section>
                 <div className="eyebrow text-[10px] text-muted mb-3">Identity</div>
                 <div>
-                  <Field label="Project ID" value={row.project_id} />
-                  <Field label="Industry" value={row.industry} />
-                  <Field label="System category" value={row.system_category} />
-                  <Field label="Primary bucket" value={row.primary_bucket} />
+                  <Field label="Project ID" value={row.project_id} mono={false} />
+                  <Field label="Industry" value={row.industry} mono={false} />
+                  <Field label="System category" value={row.system_category} mono={false} />
+                  <Field label="Primary bucket" value={row.primary_bucket} mono={false} />
                 </div>
               </section>
 
@@ -97,9 +115,23 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
                 <div className="eyebrow text-[10px] text-muted mb-3">Metrics</div>
                 <div>
                   <Field label="Stations" value={row.stations} />
-                  <Field label="Total hours (p50)" value={row.total_hours.toLocaleString("en-US", { maximumFractionDigits: 0 })} />
+                  <Field
+                    label="Total hours (p50)"
+                    value={row.total_hours.toLocaleString("en-US", {
+                      maximumFractionDigits: 0,
+                    })}
+                  />
                 </div>
               </section>
+            </div>
+
+            {/* Footer hint */}
+            <div className="px-5 py-3 border-t hairline text-[10px] eyebrow text-muted bg-paper/60">
+              Press{" "}
+              <kbd className="inline-flex items-center px-1.5 py-0.5 rounded-sm bg-line text-ink text-[9px] mono tracking-normal normal-case">
+                Esc
+              </kbd>{" "}
+              to close
             </div>
           </div>
         )}

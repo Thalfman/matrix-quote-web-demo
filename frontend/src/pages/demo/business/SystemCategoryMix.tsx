@@ -54,8 +54,15 @@ export function SystemCategoryMix({ data, selectedCategories, onCategoryClick }:
 
   return (
     <div className="card p-5 h-80 flex flex-col">
-      <div className="eyebrow text-[10px] text-muted mb-3">
-        Share of projects · by system type
+      <div className="flex items-baseline justify-between gap-3 mb-3">
+        <div className="eyebrow text-[10px] text-muted">
+          Share of projects · by system type
+        </div>
+        {onCategoryClick && (
+          <div className="text-[10px] eyebrow text-muted">
+            Click slice to filter
+          </div>
+        )}
       </div>
       {data.length === 0 ? (
         <div className="text-sm text-muted">No data available.</div>
@@ -83,12 +90,14 @@ export function SystemCategoryMix({ data, selectedCategories, onCategoryClick }:
               >
                 {data.map((entry, i) => {
                   const isSelected = hasSelection && selectedCategories!.has(entry.category);
-                  const opacity = hasSelection && !isSelected ? 0.35 : 1;
+                  const opacity = hasSelection && !isSelected ? 0.4 : 1;
                   return (
                     <Cell
                       key={entry.category}
                       fill={SLICE_COLORS[i % SLICE_COLORS.length]}
                       opacity={opacity}
+                      stroke={isSelected ? CHART_COLORS.paper : "none"}
+                      strokeWidth={isSelected ? 2 : 0}
                     />
                   );
                 })}

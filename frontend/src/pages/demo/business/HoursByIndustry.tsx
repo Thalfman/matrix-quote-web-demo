@@ -105,6 +105,13 @@ export function HoursByIndustry({
           ))}
         </div>
       </div>
+      {onIndustryClick && (
+        <div className="text-[10px] eyebrow text-muted mb-1">
+          {hasSelection
+            ? "Selected shown in teal · click to toggle"
+            : "Click a bar to filter"}
+        </div>
+      )}
       {data.length === 0 ? (
         <div className="text-sm text-muted">No data available.</div>
       ) : (

@@ -1,5 +1,5 @@
 import { useState, useMemo, KeyboardEvent } from "react";
-import { ArrowDown, ArrowUp, ArrowUpDown, Download } from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Download, Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { RankedRow } from "./portfolioStats";
@@ -112,7 +112,7 @@ export function TopProjectsTable({
     >
       {/* Table header strip */}
       <div className="flex items-center justify-between gap-3 px-5 py-3 bg-paper/60 border-b hairline flex-wrap gap-y-2">
-        <div className="flex items-center gap-3">
+        <div className="flex items-baseline gap-3 flex-wrap">
           <div className="eyebrow text-[10px] text-muted">Ranked by total p50 hours</div>
           <div className="text-[11px] text-muted mono tnum">
             {sorted.length === rows.length
@@ -121,25 +121,33 @@ export function TopProjectsTable({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <input
-            type="search"
-            placeholder="Search..."
-            value={search}
-            onChange={(e) => handleSearchChange(e.target.value)}
-            className={cn(
-              "text-sm px-2.5 py-1.5 rounded-sm border hairline bg-surface",
-              "placeholder:text-muted text-ink w-36",
-              "focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0",
-              "transition-colors duration-150",
-            )}
-            aria-label="Search projects"
-          />
+          <div className="relative">
+            <Search
+              size={12}
+              strokeWidth={1.75}
+              aria-hidden="true"
+              className="absolute left-2 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
+            />
+            <input
+              type="search"
+              placeholder="Search..."
+              value={search}
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className={cn(
+                "text-sm pl-7 pr-2.5 py-1.5 rounded-sm border hairline bg-surface",
+                "placeholder:text-muted text-ink w-36",
+                "focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0 focus:border-teal",
+                "transition-colors duration-150",
+              )}
+              aria-label="Search projects"
+            />
+          </div>
           <button
             type="button"
             onClick={handleExportCsv}
             className={cn(
               "inline-flex items-center gap-1.5 text-[11px] eyebrow px-2.5 py-1.5 rounded-sm",
-              "border hairline text-muted hover:text-ink hover:bg-line",
+              "border hairline bg-surface text-muted hover:text-ink hover:bg-paper",
               "transition-colors duration-150 ease-out",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
             )}
@@ -157,49 +165,78 @@ export function TopProjectsTable({
         style={{ gridTemplateColumns: GRID_COLS }}
         role="row"
       >
-        {COLS.map((col) => (
-          <div
-            key={col.label}
-            role="columnheader"
-            className={cn(
-              "eyebrow text-[10px] text-muted select-none",
-              col.align === "right" ? "text-right" : "",
-              col.sortKey ? "cursor-pointer hover:text-ink transition-colors duration-150" : "",
-            )}
-            onClick={col.sortKey ? () => handleSort(col.sortKey!) : undefined}
-            aria-sort={
-              col.sortKey && sortKey === col.sortKey
-                ? sortDir === "asc"
-                  ? "ascending"
-                  : "descending"
-                : col.sortKey
-                  ? "none"
-                  : undefined
-            }
-          >
-            <span className="inline-flex items-center gap-1">
-              {col.label}
-              {col.sortKey && (
-                <span aria-hidden="true" className="text-muted/60">
-                  {sortKey === col.sortKey ? (
-                    sortDir === "asc" ? (
-                      <ArrowUp size={10} strokeWidth={2} />
-                    ) : (
-                      <ArrowDown size={10} strokeWidth={2} />
-                    )
-                  ) : (
-                    <ArrowUpDown size={10} strokeWidth={1.75} />
-                  )}
-                </span>
+        {COLS.map((col) => {
+          const isActive = col.sortKey && sortKey === col.sortKey;
+          const isSortable = !!col.sortKey;
+          return (
+            <div
+              key={col.label}
+              role="columnheader"
+              className={cn(
+                "eyebrow text-[10px] select-none",
+                col.align === "right" ? "text-right" : "",
+                isActive ? "text-ink" : "text-muted",
+                isSortable
+                  ? "cursor-pointer hover:text-ink transition-colors duration-150 rounded-sm"
+                  : "",
+                isSortable
+                  ? "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal"
+                  : "",
               )}
-            </span>
-          </div>
-        ))}
+              onClick={isSortable ? () => handleSort(col.sortKey!) : undefined}
+              onKeyDown={
+                isSortable
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleSort(col.sortKey!);
+                      }
+                    }
+                  : undefined
+              }
+              tabIndex={isSortable ? 0 : undefined}
+              aria-sort={
+                isSortable
+                  ? sortKey === col.sortKey
+                    ? sortDir === "asc"
+                      ? "ascending"
+                      : "descending"
+                    : "none"
+                  : undefined
+              }
+            >
+              <span
+                className={cn(
+                  "inline-flex items-center gap-1",
+                  col.align === "right" ? "flex-row-reverse" : "",
+                )}
+              >
+                {col.label}
+                {isSortable && (
+                  <span
+                    aria-hidden="true"
+                    className={isActive ? "text-teal" : "text-muted"}
+                  >
+                    {isActive ? (
+                      sortDir === "asc" ? (
+                        <ArrowUp size={10} strokeWidth={2} />
+                      ) : (
+                        <ArrowDown size={10} strokeWidth={2} />
+                      )
+                    ) : (
+                      <ArrowUpDown size={10} strokeWidth={1.75} />
+                    )}
+                  </span>
+                )}
+              </span>
+            </div>
+          );
+        })}
       </div>
 
       {/* Rows */}
       {sorted.length === 0 ? (
-        <div className="px-5 py-6 text-sm text-muted text-center">
+        <div className="px-5 py-8 text-sm text-muted text-center">
           No projects match the current filters.
         </div>
       ) : (
@@ -212,10 +249,10 @@ export function TopProjectsTable({
             onKeyDown={onRowClick ? (e) => handleRowKeyDown(e, r) : undefined}
             className={cn(
               "grid items-center gap-3 px-5 py-3 border-b hairline last:border-b-0",
-              "hover:bg-paper/80 transition-colors duration-150 ease-out",
+              "transition-colors duration-150 ease-out",
               onRowClick
-                ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal"
-                : "",
+                ? "cursor-pointer hover:bg-tealSoft/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal"
+                : "hover:bg-paper/80",
             )}
             style={{ gridTemplateColumns: GRID_COLS }}
           >
@@ -240,7 +277,7 @@ export function TopProjectsTable({
             </div>
             <div
               role="cell"
-              className="text-[11px] eyebrow text-muted truncate"
+              className="text-[10px] eyebrow text-muted truncate"
               title={r.primary_bucket}
             >
               {r.primary_bucket}
