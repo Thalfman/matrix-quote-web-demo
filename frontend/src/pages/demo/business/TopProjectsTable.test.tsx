@@ -1,5 +1,5 @@
-import { screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { screen, fireEvent } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "@/test/render";
 
@@ -73,7 +73,31 @@ describe("TopProjectsTable", () => {
 
   it("renders a row-count badge", () => {
     renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    // With no filter active, shows "N projects"
     expect(screen.getByText("2 projects")).toBeInTheDocument();
+  });
+
+  it("renders an Export CSV button", () => {
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    expect(screen.getByRole("button", { name: /export csv/i })).toBeInTheDocument();
+  });
+
+  it("renders sortable column headers for Project and Total hours", () => {
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    // sortable headers have aria-sort attribute
+    const projectHeader = screen.getByRole("columnheader", { name: /project/i });
+    expect(projectHeader).toHaveAttribute("aria-sort");
+    const hoursHeader = screen.getByRole("columnheader", { name: /total hours/i });
+    expect(hoursHeader).toHaveAttribute("aria-sort");
+  });
+
+  it("calls onRowClick when a row is clicked", () => {
+    const onRowClick = vi.fn();
+    renderWithProviders(<TopProjectsTable rows={ROWS} onRowClick={onRowClick} />);
+    const row = screen.getByText("Delta System").closest("[role='button']");
+    expect(row).not.toBeNull();
+    fireEvent.click(row!);
+    expect(onRowClick).toHaveBeenCalledWith(ROWS[0]);
   });
 
   it("renders primary_bucket value for each row", () => {

@@ -22,7 +22,7 @@ const INDUSTRY_DATA: IndustryRow[] = [
 ];
 
 describe("HoursByIndustry", () => {
-  it("renders the section heading", () => {
+  it("renders the section heading with 'avg' metric by default", () => {
     renderWithProviders(<HoursByIndustry data={INDUSTRY_DATA} />);
     expect(screen.getByText(/average hours per project · by industry/i)).toBeInTheDocument();
   });

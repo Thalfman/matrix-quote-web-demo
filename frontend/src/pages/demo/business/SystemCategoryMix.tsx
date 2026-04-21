@@ -42,8 +42,15 @@ function CustomTooltip({
   );
 }
 
-export function SystemCategoryMix({ data }: { data: CategoryRow[] }) {
+type Props = {
+  data: CategoryRow[];
+  selectedCategories?: Set<string>;
+  onCategoryClick?: (name: string) => void;
+};
+
+export function SystemCategoryMix({ data, selectedCategories, onCategoryClick }: Props) {
   const total = data.reduce((s, d) => s + d.count, 0);
+  const hasSelection = selectedCategories && selectedCategories.size > 0;
 
   return (
     <div className="card p-5 h-80 flex flex-col">
@@ -54,48 +61,59 @@ export function SystemCategoryMix({ data }: { data: CategoryRow[] }) {
         <div className="text-sm text-muted">No data available.</div>
       ) : (
         <div className="flex-1 min-h-0">
-        <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie
-              data={data}
-              dataKey="count"
-              nameKey="category"
-              cx="40%"
-              cy="50%"
-              innerRadius={60}
-              outerRadius={90}
-              paddingAngle={2}
-            >
-              {data.map((entry, i) => (
-                <Cell
-                  key={entry.category}
-                  fill={SLICE_COLORS[i % SLICE_COLORS.length]}
-                />
-              ))}
-            </Pie>
-            <Tooltip
-              content={<CustomTooltip total={total} />}
-            />
-            <Legend
-              layout="vertical"
-              align="right"
-              verticalAlign="middle"
-              iconType="circle"
-              iconSize={8}
-              formatter={(value) => (
-                <span
-                  style={{
-                    fontSize: AXIS_TICK.fontSize,
-                    fontFamily: AXIS_TICK.fontFamily,
-                    color: CHART_COLORS.muted,
-                  }}
-                >
-                  {value}
-                </span>
-              )}
-            />
-          </PieChart>
-        </ResponsiveContainer>
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <Pie
+                data={data}
+                dataKey="count"
+                nameKey="category"
+                cx="40%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={90}
+                paddingAngle={2}
+                onClick={
+                  onCategoryClick
+                    ? (entry: { category?: string }) => {
+                        if (entry.category) onCategoryClick(entry.category);
+                      }
+                    : undefined
+                }
+                style={onCategoryClick ? { cursor: "pointer" } : undefined}
+              >
+                {data.map((entry, i) => {
+                  const isSelected = hasSelection && selectedCategories!.has(entry.category);
+                  const opacity = hasSelection && !isSelected ? 0.35 : 1;
+                  return (
+                    <Cell
+                      key={entry.category}
+                      fill={SLICE_COLORS[i % SLICE_COLORS.length]}
+                      opacity={opacity}
+                    />
+                  );
+                })}
+              </Pie>
+              <Tooltip content={<CustomTooltip total={total} />} />
+              <Legend
+                layout="vertical"
+                align="right"
+                verticalAlign="middle"
+                iconType="circle"
+                iconSize={8}
+                formatter={(value) => (
+                  <span
+                    style={{
+                      fontSize: AXIS_TICK.fontSize,
+                      fontFamily: AXIS_TICK.fontFamily,
+                      color: CHART_COLORS.muted,
+                    }}
+                  >
+                    {value}
+                  </span>
+                )}
+              />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       )}
     </div>

@@ -1,7 +1,9 @@
+import { useState } from "react";
 import {
   CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis,
 } from "recharts";
 
+import { cn } from "@/lib/utils";
 import {
   AXIS_LINE, AXIS_TICK, CHART_COLORS, GRID_STYLE, TOOLTIP_STYLE,
 } from "@/pages/insights/chartTheme";
@@ -17,6 +19,8 @@ const DOT_PALETTE = [
 ];
 
 const fmtHours = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
+
+type XAxis2 = "complexity" | "stations";
 
 type TooltipPayloadEntry = {
   payload?: ScatterPoint;
@@ -57,7 +61,14 @@ function CustomTooltip({
   );
 }
 
-export function ComplexityVsHours({ data }: { data: ScatterPoint[] }) {
+type Props = {
+  data: ScatterPoint[];
+  onPointClick?: (point: ScatterPoint) => void;
+};
+
+export function ComplexityVsHours({ data, onPointClick }: Props) {
+  const [xAxis, setXAxis] = useState<XAxis2>("complexity");
+
   // Build a color map keyed by unique industries
   const uniqueIndustries = Array.from(new Set(data.map((d) => d.industry)));
   const colorMap: Record<string, string> = {};
@@ -74,12 +85,35 @@ export function ComplexityVsHours({ data }: { data: ScatterPoint[] }) {
 
   return (
     <div className="card p-5 h-80 flex flex-col">
-      <div className="flex items-baseline justify-between gap-3 mb-3">
+      <div className="flex items-baseline justify-between gap-3 mb-2">
         <div className="eyebrow text-[10px] text-muted">
           One dot per project · color = industry
         </div>
-        <div className="text-[11px] text-muted mono tnum">
-          {data.length} projects
+        <div className="flex items-center gap-2">
+          <div className="text-[11px] text-muted mono tnum">{data.length} projects</div>
+          <div
+            className="inline-flex rounded-sm border hairline bg-surface p-0.5 gap-0.5"
+            role="group"
+            aria-label="X-axis"
+          >
+            {(["complexity", "stations"] as XAxis2[]).map((ax) => (
+              <button
+                key={ax}
+                type="button"
+                onClick={() => setXAxis(ax)}
+                className={cn(
+                  "text-[10px] eyebrow px-2 py-1 rounded-sm transition-colors duration-150 ease-out",
+                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal",
+                  xAxis === ax
+                    ? "bg-ink text-white"
+                    : "text-muted hover:text-ink",
+                )}
+                aria-pressed={xAxis === ax}
+              >
+                {ax === "complexity" ? "Complexity" : "Stations"}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
       {data.length === 0 ? (
@@ -112,15 +146,15 @@ export function ComplexityVsHours({ data }: { data: ScatterPoint[] }) {
               <ScatterChart margin={{ top: 4, right: 8, left: -8, bottom: 16 }}>
                 <CartesianGrid {...GRID_STYLE} />
                 <XAxis
-                  dataKey="complexity"
+                  dataKey={xAxis}
                   type="number"
-                  name="Complexity"
-                  domain={[0, 5.5]}
+                  name={xAxis === "complexity" ? "Complexity" : "Stations"}
+                  domain={xAxis === "complexity" ? [0, 5.5] : undefined}
                   tick={AXIS_TICK}
                   axisLine={AXIS_LINE}
                   tickLine={false}
                   label={{
-                    value: "Complexity (1–5)",
+                    value: xAxis === "complexity" ? "Complexity (1–5)" : "Stations",
                     position: "insideBottom",
                     offset: -4,
                     style: {
@@ -147,6 +181,12 @@ export function ComplexityVsHours({ data }: { data: ScatterPoint[] }) {
                     data={pts}
                     fill={colorMap[industry]}
                     opacity={0.85}
+                    onClick={
+                      onPointClick
+                        ? (point: ScatterPoint) => onPointClick(point)
+                        : undefined
+                    }
+                    style={onPointClick ? { cursor: "pointer" } : undefined}
                   />
                 ))}
               </ScatterChart>

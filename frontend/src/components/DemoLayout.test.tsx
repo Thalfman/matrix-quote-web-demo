@@ -33,10 +33,16 @@ describe("DemoLayout sidebar structure", () => {
     renderLayout();
     const links = screen.getAllByRole("link");
     const quoteLinks = links.filter((l) => l.textContent === "Quote");
-    const compareLinks = links.filter((l) => l.textContent === "Compare");
+    // Sidebar Compare links point to /compare/compare and /ml/compare (not the mobile /compare/quote link)
+    const sidebarCompareLinks = links.filter(
+      (l) =>
+        l.textContent === "Compare" &&
+        ((l as HTMLAnchorElement).href.includes("/compare/compare") ||
+          (l as HTMLAnchorElement).href.includes("/ml/compare")),
+    );
     const insightsLinks = links.filter((l) => l.textContent === "Business Insights");
     expect(quoteLinks).toHaveLength(2);
-    expect(compareLinks).toHaveLength(2);
+    expect(sidebarCompareLinks).toHaveLength(2);
     expect(insightsLinks).toHaveLength(2);
 
     // Within each section, Quote must precede Compare, which precedes Business Insights.

@@ -23,9 +23,9 @@ const BUCKET_DATA: BucketRow[] = [
 ];
 
 describe("HoursBySalesBucket", () => {
-  it("renders the section heading", () => {
+  it("renders the section heading with 'total' metric by default", () => {
     renderWithProviders(<HoursBySalesBucket data={BUCKET_DATA} />);
-    expect(screen.getByText(/total p50 hours · all 24 projects/i)).toBeInTheDocument();
+    expect(screen.getByText(/total p50 hours · by sales bucket/i)).toBeInTheDocument();
   });
 
   it("renders empty-state text when data is empty", () => {

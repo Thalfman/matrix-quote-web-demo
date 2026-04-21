@@ -1,19 +1,105 @@
+import { useState, useMemo, KeyboardEvent } from "react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Download } from "lucide-react";
+
+import { cn } from "@/lib/utils";
 import { RankedRow } from "./portfolioStats";
+import { toCsv, downloadCsv } from "./csv";
 
 const fmtHours = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
 const GRID_COLS = "2.2fr 1.4fr 1.4fr 72px 96px 100px";
 
-const COLS: { label: string; align?: "right" }[] = [
-  { label: "Project" },
-  { label: "Industry" },
+type SortKey = "project_name" | "industry" | "stations" | "total_hours";
+type SortDir = "asc" | "desc";
+
+type ColDef = {
+  label: string;
+  align?: "right";
+  sortKey?: SortKey;
+};
+
+const COLS: ColDef[] = [
+  { label: "Project", sortKey: "project_name" },
+  { label: "Industry", sortKey: "industry" },
   { label: "System" },
-  { label: "Stations", align: "right" },
-  { label: "Total hours", align: "right" },
+  { label: "Stations", align: "right", sortKey: "stations" },
+  { label: "Total hours", align: "right", sortKey: "total_hours" },
   { label: "Primary bucket" },
 ];
 
-export function TopProjectsTable({ rows }: { rows: RankedRow[] }) {
+type Props = {
+  rows: RankedRow[];
+  search?: string;
+  onSearchChange?: (s: string) => void;
+  onRowClick?: (row: RankedRow) => void;
+};
+
+export function TopProjectsTable({
+  rows,
+  search: externalSearch,
+  onSearchChange,
+  onRowClick,
+}: Props) {
+  const [internalSearch, setInternalSearch] = useState("");
+  const [sortKey, setSortKey] = useState<SortKey>("total_hours");
+  const [sortDir, setSortDir] = useState<SortDir>("desc");
+
+  const search = externalSearch ?? internalSearch;
+
+  const filtered = useMemo(() => {
+    if (!search) return rows;
+    const q = search.toLowerCase();
+    return rows.filter(
+      (r) =>
+        r.project_name.toLowerCase().includes(q) ||
+        r.industry.toLowerCase().includes(q) ||
+        r.system_category.toLowerCase().includes(q),
+    );
+  }, [rows, search]);
+
+  const sorted = useMemo(() => {
+    return [...filtered].sort((a, b) => {
+      const aVal = a[sortKey];
+      const bVal = b[sortKey];
+      if (typeof aVal === "number" && typeof bVal === "number") {
+        return sortDir === "asc" ? aVal - bVal : bVal - aVal;
+      }
+      const aStr = String(aVal ?? "");
+      const bStr = String(bVal ?? "");
+      const cmp = aStr.localeCompare(bStr);
+      return sortDir === "asc" ? cmp : -cmp;
+    });
+  }, [filtered, sortKey, sortDir]);
+
+  const handleSort = (key: SortKey) => {
+    if (sortKey === key) {
+      setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+    } else {
+      setSortKey(key);
+      setSortDir("desc");
+    }
+  };
+
+  const handleSearchChange = (value: string) => {
+    if (onSearchChange) {
+      onSearchChange(value);
+    } else {
+      setInternalSearch(value);
+    }
+  };
+
+  const handleExportCsv = () => {
+    const csv = toCsv(sorted);
+    downloadCsv(csv, "business-insights-projects.csv");
+  };
+
+  const handleRowKeyDown = (e: KeyboardEvent<HTMLDivElement>, row: RankedRow) => {
+    if (onRowClick && (e.key === "Enter" || e.key === " ")) {
+      e.preventDefault();
+      onRowClick(row);
+    }
+  };
+
   if (rows.length === 0) {
     return <div className="card p-6 text-sm text-muted">No projects to display.</div>;
   }
@@ -24,14 +110,48 @@ export function TopProjectsTable({ rows }: { rows: RankedRow[] }) {
       role="table"
       aria-label="Ranked projects by total p50 hours"
     >
-      <div
-        className="flex items-baseline justify-between px-5 py-3 bg-paper/60 border-b hairline"
-      >
-        <div className="eyebrow text-[10px] text-muted">Ranked by total p50 hours</div>
-        <div className="text-[11px] text-muted mono tnum">{rows.length} projects</div>
+      {/* Table header strip */}
+      <div className="flex items-center justify-between gap-3 px-5 py-3 bg-paper/60 border-b hairline flex-wrap gap-y-2">
+        <div className="flex items-center gap-3">
+          <div className="eyebrow text-[10px] text-muted">Ranked by total p50 hours</div>
+          <div className="text-[11px] text-muted mono tnum">
+            {sorted.length === rows.length
+              ? `${rows.length} projects`
+              : `${sorted.length} of ${rows.length} projects`}
+          </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="search"
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => handleSearchChange(e.target.value)}
+            className={cn(
+              "text-sm px-2.5 py-1.5 rounded-sm border hairline bg-surface",
+              "placeholder:text-muted text-ink w-36",
+              "focus:outline-none focus:ring-2 focus:ring-teal focus:ring-offset-0",
+              "transition-colors duration-150",
+            )}
+            aria-label="Search projects"
+          />
+          <button
+            type="button"
+            onClick={handleExportCsv}
+            className={cn(
+              "inline-flex items-center gap-1.5 text-[11px] eyebrow px-2.5 py-1.5 rounded-sm",
+              "border hairline text-muted hover:text-ink hover:bg-line",
+              "transition-colors duration-150 ease-out",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
+            )}
+            title="Export filtered rows as CSV"
+          >
+            <Download size={12} strokeWidth={1.75} aria-hidden="true" />
+            Export CSV
+          </button>
+        </div>
       </div>
 
-      {/* Header */}
+      {/* Column headers */}
       <div
         className="grid items-center gap-3 px-5 py-2.5 border-b hairline bg-paper/40"
         style={{ gridTemplateColumns: GRID_COLS }}
@@ -41,51 +161,93 @@ export function TopProjectsTable({ rows }: { rows: RankedRow[] }) {
           <div
             key={col.label}
             role="columnheader"
-            className={
-              "eyebrow text-[10px] text-muted" + (col.align === "right" ? " text-right" : "")
+            className={cn(
+              "eyebrow text-[10px] text-muted select-none",
+              col.align === "right" ? "text-right" : "",
+              col.sortKey ? "cursor-pointer hover:text-ink transition-colors duration-150" : "",
+            )}
+            onClick={col.sortKey ? () => handleSort(col.sortKey!) : undefined}
+            aria-sort={
+              col.sortKey && sortKey === col.sortKey
+                ? sortDir === "asc"
+                  ? "ascending"
+                  : "descending"
+                : col.sortKey
+                  ? "none"
+                  : undefined
             }
           >
-            {col.label}
+            <span className="inline-flex items-center gap-1">
+              {col.label}
+              {col.sortKey && (
+                <span aria-hidden="true" className="text-muted/60">
+                  {sortKey === col.sortKey ? (
+                    sortDir === "asc" ? (
+                      <ArrowUp size={10} strokeWidth={2} />
+                    ) : (
+                      <ArrowDown size={10} strokeWidth={2} />
+                    )
+                  ) : (
+                    <ArrowUpDown size={10} strokeWidth={1.75} />
+                  )}
+                </span>
+              )}
+            </span>
           </div>
         ))}
       </div>
 
       {/* Rows */}
-      {rows.map((r, i) => (
-        <div
-          key={r.project_id || i}
-          role="row"
-          className="grid items-center gap-3 px-5 py-3 border-b hairline last:border-b-0 hover:bg-paper/80 transition-colors duration-150 ease-out"
-          style={{ gridTemplateColumns: GRID_COLS }}
-        >
-          <div
-            role="cell"
-            className="text-sm text-ink truncate font-medium"
-            title={r.project_name}
-          >
-            {r.project_name}
-          </div>
-          <div role="cell" className="text-sm text-muted truncate" title={r.industry}>
-            {r.industry}
-          </div>
-          <div role="cell" className="text-sm text-muted truncate" title={r.system_category}>
-            {r.system_category}
-          </div>
-          <div role="cell" className="mono tnum text-ink text-sm text-right">
-            {r.stations}
-          </div>
-          <div role="cell" className="mono tnum text-ink text-sm text-right">
-            {fmtHours.format(r.total_hours)}
-          </div>
-          <div
-            role="cell"
-            className="text-[11px] eyebrow text-muted truncate"
-            title={r.primary_bucket}
-          >
-            {r.primary_bucket}
-          </div>
+      {sorted.length === 0 ? (
+        <div className="px-5 py-6 text-sm text-muted text-center">
+          No projects match the current filters.
         </div>
-      ))}
+      ) : (
+        sorted.map((r, i) => (
+          <div
+            key={r.project_id || i}
+            role={onRowClick ? "button" : "row"}
+            tabIndex={onRowClick ? 0 : undefined}
+            onClick={onRowClick ? () => onRowClick(r) : undefined}
+            onKeyDown={onRowClick ? (e) => handleRowKeyDown(e, r) : undefined}
+            className={cn(
+              "grid items-center gap-3 px-5 py-3 border-b hairline last:border-b-0",
+              "hover:bg-paper/80 transition-colors duration-150 ease-out",
+              onRowClick
+                ? "cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal"
+                : "",
+            )}
+            style={{ gridTemplateColumns: GRID_COLS }}
+          >
+            <div
+              role="cell"
+              className="text-sm text-ink truncate font-medium"
+              title={r.project_name}
+            >
+              {r.project_name}
+            </div>
+            <div role="cell" className="text-sm text-muted truncate" title={r.industry}>
+              {r.industry}
+            </div>
+            <div role="cell" className="text-sm text-muted truncate" title={r.system_category}>
+              {r.system_category}
+            </div>
+            <div role="cell" className="mono tnum text-ink text-sm text-right">
+              {r.stations}
+            </div>
+            <div role="cell" className="mono tnum text-ink text-sm text-right">
+              {fmtHours.format(r.total_hours)}
+            </div>
+            <div
+              role="cell"
+              className="text-[11px] eyebrow text-muted truncate"
+              title={r.primary_bucket}
+            >
+              {r.primary_bucket}
+            </div>
+          </div>
+        ))
+      )}
     </div>
   );
 }
