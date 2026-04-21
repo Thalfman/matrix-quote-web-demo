@@ -1,0 +1,637 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Matrix Quote — Insights</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:"#0D1B2A", ink2:"#1E2B3A",
+          paper:"#F6F4EF", surface:"#FFFFFF",
+          line:"#E5E1D8", line2:"#D8D3C6",
+          muted:"#5A6573", muted2:"#8A94A1",
+          amber:"#F2B61F", amberSoft:"#FAEBB5",
+          teal:"#1F8FA6", tealDark:"#177082", tealSoft:"#D7ECF1",
+          success:"#2F8F6F", danger:"#B5412B",
+        },
+        fontFamily: {
+          sans:['Inter','ui-sans-serif','system-ui','sans-serif'],
+          display:['"Barlow Condensed"','Inter','sans-serif'],
+          mono:['"JetBrains Mono"','ui-monospace','monospace'],
+        },
+      }
+    }
+  };
+</script>
+<style>
+  html,body { background:#F6F4EF; color:#0D1B2A; }
+  body { font-family:'Inter',ui-sans-serif,system-ui,sans-serif; font-feature-settings:"cv02","cv03","cv04","cv11"; }
+  .eyebrow { font-family:'Barlow Condensed','Inter',sans-serif; font-weight:600; letter-spacing:.14em; text-transform:uppercase; }
+  .mono { font-family:'JetBrains Mono',ui-monospace,monospace; font-variant-numeric: tabular-nums; }
+  .card { background:#fff; border:1px solid #E5E1D8; border-radius:2px; }
+  .hairline { border-color:#E5E1D8; }
+  .tnum { font-variant-numeric: tabular-nums; }
+  .display-hero { font-family:'Barlow Condensed','Inter',sans-serif; font-weight:600; letter-spacing:-.01em; }
+  .screen { display:none; }
+  .screen.active { display:block; }
+
+  /* tiny grid lines for charts */
+  .gridbg {
+    background-image:
+      linear-gradient(to top, rgba(13,27,42,.04) 1px, transparent 1px);
+    background-size: 100% 25%;
+  }
+</style>
+<link rel="stylesheet" href="styles/dark-mode.css" />
+<script defer src="lib/theme-toggle.js"></script>
+</head>
+<body>
+
+<!-- ============================================================
+  APP SHELL
+============================================================= -->
+<div class="min-h-screen flex">
+
+  <aside class="hidden lg:flex w-60 shrink-0 flex-col bg-ink text-white p-6 gap-8">
+    <div>
+      <div class="display-hero text-2xl tracking-tight leading-none">Matrix</div>
+      <div class="eyebrow text-[10px] text-white/50 mt-1">Quote Estimation</div>
+    </div>
+    <nav class="flex flex-col gap-1">
+      <div class="eyebrow text-[10px] text-white/40 mb-1 px-3">Estimate</div>
+      <a href="Cockpit Redesign.html" class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Single Quote</a>
+      <a class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Batch Quotes</a>
+    </nav>
+    <nav class="flex flex-col gap-1">
+      <div class="eyebrow text-[10px] text-white/40 mb-1 px-3">Quotes</div>
+      <a href="Saved Quotes + Compare.html" class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Saved Quotes</a>
+      <a href="Saved Quotes + Compare.html" class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Compare</a>
+    </nav>
+    <nav class="flex flex-col gap-1">
+      <div class="eyebrow text-[10px] text-white/40 mb-1 px-3">Insights</div>
+      <a data-route="accuracy" class="route text-sm px-3 py-2 rounded-sm bg-white/5 border-l-2 border-amber text-white font-medium cursor-pointer">Estimate Accuracy</a>
+      <a data-route="exec" class="route text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5 cursor-pointer">Executive Overview</a>
+    </nav>
+    <div class="mt-auto">
+      <div class="eyebrow text-[10px] text-white/40 mb-2">Model Status</div>
+      <div class="flex items-center gap-2 text-xs text-white/80">
+        <span class="relative flex w-1.5 h-1.5">
+          <span class="absolute inset-0 rounded-full bg-success animate-ping opacity-60"></span>
+          <span class="relative w-1.5 h-1.5 rounded-full bg-success"></span>
+        </span>
+        Ready · 12 / 12 models
+      </div>
+      <div class="mono text-[10px] text-white/40 mt-1">Trained Apr 14, 2026</div>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0">
+    <!-- Top strip -->
+    <div class="border-b hairline bg-white/60 backdrop-blur">
+      <div class="max-w-[1400px] mx-auto px-8 h-12 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2 text-muted">
+          <span>Insights</span>
+          <span class="text-muted2">/</span>
+          <span id="crumb" class="text-ink font-medium">Estimate Accuracy</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="mono text-muted2">⌘K</span>
+          <span class="w-px h-4 bg-line"></span>
+          <span class="inline-flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-ink text-white grid place-items-center text-[10px] font-semibold">TH</span>
+            <span class="text-ink">T. Halfman</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+      SCREEN — ESTIMATE ACCURACY
+    ============================================================= -->
+    <section class="screen active" data-screen="accuracy">
+      <div class="max-w-[1400px] mx-auto px-8 py-8">
+
+        <header class="flex items-end justify-between gap-6 pb-6 mb-6 border-b hairline">
+          <div>
+            <div class="eyebrow text-[11px] text-teal">Insights · Model performance</div>
+            <h1 class="display-hero text-4xl leading-none mt-2 text-ink">Estimate Accuracy</h1>
+            <p class="text-sm text-muted mt-3 max-w-xl">How close our predicted hours land to actuals once a project closes. Back-tested across the last 4 training runs.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <!-- range tabs -->
+            <div class="inline-flex rounded-sm border hairline overflow-hidden bg-white text-xs mono">
+              <button class="px-3 py-2 text-muted">30d</button>
+              <button class="px-3 py-2 text-muted">90d</button>
+              <button class="px-3 py-2 bg-ink text-white">1y</button>
+              <button class="px-3 py-2 text-muted">All</button>
+            </div>
+            <button class="inline-flex items-center gap-2 px-3 py-2 text-xs border hairline rounded-sm bg-white hover:bg-paper">Export</button>
+          </div>
+        </header>
+
+        <!-- KPI strip -->
+        <div class="grid grid-cols-4 gap-3 mb-6">
+          <div class="card p-5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-amber"></div>
+            <div class="eyebrow text-[10px] text-muted">MAPE</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <div class="display-hero text-4xl tnum">11.4<span class="text-xl text-muted">%</span></div>
+              <span class="mono text-[11px] text-success">↓ 1.2 pts</span>
+            </div>
+            <div class="text-[11px] text-muted mt-1">vs. previous training run</div>
+          </div>
+          <div class="card p-5">
+            <div class="eyebrow text-[10px] text-muted">R²</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <div class="display-hero text-4xl tnum">0.84</div>
+              <span class="mono text-[11px] text-success">↑ 0.03</span>
+            </div>
+            <div class="text-[11px] text-muted mt-1">out-of-fold</div>
+          </div>
+          <div class="card p-5">
+            <div class="eyebrow text-[10px] text-muted">Median absolute Δ</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <div class="display-hero text-4xl tnum">92</div>
+              <span class="text-sm text-muted">hrs</span>
+            </div>
+            <div class="text-[11px] text-muted mt-1">8.1% of median quote</div>
+          </div>
+          <div class="card p-5">
+            <div class="eyebrow text-[10px] text-muted">Coverage · 90% CI</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <div class="display-hero text-4xl tnum">87<span class="text-xl text-muted">%</span></div>
+              <span class="mono text-[11px] text-danger">↓ 3 pts</span>
+            </div>
+            <div class="text-[11px] text-muted mt-1">actuals inside predicted band</div>
+          </div>
+        </div>
+
+        <!-- Main chart: predicted vs actual scatter -->
+        <div class="card mb-3">
+          <div class="flex items-baseline justify-between px-5 py-4 border-b hairline">
+            <div>
+              <div class="eyebrow text-[11px] text-ink">Predicted vs. actual hours</div>
+              <div class="text-xs text-muted">62 closed projects · diagonal = perfect</div>
+            </div>
+            <div class="flex items-center gap-4 text-[11px] text-muted">
+              <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-ink"></span>Within ±10%</span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber"></span>±10–25%</span>
+              <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-danger"></span>&gt;25%</span>
+            </div>
+          </div>
+          <div class="p-5">
+            <div class="relative h-[360px]" id="scatter">
+              <!-- Y axis -->
+              <div class="absolute inset-y-0 left-0 w-12 flex flex-col justify-between eyebrow text-[10px] text-muted mono tnum">
+                <span>3,000</span><span>2,250</span><span>1,500</span><span>750</span><span>0</span>
+              </div>
+              <!-- Plot -->
+              <div class="absolute inset-0 ml-12 border-l border-b hairline gridbg overflow-hidden">
+                <!-- diagonal -->
+                <svg class="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+                  <line x1="0" y1="100%" x2="100%" y2="0" stroke="#0D1B2A" stroke-dasharray="4 4" stroke-width="1" opacity="0.35"/>
+                  <!-- ±10% band -->
+                  <polygon points="0,100% 100%,0 100%,10 10,100%" fill="#0D1B2A" opacity="0.04" />
+                  <polygon points="0,100% 0,90% 90%,0 100%,0" fill="#0D1B2A" opacity="0.04" />
+                </svg>
+                <!-- points inserted by JS -->
+                <div id="scatter-points" class="absolute inset-0"></div>
+                <!-- y=x label -->
+                <div class="absolute bottom-3 right-3 text-[10px] mono text-muted2 rotate-[-35deg] origin-bottom-right">y = x</div>
+              </div>
+              <!-- X axis -->
+              <div class="absolute bottom-[-22px] left-12 right-0 flex justify-between eyebrow text-[10px] text-muted mono tnum">
+                <span>0</span><span>750</span><span>1,500</span><span>2,250</span><span>3,000</span>
+              </div>
+              <!-- axis titles -->
+              <div class="absolute -rotate-90 top-1/2 -translate-y-1/2 -left-2 eyebrow text-[10px] text-muted2">Actual hrs</div>
+              <div class="absolute -bottom-9 right-0 eyebrow text-[10px] text-muted2">Predicted hrs</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: residual distribution + error by segment -->
+        <div class="grid grid-cols-[1.4fr_1fr] gap-3 mb-3">
+          <!-- Residuals histogram -->
+          <div class="card">
+            <div class="px-5 py-4 border-b hairline flex items-baseline justify-between">
+              <div>
+                <div class="eyebrow text-[11px] text-ink">Residual distribution</div>
+                <div class="text-xs text-muted">(predicted − actual) / actual · 62 projects</div>
+              </div>
+              <div class="mono text-[11px] text-muted">μ = <span class="text-ink">−0.4%</span> · σ = <span class="text-ink">14.2%</span></div>
+            </div>
+            <div class="p-5">
+              <div class="relative h-[200px]" id="residuals">
+                <div class="absolute inset-x-12 inset-y-0 border-l border-b hairline">
+                  <!-- 0% mid line -->
+                  <div class="absolute inset-y-0 left-1/2 w-px bg-ink/30"></div>
+                  <div id="resbars" class="absolute inset-0 flex items-end gap-px px-1"></div>
+                </div>
+                <div class="absolute inset-y-0 left-0 w-12 flex flex-col justify-between eyebrow text-[10px] text-muted mono tnum">
+                  <span>14</span><span>10</span><span>6</span><span>2</span><span>0</span>
+                </div>
+                <div class="absolute -bottom-5 left-12 right-0 flex justify-between eyebrow text-[10px] text-muted mono tnum">
+                  <span>−40%</span><span>−20%</span><span>0</span><span>+20%</span><span>+40%</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Error by segment -->
+          <div class="card">
+            <div class="px-5 py-4 border-b hairline flex items-baseline justify-between">
+              <div>
+                <div class="eyebrow text-[11px] text-ink">Error by industry</div>
+                <div class="text-xs text-muted">Median |residual|</div>
+              </div>
+              <button class="text-[11px] mono text-muted hover:text-ink">Toggle to by operation →</button>
+            </div>
+            <div class="p-5 space-y-3" id="segerr"></div>
+          </div>
+        </div>
+
+        <!-- Row 3: per-operation performance table -->
+        <div class="card">
+          <div class="px-5 py-4 border-b hairline flex items-baseline justify-between">
+            <div>
+              <div class="eyebrow text-[11px] text-ink">Per-operation model health</div>
+              <div class="text-xs text-muted">12 operation-level models · sorted by MAPE</div>
+            </div>
+            <div class="text-[11px] mono text-muted">last retrain · <span class="text-ink">Apr 14</span></div>
+          </div>
+          <div class="grid grid-cols-[minmax(0,1.2fr)_90px_80px_1fr_80px_90px] items-center gap-x-4 px-5 py-2 bg-paper eyebrow text-[10px] text-muted">
+            <div>Operation</div>
+            <div class="text-right">n</div>
+            <div class="text-right">MAPE</div>
+            <div>Trend · 12w</div>
+            <div class="text-right">Cov.</div>
+            <div class="text-right">Status</div>
+          </div>
+          <div id="oprows"></div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+      SCREEN — EXECUTIVE OVERVIEW
+    ============================================================= -->
+    <section class="screen" data-screen="exec">
+      <div class="max-w-[1400px] mx-auto px-8 py-8">
+
+        <header class="flex items-end justify-between gap-6 pb-6 mb-6 border-b hairline">
+          <div>
+            <div class="eyebrow text-[11px] text-teal">Insights · Leadership</div>
+            <h1 class="display-hero text-4xl leading-none mt-2 text-ink">Executive Overview</h1>
+            <p class="text-sm text-muted mt-3 max-w-xl">Quoting volume, pipeline value, and team activity — rolled up across estimators.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="inline-flex rounded-sm border hairline overflow-hidden bg-white text-xs mono">
+              <button class="px-3 py-2 text-muted">Week</button>
+              <button class="px-3 py-2 bg-ink text-white">Month</button>
+              <button class="px-3 py-2 text-muted">Quarter</button>
+              <button class="px-3 py-2 text-muted">YTD</button>
+            </div>
+            <button class="inline-flex items-center gap-2 px-3 py-2 text-xs border hairline rounded-sm bg-white hover:bg-paper">Share</button>
+          </div>
+        </header>
+
+        <!-- KPI row -->
+        <div class="grid grid-cols-4 gap-3 mb-6">
+          <div class="card p-5">
+            <div class="eyebrow text-[10px] text-muted">Quotes issued</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <div class="display-hero text-4xl tnum">148</div>
+              <span class="mono text-[11px] text-success">↑ 22</span>
+            </div>
+            <svg viewBox="0 0 120 24" class="w-full h-6 mt-3" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#0D1B2A" stroke-width="1.5"
+                points="0,18 12,16 24,14 36,15 48,12 60,10 72,11 84,8 96,9 108,6 120,5"/>
+            </svg>
+          </div>
+          <div class="card p-5">
+            <div class="eyebrow text-[10px] text-muted">Pipeline value</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <div class="display-hero text-4xl tnum">$48.2<span class="text-xl text-muted">M</span></div>
+              <span class="mono text-[11px] text-success">↑ 8.4%</span>
+            </div>
+            <svg viewBox="0 0 120 24" class="w-full h-6 mt-3" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#1F8FA6" stroke-width="1.5"
+                points="0,14 12,12 24,16 36,14 48,11 60,9 72,10 84,7 96,8 108,5 120,3"/>
+            </svg>
+          </div>
+          <div class="card p-5">
+            <div class="eyebrow text-[10px] text-muted">Avg. quote size</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <div class="display-hero text-4xl tnum">1,186</div>
+              <span class="text-sm text-muted">hrs</span>
+            </div>
+            <svg viewBox="0 0 120 24" class="w-full h-6 mt-3" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#0D1B2A" stroke-width="1.5"
+                points="0,12 12,14 24,11 36,13 48,10 60,12 72,9 84,10 96,8 108,9 120,7"/>
+            </svg>
+          </div>
+          <div class="card p-5 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-amber"></div>
+            <div class="eyebrow text-[10px] text-muted">Win rate</div>
+            <div class="flex items-baseline gap-2 mt-1">
+              <div class="display-hero text-4xl tnum">34<span class="text-xl text-muted">%</span></div>
+              <span class="mono text-[11px] text-success">↑ 2 pts</span>
+            </div>
+            <svg viewBox="0 0 120 24" class="w-full h-6 mt-3" preserveAspectRatio="none">
+              <polyline fill="none" stroke="#F2B61F" stroke-width="1.5"
+                points="0,16 12,15 24,13 36,14 48,11 60,13 72,10 84,9 96,11 108,8 120,6"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- Main row: volume stacked bars + pipeline funnel -->
+        <div class="grid grid-cols-[1.6fr_1fr] gap-3 mb-3">
+          <div class="card">
+            <div class="px-5 py-4 border-b hairline flex items-baseline justify-between">
+              <div>
+                <div class="eyebrow text-[11px] text-ink">Quotes per week by industry</div>
+                <div class="text-xs text-muted">rolling 16 weeks</div>
+              </div>
+              <div class="flex items-center gap-3 text-[11px] text-muted">
+                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-ink rounded-sm"></span>Automotive</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-teal rounded-sm"></span>Food &amp; Bev</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-amber rounded-sm"></span>Heavy/Aero</span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-2.5 h-2.5 bg-line2 rounded-sm"></span>Other</span>
+              </div>
+            </div>
+            <div class="p-5">
+              <div id="stackbars" class="flex items-end gap-1 h-[220px]"></div>
+              <div id="stackbars-axis" class="flex justify-between text-[10px] mono text-muted mt-2 px-0.5"></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="px-5 py-4 border-b hairline">
+              <div class="eyebrow text-[11px] text-ink">Pipeline funnel</div>
+              <div class="text-xs text-muted">Last 90 days</div>
+            </div>
+            <div class="p-5 space-y-3" id="funnel"></div>
+          </div>
+        </div>
+
+        <!-- Row: estimator leaderboard + latest activity -->
+        <div class="grid grid-cols-[1.4fr_1fr] gap-3">
+          <div class="card">
+            <div class="px-5 py-4 border-b hairline">
+              <div class="eyebrow text-[11px] text-ink">Estimator leaderboard</div>
+              <div class="text-xs text-muted">This month</div>
+            </div>
+            <div class="grid grid-cols-[1fr_90px_100px_100px] items-center gap-x-4 px-5 py-2 bg-paper eyebrow text-[10px] text-muted">
+              <div>Estimator</div>
+              <div class="text-right">Quotes</div>
+              <div class="text-right">Avg. hrs</div>
+              <div class="text-right">|Δ vs actual|</div>
+            </div>
+            <div id="leaderboard"></div>
+          </div>
+
+          <div class="card">
+            <div class="px-5 py-4 border-b hairline">
+              <div class="eyebrow text-[11px] text-ink">Recent activity</div>
+              <div class="text-xs text-muted">Last 24 hours</div>
+            </div>
+            <div class="divide-y hairline" id="feed"></div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ===================== Helpers ===================== */
+const fmt = (n) => new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(n);
+const clamp = (n, lo, hi) => Math.max(lo, Math.min(hi, n));
+const pct = (n, max) => (n/max*100)+'%';
+
+/* ===================== Screen 1 — Accuracy ===================== */
+
+// Scatter points
+const PTS = [
+  // [actual, predicted]
+  [1150, 1204],[1820, 1890],[ 620,  588],[ 980, 1020],[1420, 1310],
+  [ 780,  802],[ 510,  560],[2280, 2110],[ 840,  920],[ 390,  360],
+  [1680, 1612],[1060, 1140],[ 940,  870],[2050, 2220],[1260, 1188],
+  [1500, 1400],[ 720,  756],[1340, 1260],[2400, 2180],[ 880,  910],
+  [1180, 1102],[ 640,  702],[1920, 1850],[2160, 2340],[ 470,  512],
+  [1080, 1020],[ 830,  790],[1400, 1502],[1760, 1680],[ 550,  610],
+  [2520, 2380],[1210, 1160],[ 990, 1080],[ 710,  680],[1870, 1990],
+  [1030,  940],[1440, 1520],[ 620,  670],[2080, 1940],[1320, 1280],
+  [ 910, 1010],[ 460,  440],[1550, 1640],[2250, 2130],[ 790,  820],
+  [1130, 1080],[1690, 1590],[ 570,  640],[1240, 1160],[2000, 2080],
+  [ 860,  810],[1400, 1344],[1820, 1720],[ 640,  590],[2400, 2250],
+  [1110, 1055],[ 930,  990],[1560, 1472],[ 420,  480],[2120, 2240],
+  [1300, 1230],[ 750,  690]
+];
+const MAX = 3000;
+const pointsEl = document.getElementById('scatter-points');
+pointsEl.innerHTML = PTS.map(([a, p]) => {
+  const errPct = Math.abs(p - a) / a * 100;
+  const color = errPct <= 10 ? 'bg-ink' : errPct <= 25 ? 'bg-amber' : 'bg-danger';
+  const x = (p / MAX) * 100;
+  const y = (a / MAX) * 100;
+  return `<span class="absolute w-1.5 h-1.5 rounded-full ${color} opacity-80 -translate-x-1/2 translate-y-1/2" style="left:${x}%; bottom:${y}%"></span>`;
+}).join('');
+
+// Residuals histogram — 16 buckets from -40% to +40%
+const RES_BUCKETS = [0, 1, 0, 2, 3, 5, 7, 11, 13, 10, 6, 3, 1, 0, 0, 0];
+const resmax = Math.max(...RES_BUCKETS);
+document.getElementById('resbars').innerHTML = RES_BUCKETS.map((v, i) => {
+  const h = v/resmax * 100;
+  const mid = i === 7 || i === 8;
+  return `<div class="flex-1 ${mid?'bg-amber':'bg-ink'} rounded-sm opacity-90" style="height:${h}%"></div>`;
+}).join('');
+
+// Error by segment
+const SEG = [
+  ["Automotive",        6.8, 18],
+  ["Food & Beverage",   9.2, 11],
+  ["General Industry", 12.6, 14],
+  ["Heavy Equipment",  13.1,  7],
+  ["Aerospace",        18.4,  5],
+  ["Medical Implants", 24.9,  4],
+  ["Consumer Products", 7.3,  3],
+];
+const segmax = Math.max(...SEG.map(r => r[1]));
+document.getElementById('segerr').innerHTML = SEG.map(([name, err, n]) => {
+  const color = err <= 10 ? 'bg-ink' : err <= 20 ? 'bg-amber' : 'bg-danger';
+  return `
+    <div>
+      <div class="flex items-baseline justify-between text-xs mb-1">
+        <span class="text-ink">${name} <span class="text-muted2 mono ml-1">n=${n}</span></span>
+        <span class="mono tnum text-ink font-medium">${err.toFixed(1)}%</span>
+      </div>
+      <div class="h-1.5 bg-line rounded-sm overflow-hidden">
+        <div class="h-full ${color}" style="width:${err/segmax*100}%"></div>
+      </div>
+    </div>`;
+}).join('');
+
+// Per-op rows
+const OPROWS = [
+  ["ME 10 · Mechanical Design",      62,  8.2, "good",  91, [4,5,5,4,6,5,6,5,4,5,4,3]],
+  ["EE 20 · Electrical Design",      58,  9.1, "good",  89, [5,6,5,5,4,5,6,5,5,4,4,4]],
+  ["CP 50 · Controls Programming",   54, 10.4, "good",  88, [6,6,7,6,5,6,5,6,5,5,5,4]],
+  ["RB 30 · Robot Programming",      48, 11.8, "good",  86, [7,6,6,7,6,6,6,5,5,6,5,5]],
+  ["ME 15 · Mechanical Detailing",   60, 12.2, "good",  85, [5,5,6,6,7,6,6,6,5,6,5,5]],
+  ["PM 200 · Project Management",    62, 12.8, "good",  87, [5,6,5,6,6,7,6,6,6,5,5,5]],
+  ["BLD 100 · Mechanical Build",     55, 13.6, "warn",  83, [6,7,6,7,6,7,7,7,6,6,6,5]],
+  ["INST 160 · Installation",        41, 14.4, "warn",  82, [6,7,7,6,7,7,8,7,7,6,6,6]],
+  ["DOC 190 · Documentation",        58, 15.2, "warn",  81, [7,6,7,8,7,7,7,8,7,7,6,6]],
+  ["ME 230 · Integration",           46, 16.8, "warn",  78, [7,8,7,8,8,7,8,8,7,7,7,6]],
+  ["TRV 180 · Travel & Logistics",   52, 19.4, "risk",  74, [8,9,8,9,8,9,9,8,9,8,8,7]],
+  ["SHP 150 · Shipping",             29, 21.7, "risk",  71, [9,10,9,10,10,9,10,9,9,10,9,8]],
+];
+const mkSpark = (arr) => {
+  const max = Math.max(...arr), min = Math.min(...arr);
+  const pts = arr.map((v,i) => {
+    const x = (i/(arr.length-1))*100;
+    const y = 100 - ((v-min)/(max-min||1))*100;
+    return `${x},${y}`;
+  }).join(' ');
+  return `<svg viewBox="0 0 100 100" preserveAspectRatio="none" class="w-full h-6"><polyline fill="none" stroke="#0D1B2A" stroke-width="2" vector-effect="non-scaling-stroke" points="${pts}"/></svg>`;
+};
+const statusDot = { good:"bg-success", warn:"bg-amber", risk:"bg-danger" };
+const statusTxt = { good:"Healthy",   warn:"Watch",   risk:"Retrain"   };
+document.getElementById('oprows').innerHTML = OPROWS.map(([name, n, mape, s, cov, spark]) => `
+  <div class="grid grid-cols-[minmax(0,1.2fr)_90px_80px_1fr_80px_90px] items-center gap-x-4 px-5 py-2.5 border-b hairline last:border-b-0 hover:bg-paper/80">
+    <div class="text-sm text-ink truncate">${name}</div>
+    <div class="mono tnum text-right text-sm">${n}</div>
+    <div class="mono tnum text-right text-sm font-medium">${mape.toFixed(1)}%</div>
+    <div class="max-w-[200px]">${mkSpark(spark)}</div>
+    <div class="mono tnum text-right text-sm text-muted">${cov}%</div>
+    <div class="flex items-center gap-1.5 justify-end text-xs">
+      <span class="w-1.5 h-1.5 rounded-full ${statusDot[s]}"></span>
+      <span class="text-ink">${statusTxt[s]}</span>
+    </div>
+  </div>
+`).join('');
+
+/* ===================== Screen 2 — Executive ===================== */
+
+// Stacked bars: 16 weeks × 4 industries
+const WEEKS = Array.from({length:16}, (_, i) => {
+  const auto = 3 + Math.round(Math.sin(i/2)*1.5) + Math.round(i/6);
+  const fnb  = 2 + Math.round(Math.cos(i/3)*1) + Math.round(i/8);
+  const hvy  = 1 + Math.round(Math.sin(i/4+1)*1.2);
+  const other= 1 + Math.round(Math.cos(i/2)*.8);
+  return [Math.max(1,auto), Math.max(1,fnb), Math.max(0,hvy), Math.max(0,other)];
+});
+const weekMax = Math.max(...WEEKS.map(w => w.reduce((a,b)=>a+b,0)));
+document.getElementById('stackbars').innerHTML = WEEKS.map((w, i) => {
+  const total = w.reduce((a,b)=>a+b,0);
+  const cur = i === WEEKS.length-1;
+  return `
+    <div class="flex-1 flex flex-col justify-end gap-px h-full ${cur?'ring-1 ring-amber':''}">
+      <div class="w-full bg-line2" style="height:${w[3]/weekMax*100}%"></div>
+      <div class="w-full bg-amber" style="height:${w[2]/weekMax*100}%"></div>
+      <div class="w-full bg-teal" style="height:${w[1]/weekMax*100}%"></div>
+      <div class="w-full bg-ink" style="height:${w[0]/weekMax*100}%"></div>
+    </div>`;
+}).join('');
+document.getElementById('stackbars-axis').innerHTML = WEEKS.map((_, i) => {
+  const show = i === 0 || i === 5 || i === 10 || i === WEEKS.length-1;
+  const lbl = `W${i+1}`;
+  return `<span class="flex-1 text-center ${show?'':'opacity-0'}">${lbl}</span>`;
+}).join('');
+
+// Funnel
+const FUN = [
+  ["Quotes drafted",    148, "bg-ink"],
+  ["Quotes sent",       112, "bg-ink/85"],
+  ["In negotiation",     64, "bg-teal"],
+  ["Won",                38, "bg-amber"],
+  ["Lost",               28, "bg-danger/80"],
+];
+const funmax = Math.max(...FUN.map(f => f[1]));
+document.getElementById('funnel').innerHTML = FUN.map(([label, v, c], i) => {
+  const prev = i === 0 ? v : FUN[i-1][1];
+  const conv = i === 0 ? null : Math.round(v/prev*100);
+  return `
+    <div>
+      <div class="flex items-baseline justify-between text-xs mb-1">
+        <span class="text-ink">${label}</span>
+        <span class="mono tnum text-ink font-medium">${v}
+          ${conv !== null ? `<span class="text-[10px] text-muted ml-1">${conv}%</span>` : ''}
+        </span>
+      </div>
+      <div class="h-4 bg-line rounded-sm overflow-hidden">
+        <div class="h-full ${c}" style="width:${v/funmax*100}%"></div>
+      </div>
+    </div>`;
+}).join('');
+
+// Leaderboard
+const EST = [
+  ["T. Halfman",  42, 1320,  8.4],
+  ["J. Chen",     38, 1180,  9.1],
+  ["M. Alvarez",  31,  940, 10.6],
+  ["S. Patel",    22, 1060, 11.8],
+  ["R. Okafor",   15, 1460, 13.2],
+];
+document.getElementById('leaderboard').innerHTML = EST.map(([name, n, avg, err], i) => {
+  const mono3 = name.split(' ').map(s => s[0]).join('');
+  return `
+    <div class="grid grid-cols-[1fr_90px_100px_100px] items-center gap-x-4 px-5 py-2.5 border-b hairline last:border-b-0 hover:bg-paper/80">
+      <div class="flex items-center gap-2 min-w-0">
+        <span class="mono text-muted2 text-[11px] w-4">${i+1}</span>
+        <span class="w-6 h-6 rounded-full bg-ink text-white grid place-items-center text-[10px] font-semibold">${mono3}</span>
+        <span class="text-sm text-ink truncate">${name}</span>
+      </div>
+      <div class="mono tnum text-right text-sm">${n}</div>
+      <div class="mono tnum text-right text-sm text-muted">${fmt(avg)}</div>
+      <div class="mono tnum text-right text-sm ${err<=10?'text-success':err<=12?'text-ink':'text-amber'}">${err.toFixed(1)}%</div>
+    </div>`;
+}).join('');
+
+// Activity feed
+const FEED = [
+  ["TH", "saved",    "Apex Body-in-White · + vision",   "1,416 hrs", "12 min"],
+  ["JC", "exported", "Halion Medical Assembly · final",  "1,604 hrs", "1 h"],
+  ["MA", "compared", "3 scenarios for Riverbend",       "—",         "2 h"],
+  ["SP", "created",  "Forge Custom Tending Line",         "612 hrs",  "4 h"],
+  ["TH", "retrained","12 operation models",              "—",         "8 h"],
+];
+document.getElementById('feed').innerHTML = FEED.map(([who, verb, obj, val, when]) => `
+  <div class="flex items-start gap-3 px-5 py-3">
+    <span class="w-6 h-6 rounded-full bg-ink text-white grid place-items-center text-[10px] font-semibold shrink-0">${who}</span>
+    <div class="flex-1 min-w-0 text-xs">
+      <div class="text-ink"><span class="font-medium">${who}</span> <span class="text-muted">${verb}</span> <span class="font-medium truncate">${obj}</span></div>
+      <div class="mono text-muted mt-0.5">${val} · ${when} ago</div>
+    </div>
+  </div>
+`).join('');
+
+/* ===================== Screen routing ===================== */
+function go(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.dataset.screen === name));
+  document.querySelectorAll('[data-route]').forEach(a => {
+    const sel = a.dataset.route === name;
+    a.classList.toggle('bg-white/5', sel);
+    a.classList.toggle('border-l-2', sel);
+    a.classList.toggle('border-amber', sel);
+    a.classList.toggle('text-white', sel);
+    a.classList.toggle('font-medium', sel);
+    a.classList.toggle('text-white/60', !sel);
+  });
+  document.getElementById('crumb').textContent = name === 'accuracy' ? 'Estimate Accuracy' : 'Executive Overview';
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.route').forEach(a => a.addEventListener('click', () => go(a.dataset.route)));
+</script>
+</body>
+</html>

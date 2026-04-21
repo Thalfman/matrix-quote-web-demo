@@ -1,0 +1,570 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Matrix Quote — Saved Quotes &amp; Compare</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:"#0D1B2A", ink2:"#1E2B3A",
+          paper:"#F6F4EF", surface:"#FFFFFF",
+          line:"#E5E1D8", line2:"#D8D3C6",
+          muted:"#5A6573", muted2:"#8A94A1",
+          amber:"#F2B61F", amberSoft:"#FAEBB5",
+          teal:"#1F8FA6", tealDark:"#177082", tealSoft:"#D7ECF1",
+          success:"#2F8F6F", danger:"#B5412B",
+        },
+        fontFamily: {
+          sans:['Inter','ui-sans-serif','system-ui','sans-serif'],
+          display:['"Barlow Condensed"','Inter','sans-serif'],
+          mono:['"JetBrains Mono"','ui-monospace','monospace'],
+        },
+      }
+    }
+  };
+</script>
+<style>
+  html,body { background:#F6F4EF; color:#0D1B2A; }
+  body { font-family:'Inter',ui-sans-serif,system-ui,sans-serif; font-feature-settings:"cv02","cv03","cv04","cv11"; }
+  .eyebrow { font-family:'Barlow Condensed','Inter',sans-serif; font-weight:600; letter-spacing:.14em; text-transform:uppercase; }
+  .mono { font-family:'JetBrains Mono',ui-monospace,monospace; font-variant-numeric: tabular-nums; }
+  .card { background:#fff; border:1px solid #E5E1D8; border-radius:2px; }
+  .hairline { border-color:#E5E1D8; }
+  .tnum { font-variant-numeric: tabular-nums; }
+  .display-hero { font-family:'Barlow Condensed','Inter',sans-serif; font-weight:600; letter-spacing:-.01em; }
+  input[type="checkbox"] { accent-color:#1F8FA6; }
+  /* screen switcher */
+  .screen { display:none; }
+  .screen.active { display:block; }
+</style>
+<link rel="stylesheet" href="styles/dark-mode.css" />
+<script defer src="lib/theme-toggle.js"></script>
+</head>
+<body>
+
+<!-- ============================================================
+  APP SHELL (same as cockpit)
+============================================================= -->
+<div class="min-h-screen flex">
+
+  <aside class="hidden lg:flex w-60 shrink-0 flex-col bg-ink text-white p-6 gap-8">
+    <div>
+      <div class="display-hero text-2xl tracking-tight leading-none">Matrix</div>
+      <div class="eyebrow text-[10px] text-white/50 mt-1">Quote Estimation</div>
+    </div>
+    <nav class="flex flex-col gap-1">
+      <div class="eyebrow text-[10px] text-white/40 mb-1 px-3">Estimate</div>
+      <a href="Cockpit Redesign.html" class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Single Quote</a>
+      <a class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Batch Quotes</a>
+    </nav>
+    <nav class="flex flex-col gap-1">
+      <div class="eyebrow text-[10px] text-white/40 mb-1 px-3">Quotes</div>
+      <a data-route="list"    class="route text-sm px-3 py-2 rounded-sm bg-white/5 border-l-2 border-amber text-white font-medium cursor-pointer">Saved Quotes</a>
+      <a data-route="compare" class="route text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5 cursor-pointer">Compare</a>
+    </nav>
+    <nav class="flex flex-col gap-1">
+      <div class="eyebrow text-[10px] text-white/40 mb-1 px-3">Insights</div>
+      <a class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Estimate Accuracy</a>
+      <a class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Executive Overview</a>
+    </nav>
+    <div class="mt-auto">
+      <div class="eyebrow text-[10px] text-white/40 mb-2">Model Status</div>
+      <div class="flex items-center gap-2 text-xs text-white/80">
+        <span class="relative flex w-1.5 h-1.5">
+          <span class="absolute inset-0 rounded-full bg-success animate-ping opacity-60"></span>
+          <span class="relative w-1.5 h-1.5 rounded-full bg-success"></span>
+        </span>
+        Ready · 12 / 12 models
+      </div>
+      <div class="mono text-[10px] text-white/40 mt-1">Trained Apr 14, 2026</div>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0">
+    <!-- Top strip -->
+    <div class="border-b hairline bg-white/60 backdrop-blur">
+      <div class="max-w-[1400px] mx-auto px-8 h-12 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2 text-muted">
+          <span>Quotes</span>
+          <span class="text-muted2">/</span>
+          <span id="crumb" class="text-ink font-medium">Saved Quotes</span>
+        </div>
+        <div class="flex items-center gap-3">
+          <span class="mono text-muted2">⌘K</span>
+          <span class="w-px h-4 bg-line"></span>
+          <span class="inline-flex items-center gap-2">
+            <span class="w-6 h-6 rounded-full bg-ink text-white grid place-items-center text-[10px] font-semibold">TH</span>
+            <span class="text-ink">T. Halfman</span>
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================================
+      SCREEN 1 — SAVED QUOTES LIST
+    ============================================================= -->
+    <section class="screen active" data-screen="list">
+      <div class="max-w-[1400px] mx-auto px-8 py-8">
+
+        <header class="flex items-end justify-between gap-6 pb-6 mb-6 border-b hairline">
+          <div>
+            <div class="eyebrow text-[11px] text-teal">Quotes · Library</div>
+            <h1 class="display-hero text-4xl leading-none mt-2 text-ink">Saved Quotes</h1>
+            <p class="text-sm text-muted mt-3 max-w-xl">Every scenario saved from the cockpit, across estimators. Select 2–3 to compare side-by-side.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="inline-flex items-center gap-2 px-3 py-2 text-xs border hairline rounded-sm bg-white hover:bg-paper">Export CSV</button>
+            <a href="Cockpit Redesign.html" class="inline-flex items-center gap-2 px-3 py-2 text-xs bg-ink text-white rounded-sm hover:bg-ink2">+ New quote</a>
+          </div>
+        </header>
+
+        <!-- KPI strip -->
+        <div class="grid grid-cols-4 gap-3 mb-6">
+          <div class="card p-4">
+            <div class="eyebrow text-[10px] text-muted">Total saved</div>
+            <div class="display-hero text-3xl mt-1 tnum">47</div>
+            <div class="mono text-[11px] text-muted mt-1">+ 8 this week</div>
+          </div>
+          <div class="card p-4">
+            <div class="eyebrow text-[10px] text-muted">Active estimators</div>
+            <div class="display-hero text-3xl mt-1 tnum">6</div>
+            <div class="mono text-[11px] text-muted mt-1">across 4 industries</div>
+          </div>
+          <div class="card p-4">
+            <div class="eyebrow text-[10px] text-muted">Median estimate</div>
+            <div class="display-hero text-3xl mt-1 tnum">1,164</div>
+            <div class="mono text-[11px] text-muted mt-1">hrs · p10–p90 ±18%</div>
+          </div>
+          <div class="card p-4 relative overflow-hidden">
+            <div class="absolute top-0 left-0 right-0 h-1 bg-amber"></div>
+            <div class="eyebrow text-[10px] text-muted">Awaiting quote</div>
+            <div class="display-hero text-3xl mt-1 tnum text-ink">3</div>
+            <div class="mono text-[11px] text-muted mt-1">last touched ≥ 5 days</div>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="card flex items-stretch divide-x hairline mb-3">
+          <div class="flex items-center gap-2 px-4 py-2.5 flex-1">
+            <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="flex-1 bg-transparent outline-none text-sm" placeholder="Search by project or client name…" />
+            <span class="mono text-[10px] text-muted2 border hairline px-1.5 py-0.5 rounded-sm">/</span>
+          </div>
+          <button class="px-4 py-2.5 text-sm text-muted hover:text-ink inline-flex items-center gap-2">
+            <span class="eyebrow text-[10px]">Industry</span>
+            <span class="text-ink font-medium">All</span>
+            <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z"/></svg>
+          </button>
+          <button class="px-4 py-2.5 text-sm text-muted hover:text-ink inline-flex items-center gap-2">
+            <span class="eyebrow text-[10px]">Estimator</span>
+            <span class="text-ink font-medium">All</span>
+            <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z"/></svg>
+          </button>
+          <button class="px-4 py-2.5 text-sm text-muted hover:text-ink inline-flex items-center gap-2">
+            <span class="eyebrow text-[10px]">Saved</span>
+            <span class="text-ink font-medium">Last 30 days</span>
+            <svg class="w-3 h-3" viewBox="0 0 20 20" fill="currentColor"><path d="M5.3 7.3a1 1 0 011.4 0L10 10.6l3.3-3.3a1 1 0 111.4 1.4l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 010-1.4z"/></svg>
+          </button>
+        </div>
+
+        <!-- Bulk action bar (visible when selection) -->
+        <div id="bulkbar" class="hidden mb-3 bg-ink text-white rounded-sm">
+          <div class="flex items-center gap-4 px-4 py-2.5 text-sm">
+            <span><span id="bulkcount" class="mono font-semibold">2</span> selected</span>
+            <span class="w-px h-4 bg-white/20"></span>
+            <button id="bulkcompare" class="eyebrow text-[11px] text-amber hover:text-white">Compare →</button>
+            <button class="text-white/70 hover:text-white text-xs">Duplicate</button>
+            <button class="text-white/70 hover:text-white text-xs">Export PDF</button>
+            <button class="text-white/70 hover:text-white text-xs">Delete</button>
+            <button id="bulkclear" class="ml-auto text-white/60 hover:text-white text-xs">Clear</button>
+          </div>
+        </div>
+
+        <!-- Table -->
+        <div class="card overflow-hidden">
+          <div class="grid grid-cols-[32px_minmax(0,2.2fr)_minmax(0,1.2fr)_90px_110px_110px_110px_1fr_32px] items-center gap-x-4 px-4 py-2 border-b hairline bg-paper eyebrow text-[10px] text-muted">
+            <div><input type="checkbox" id="checkall" /></div>
+            <div>Project</div>
+            <div>Client</div>
+            <div class="text-right">Est. hrs</div>
+            <div class="text-right">Range</div>
+            <div class="text-right">Conf.</div>
+            <div class="text-right">Saved</div>
+            <div>By</div>
+            <div></div>
+          </div>
+          <div id="rows"></div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between mt-4 text-xs text-muted">
+          <div>Showing <span class="mono text-ink">1–12</span> of <span class="mono text-ink">47</span></div>
+          <div class="flex items-center gap-1">
+            <button class="px-2.5 py-1 border hairline rounded-sm bg-white text-muted2">‹</button>
+            <button class="px-2.5 py-1 border hairline rounded-sm bg-ink text-white mono">1</button>
+            <button class="px-2.5 py-1 border hairline rounded-sm bg-white mono">2</button>
+            <button class="px-2.5 py-1 border hairline rounded-sm bg-white mono">3</button>
+            <button class="px-2.5 py-1 border hairline rounded-sm bg-white mono">4</button>
+            <button class="px-2.5 py-1 border hairline rounded-sm bg-white">›</button>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ============================================================
+      SCREEN 2 — COMPARE (2 scenarios selected by default)
+    ============================================================= -->
+    <section class="screen" data-screen="compare">
+      <div class="max-w-[1400px] mx-auto px-8 py-8">
+
+        <header class="flex items-end justify-between gap-6 pb-6 mb-6 border-b hairline">
+          <div>
+            <a data-route="list" class="route text-xs text-teal hover:text-tealDark cursor-pointer inline-flex items-center gap-1">
+              ← Back to Saved Quotes
+            </a>
+            <div class="eyebrow text-[11px] text-teal mt-2">Quotes · Compare</div>
+            <h1 class="display-hero text-4xl leading-none mt-2 text-ink">3 scenarios</h1>
+            <p class="text-sm text-muted mt-3 max-w-xl">Side-by-side diff with per-operation breakdown and top drivers. Column one is the anchor — Δ is computed against it.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="inline-flex items-center gap-2 px-3 py-2 text-xs border hairline rounded-sm bg-white hover:bg-paper">+ Add scenario</button>
+            <button class="inline-flex items-center gap-2 px-3 py-2 text-xs bg-teal text-white rounded-sm hover:bg-tealDark">Export PDF</button>
+          </div>
+        </header>
+
+        <!-- Scenario column headers -->
+        <div class="grid grid-cols-[220px_repeat(3,minmax(0,1fr))] gap-3 mb-3">
+          <div></div>
+          <div class="card p-4 border-l-2 border-l-amber">
+            <div class="eyebrow text-[10px] text-amber">Anchor</div>
+            <div class="text-sm font-semibold text-ink mt-1 truncate">Apex Body-in-White · v1</div>
+            <div class="mono text-[11px] text-muted mt-1">Apr 16 · T. Halfman</div>
+          </div>
+          <div class="card p-4">
+            <div class="eyebrow text-[10px] text-muted">Scenario 2</div>
+            <div class="text-sm font-semibold text-ink mt-1 truncate">Apex BIW · + vision</div>
+            <div class="mono text-[11px] text-muted mt-1">Apr 17 · T. Halfman</div>
+          </div>
+          <div class="card p-4">
+            <div class="eyebrow text-[10px] text-muted">Scenario 3</div>
+            <div class="text-sm font-semibold text-ink mt-1 truncate">Apex BIW · retrofit</div>
+            <div class="mono text-[11px] text-muted mt-1">Apr 17 · J. Chen</div>
+          </div>
+        </div>
+
+        <!-- Row 1: Headline numbers -->
+        <div class="grid grid-cols-[220px_repeat(3,minmax(0,1fr))] gap-3 mb-3">
+          <div class="flex items-center pr-3">
+            <div>
+              <div class="eyebrow text-[11px] text-ink">Estimate</div>
+              <div class="text-xs text-muted">p50 · range · confidence</div>
+            </div>
+          </div>
+          <div class="card p-5">
+            <div class="display-hero text-5xl tnum text-ink leading-none">1,248</div>
+            <div class="mono text-[11px] text-muted mt-2">1,050–1,470 · 90% CI</div>
+            <div class="mt-3 flex items-center gap-2 text-xs">
+              <span class="flex gap-0.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-line2"></span>
+              </span>
+              <span class="text-ink">Strong</span>
+              <span class="mono text-muted ml-auto">baseline</span>
+            </div>
+          </div>
+          <div class="card p-5">
+            <div class="flex items-baseline gap-2">
+              <div class="display-hero text-5xl tnum text-ink leading-none">1,416</div>
+              <div class="mono text-sm text-amber">+168 <span class="text-muted">(+13.5%)</span></div>
+            </div>
+            <div class="mono text-[11px] text-muted mt-2">1,180–1,680 · 90% CI</div>
+            <div class="mt-3 flex items-center gap-2 text-xs">
+              <span class="flex gap-0.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-line2"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-line2"></span>
+              </span>
+              <span class="text-ink">Moderate</span>
+            </div>
+          </div>
+          <div class="card p-5">
+            <div class="flex items-baseline gap-2">
+              <div class="display-hero text-5xl tnum text-ink leading-none">864</div>
+              <div class="mono text-sm text-teal">−384 <span class="text-muted">(−30.8%)</span></div>
+            </div>
+            <div class="mono text-[11px] text-muted mt-2">740–1,000 · 90% CI</div>
+            <div class="mt-3 flex items-center gap-2 text-xs">
+              <span class="flex gap-0.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+                <span class="w-1.5 h-1.5 rounded-full bg-line2"></span>
+              </span>
+              <span class="text-ink">Strong</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 2: Grouped bar chart — 12 operations -->
+        <div class="card mb-3">
+          <div class="flex items-center justify-between px-5 py-3 border-b hairline">
+            <div>
+              <div class="eyebrow text-[11px] text-ink">Hours by operation</div>
+              <div class="text-xs text-muted">12 operations · p50 only</div>
+            </div>
+            <div class="inline-flex text-[10px] mono rounded-sm border hairline overflow-hidden">
+              <button class="px-2 py-1 bg-ink text-white">Absolute</button>
+              <button class="px-2 py-1 text-muted">Δ vs anchor</button>
+            </div>
+          </div>
+          <div id="opsChart" class="p-5 grid grid-cols-[120px_1fr] gap-y-2 items-center gap-x-4"></div>
+          <div class="px-5 py-3 border-t hairline flex items-center gap-4 text-[11px] text-muted">
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-2 bg-ink rounded-sm"></span>Apex BIW · v1</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-2 bg-amber rounded-sm"></span>+ vision</span>
+            <span class="inline-flex items-center gap-1.5"><span class="w-3 h-2 bg-teal rounded-sm"></span>retrofit</span>
+          </div>
+        </div>
+
+        <!-- Row 3: Input diff + Row 4: Top drivers — side by side -->
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Diff -->
+          <div class="card">
+            <div class="px-5 py-3 border-b hairline flex items-baseline justify-between">
+              <div>
+                <div class="eyebrow text-[11px] text-ink">Input diff</div>
+                <div class="text-xs text-muted">Only fields that differ</div>
+              </div>
+              <div class="mono text-[11px] text-muted"><span class="text-ink">7</span> / 28 changed</div>
+            </div>
+            <div>
+              <div class="grid grid-cols-[1fr_60px_60px_60px] gap-x-3 px-5 py-2 bg-paper eyebrow text-[10px] text-muted">
+                <div>Field</div><div class="text-right">v1</div><div class="text-right">+vis</div><div class="text-right">retro</div>
+              </div>
+              <div id="diffRows"></div>
+            </div>
+          </div>
+
+          <!-- Drivers -->
+          <div class="card">
+            <div class="px-5 py-3 border-b hairline">
+              <div class="eyebrow text-[11px] text-ink">Top drivers per scenario</div>
+              <div class="text-xs text-muted">Summed across all operations</div>
+            </div>
+            <div class="grid grid-cols-3 divide-x hairline">
+              <div class="p-4">
+                <div class="eyebrow text-[10px] text-muted mb-2">v1 · anchor</div>
+                <div class="space-y-2" id="drv1"></div>
+              </div>
+              <div class="p-4">
+                <div class="eyebrow text-[10px] text-amber mb-2">+ vision</div>
+                <div class="space-y-2" id="drv2"></div>
+              </div>
+              <div class="p-4">
+                <div class="eyebrow text-[10px] text-teal mb-2">retrofit</div>
+                <div class="space-y-2" id="drv3"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer meta -->
+        <div class="flex items-center justify-between text-[11px] text-muted mono mt-5">
+          <span>model v2026.04.14 · 3 scenarios loaded in 140 ms</span>
+          <span>PDF export deferred for this view — Plan D follow-up</span>
+        </div>
+
+      </div>
+    </section>
+  </main>
+</div>
+
+<script>
+/* ===================== Saved quotes data ===================== */
+const fmt = (n) => new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(n);
+
+const QUOTES = [
+  { id:1, name:"Apex Body-in-White · v1",        client:"Apex Motors",        ind:"Automotive",       hrs:1248, lo:1050, hi:1470, conf:4, saved:"Apr 16", by:"T. Halfman" },
+  { id:2, name:"Apex Body-in-White · + vision",  client:"Apex Motors",        ind:"Automotive",       hrs:1416, lo:1180, hi:1680, conf:3, saved:"Apr 17", by:"T. Halfman" },
+  { id:3, name:"Apex Body-in-White · retrofit",  client:"Apex Motors",        ind:"Automotive",       hrs: 864, lo: 740, hi:1000, conf:4, saved:"Apr 17", by:"J. Chen" },
+  { id:4, name:"Northland Conveyor Cell",        client:"Northland Foods",    ind:"Food & Beverage",  hrs:1082, lo: 920, hi:1270, conf:4, saved:"Apr 14", by:"T. Halfman" },
+  { id:5, name:"Riverbend Pack Cell",            client:"Riverbend Packaging",ind:"Food & Beverage",  hrs: 968, lo: 810, hi:1160, conf:3, saved:"Apr 12", by:"M. Alvarez" },
+  { id:6, name:"Cedar Mill Vision Sort",         client:"Cedar Mill",         ind:"General Industry", hrs: 842, lo: 710, hi:1000, conf:3, saved:"Apr 10", by:"M. Alvarez" },
+  { id:7, name:"Halion Medical Assembly",        client:"Halion",             ind:"Medical Implants", hrs:1604, lo:1290, hi:1960, conf:2, saved:"Apr 09", by:"T. Halfman" },
+  { id:8, name:"Orbit Heavy Weld Cell",          client:"Orbit Heavy Equip.", ind:"Heavy Equipment",  hrs:2014, lo:1680, hi:2410, conf:3, saved:"Apr 08", by:"J. Chen" },
+  { id:9, name:"Polestar Paint Booth",           client:"Polestar",           ind:"Automotive",       hrs: 756, lo: 640, hi: 890, conf:5, saved:"Apr 07", by:"S. Patel" },
+  { id:10, name:"Ember Consumer Pack",           client:"Ember Brands",       ind:"Consumer Products",hrs: 492, lo: 410, hi: 590, conf:4, saved:"Apr 04", by:"M. Alvarez" },
+  { id:11, name:"Skyline Aero Drilling",         client:"Skyline Aerospace",  ind:"Aerospace",        hrs:1880, lo:1520, hi:2290, conf:2, saved:"Apr 02", by:"T. Halfman" },
+  { id:12, name:"Forge Custom Tending Line",     client:"Forge Mfg.",         ind:"General Industry", hrs: 612, lo: 510, hi: 730, conf:4, saved:"Apr 01", by:"S. Patel" },
+];
+
+const confPips = (n) => [1,2,3,4,5].map(k =>
+  `<span class="w-1 h-1 rounded-full ${k<=n?'bg-amber':'bg-line2'}"></span>`
+).join('');
+
+const rows = document.getElementById('rows');
+rows.innerHTML = QUOTES.map((q, i) => `
+  <label class="grid grid-cols-[32px_minmax(0,2.2fr)_minmax(0,1.2fr)_90px_110px_110px_110px_1fr_32px] items-center gap-x-4 px-4 py-3 border-b hairline last:border-b-0 hover:bg-paper/80 cursor-pointer group">
+    <div><input type="checkbox" class="rowcheck" data-id="${q.id}" /></div>
+    <div class="min-w-0">
+      <div class="text-sm font-medium text-ink truncate">${q.name}</div>
+      <div class="text-[11px] text-muted mono mt-0.5">${q.ind}</div>
+    </div>
+    <div class="text-sm text-muted truncate">${q.client}</div>
+    <div class="mono tnum text-right font-medium text-ink">${fmt(q.hrs)}</div>
+    <div class="mono tnum text-right text-[11px] text-muted">${fmt(q.lo)}–${fmt(q.hi)}</div>
+    <div class="flex items-center gap-0.5 justify-end">${confPips(q.conf)}</div>
+    <div class="mono text-[11px] text-right text-muted">${q.saved}</div>
+    <div class="text-xs text-muted truncate">${q.by}</div>
+    <div class="text-muted2 opacity-0 group-hover:opacity-100 transition-opacity text-right">⋯</div>
+  </label>
+`).join('');
+
+// Bulk select
+const bulk = document.getElementById('bulkbar');
+const bulkcount = document.getElementById('bulkcount');
+function refreshBulk() {
+  const selected = document.querySelectorAll('.rowcheck:checked');
+  bulk.classList.toggle('hidden', selected.length === 0);
+  bulkcount.textContent = selected.length;
+  document.getElementById('bulkcompare').disabled = selected.length < 2 || selected.length > 3;
+}
+document.querySelectorAll('.rowcheck').forEach(c => c.addEventListener('change', refreshBulk));
+document.getElementById('checkall').addEventListener('change', (e) => {
+  document.querySelectorAll('.rowcheck').forEach(c => c.checked = e.target.checked);
+  refreshBulk();
+});
+document.getElementById('bulkclear').addEventListener('click', () => {
+  document.querySelectorAll('.rowcheck').forEach(c => c.checked = false);
+  document.getElementById('checkall').checked = false;
+  refreshBulk();
+});
+
+// Pre-check first three for nicer default
+document.querySelectorAll('.rowcheck').forEach((c,i) => { if (i<3) c.checked = true; });
+refreshBulk();
+
+document.getElementById('bulkcompare').addEventListener('click', () => go('compare'));
+
+/* ===================== Compare: ops grouped bars ===================== */
+const OPS = [
+  ["ME 10",    110, 132, 62],
+  ["ME 15",     96, 108, 54],
+  ["ME 230",    80,  92, 46],
+  ["EE 20",    120, 138, 88],
+  ["RB 30",    164, 210, 120],
+  ["CP 50",    224, 256, 180],
+  ["BLD 100",   96, 108, 64],
+  ["SHP 150",   10,  12,  8],
+  ["INST 160",  64,  72, 48],
+  ["TRV 180",   58,  66, 44],
+  ["DOC 190",   56,  64, 40],
+  ["PM 200",    88, 100, 62],
+];
+const opsMax = Math.max(...OPS.flatMap(r => [r[1], r[2], r[3]]));
+document.getElementById('opsChart').innerHTML = OPS.map(([label, a, b, c]) => `
+  <div class="eyebrow text-[10px] text-muted">${label}</div>
+  <div class="space-y-1">
+    <div class="flex items-center gap-2">
+      <div class="flex-1 h-2 bg-line rounded-sm relative">
+        <div class="absolute inset-y-0 left-0 bg-ink rounded-sm" style="width:${a/opsMax*100}%"></div>
+      </div>
+      <div class="mono tnum text-[11px] w-10 text-right text-ink">${a}</div>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="flex-1 h-2 bg-line rounded-sm relative">
+        <div class="absolute inset-y-0 left-0 bg-amber rounded-sm" style="width:${b/opsMax*100}%"></div>
+      </div>
+      <div class="mono tnum text-[11px] w-10 text-right text-ink">${b}</div>
+    </div>
+    <div class="flex items-center gap-2">
+      <div class="flex-1 h-2 bg-line rounded-sm relative">
+        <div class="absolute inset-y-0 left-0 bg-teal rounded-sm" style="width:${c/opsMax*100}%"></div>
+      </div>
+      <div class="mono tnum text-[11px] w-10 text-right text-ink">${c}</div>
+    </div>
+  </div>
+`).join('');
+
+/* ===================== Input diff ===================== */
+const DIFFS = [
+  ["Vision type",          "2D",  "3D",      "None"],
+  ["Vision systems count", "2",   "4",       "0"],
+  ["Retrofit project",     "No",  "No",      "Yes"],
+  ["Stations count",       "14",  "14",      "10"],
+  ["Robot count",          "6",   "8",       "4"],
+  ["Custom %",             "65",  "72",      "28"],
+  ["Estimated materials",  "$285k","$340k", "$168k"],
+];
+document.getElementById('diffRows').innerHTML = DIFFS.map(([label, a, b, c]) => {
+  const bChanged = b !== a, cChanged = c !== a;
+  return `
+    <div class="grid grid-cols-[1fr_60px_60px_60px] gap-x-3 px-5 py-2 border-b hairline last:border-b-0 text-sm">
+      <div class="text-ink">${label}</div>
+      <div class="mono tnum text-right text-ink">${a}</div>
+      <div class="mono tnum text-right ${bChanged ? 'text-amber font-medium' : 'text-muted'}">${b}</div>
+      <div class="mono tnum text-right ${cChanged ? 'text-teal font-medium' : 'text-muted'}">${c}</div>
+    </div>`;
+}).join('');
+
+/* ===================== Driver columns ===================== */
+const mkDrivers = (el, list, tint) => {
+  const max = Math.max(...list.map(([,v])=>Math.abs(v)));
+  el.innerHTML = list.map(([label, v]) => {
+    const pct = Math.abs(v)/max*100;
+    const pos = v>0;
+    const color = pos ? 'bg-amber' : 'bg-teal';
+    return `
+      <div>
+        <div class="flex items-center justify-between text-xs mb-1">
+          <span class="text-ink truncate">${label}</span>
+          <span class="mono tnum ${pos?'text-amber':'text-teal'}">${pos?'+':''}${v}</span>
+        </div>
+        <div class="h-1.5 bg-line rounded-sm relative overflow-hidden">
+          <div class="absolute inset-y-0 left-0 ${color}" style="width:${pct}%"></div>
+        </div>
+      </div>`;
+  }).join('');
+};
+mkDrivers(document.getElementById('drv1'), [
+  ["Stations · 14", +96], ["Servo axes · 9", +72], ["Custom % · 65", +44], ["Familiarity · 4", -34],
+]);
+mkDrivers(document.getElementById('drv2'), [
+  ["Vision · 3D",   +142],["Robots · 8",     +88], ["Custom % · 72",  +62],["Familiarity · 4", -34],
+]);
+mkDrivers(document.getElementById('drv3'), [
+  ["Retrofit · Yes",-180],["Stations · 10",  -72], ["Custom % · 28",  -96],["Familiarity · 4", -34],
+]);
+
+/* ===================== Screen routing ===================== */
+function go(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.toggle('active', s.dataset.screen === name));
+  document.querySelectorAll('[data-route]').forEach(a => {
+    const sel = a.dataset.route === name;
+    a.classList.toggle('bg-white/5', sel);
+    a.classList.toggle('border-l-2', sel);
+    a.classList.toggle('border-amber', sel);
+    a.classList.toggle('text-white', sel);
+    a.classList.toggle('font-medium', sel);
+    a.classList.toggle('text-white/60', !sel);
+  });
+  document.getElementById('crumb').textContent = name === 'list' ? 'Saved Quotes' : 'Compare';
+  window.scrollTo(0,0);
+}
+document.querySelectorAll('.route').forEach(a => a.addEventListener('click', () => go(a.dataset.route)));
+</script>
+</body>
+</html>

@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="en" class="">
+<head>
+<meta charset="utf-8" />
+<title>Matrix Quote — Single Quote (current)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com?plugins=forms"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          navy: { DEFAULT:"#0B1F3A", 600:"#15305B", 700:"#0E2238", 800:"#091729", 900:"#0A1729" },
+          steel: { 100:"#E8ECF0", 200:"#CDD4DC", 300:"#A9B6C3", 400:"#7D91A2", 500:"#546D82", 600:"#3A5166", 700:"#263D50" },
+          brand: { DEFAULT:"#2563EB", hover:"#1D4ED8", pressed:"#1E40AF", subtle:"#DBEAFE", foreground:"#FFFFFF" },
+          bg: { DEFAULT:"#F6F8FB", dark:"#0A1220" },
+          surface: { DEFAULT:"#FFFFFF", dark:"#0F1B30" },
+          ink: { DEFAULT:"#0F172A", dark:"#E2E8F0" },
+          muted: { DEFAULT:"#475569", dark:"#94A3B8" },
+          border: { DEFAULT:"#E2E8F0", dark:"#1E293B" },
+          accent: { DEFAULT:"#2563EB", foreground:"#FFFFFF" },
+          success:"#0F766E", warning:"#B45309", danger:"#B91C1C",
+        },
+        fontFamily: {
+          sans: ['Inter','ui-sans-serif','system-ui','-apple-system','Segoe UI','sans-serif'],
+          mono: ['"JetBrains Mono"','ui-monospace','SFMono-Regular','monospace'],
+        },
+        fontSize: { display: ["56px", { lineHeight:"60px", fontWeight:"600", letterSpacing:"-0.02em" }] },
+        maxWidth: { content: "1200px" },
+      }
+    }
+  };
+</script>
+<style>
+  html, body { background:#F6F8FB; }
+  body { font-family:'Inter', ui-sans-serif, system-ui; font-feature-settings:"cv02","cv03","cv04","cv11"; color:#0F172A; line-height:1.6; }
+  h1,h2,h3 { font-weight:500; letter-spacing:-0.01em; }
+  .card { background:#fff; border:1px solid #E2E8F0; border-radius:.5rem; }
+  .muted { color:#475569; }
+  .numeric { font-family:'JetBrains Mono', ui-monospace, SFMono-Regular, monospace; font-variant-numeric: tabular-nums; }
+  .text-display { font-size:56px; line-height:60px; font-weight:600; letter-spacing:-0.02em; }
+  /* range thumbs */
+  input[type="range"] { accent-color: #2563EB; }
+  /* notes panel */
+  .anno { font-family:'JetBrains Mono', ui-monospace, monospace; }
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+  Notes from Claude (so the user knows the framing)
+============================================================= -->
+<div class="max-w-[1200px] mx-auto px-6 lg:px-10 pt-8">
+  <div class="card p-5 mb-6 border-l-4 border-l-brand">
+    <div class="text-[10px] tracking-widest muted font-semibold mb-1">CURRENT STATE — REPO REPLAY</div>
+    <div class="text-sm">
+      Below is a faithful render of the <span class="font-medium">Single Quote cockpit</span> as it exists in <span class="numeric">Thalfman/matrix-quote-web@main</span> today —
+      same layout, same components, same palette tokens (navy + electric-blue, Inter, light mode).
+      I've populated it with plausible sample data so all four result tabs are wired up and clickable.
+      Use the tab strip to flip through Estimate / Drivers / Similar / Scenarios.
+      Once you've had a look, answer the questions and I'll start the redesign.
+    </div>
+  </div>
+</div>
+
+<div class="min-h-screen flex max-w-[1440px] mx-auto">
+
+  <!-- ============================================================
+    Sidebar (matches components/Layout.tsx)
+  ============================================================= -->
+  <aside class="hidden lg:flex w-60 shrink-0 flex-col border-r border-border p-6 gap-8 bg-white">
+    <div>
+      <div class="text-xs tracking-widest muted">MATRIX</div>
+      <div class="text-lg font-medium">Quote Estimation</div>
+    </div>
+
+    <nav class="flex flex-col gap-1">
+      <div class="text-[10px] tracking-widest muted mb-1">ESTIMATE</div>
+      <a href="#" class="text-sm px-3 py-2 rounded-md bg-accent/10 text-ink font-medium">Single Quote</a>
+      <a href="#" class="text-sm px-3 py-2 rounded-md muted hover:bg-border/50">Batch Quotes</a>
+    </nav>
+
+    <nav class="flex flex-col gap-1">
+      <div class="text-[10px] tracking-widest muted mb-1">INSIGHTS</div>
+      <a href="#" class="text-sm px-3 py-2 rounded-md muted hover:bg-border/50">Model Performance</a>
+    </nav>
+
+    <div class="mt-auto">
+      <div class="text-[10px] tracking-widest muted mb-2">MODEL STATUS</div>
+      <div class="inline-flex items-center gap-2 px-2 py-1 rounded-md text-xs bg-success/10 text-success">
+        <span class="w-1.5 h-1.5 rounded-full bg-success"></span>
+        Ready
+      </div>
+    </div>
+  </aside>
+
+  <!-- ============================================================
+    Main content
+  ============================================================= -->
+  <main class="flex-1 overflow-x-hidden">
+    <div class="max-w-content mx-auto px-6 lg:px-10 py-8">
+
+      <!-- PageHeader -->
+      <header class="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <div class="text-xs tracking-widest muted mb-2">ESTIMATE</div>
+          <h1 class="text-3xl font-medium">Single Quote</h1>
+          <p class="muted mt-2 max-w-2xl">Enter quote-time project parameters to generate an hour estimate with confidence intervals per sales bucket.</p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <span class="inline-flex items-center px-2 py-1 rounded-md text-xs bg-success/10 text-success">Models ready</span>
+        </div>
+      </header>
+
+      <!-- Two-column workspace -->
+      <div class="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+
+        <!-- =========== LEFT: QuoteForm =========== -->
+        <div>
+          <form>
+
+            <!-- "Populate with last quote" link (only if sessionStorage has it; shown for fidelity) -->
+            <div class="mb-4 flex justify-end">
+              <button type="button" class="text-xs text-brand hover:text-brand-hover hover:underline underline-offset-2">
+                Populate with last quote
+              </button>
+            </div>
+
+            <!-- Section 01 -->
+            <section class="mb-8">
+              <div class="flex items-baseline gap-3 mb-3">
+                <span class="numeric text-[10px] tracking-widest muted">01</span>
+                <div>
+                  <h2 class="text-lg font-medium leading-tight">Project classification</h2>
+                  <p class="text-xs muted">Segment, system type, and project flags</p>
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                  <label class="block">
+                    <span class="text-xs muted block mb-1">Industry segment</span>
+                    <select class="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm">
+                      <option>Automotive</option><option>Food &amp; Beverage</option><option>General Industry</option>
+                    </select>
+                  </label>
+                  <label class="block">
+                    <span class="text-xs muted block mb-1">System category</span>
+                    <select class="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm">
+                      <option>Machine Tending</option><option>End of Line Automation</option><option>Robotic Metal Finishing</option>
+                    </select>
+                  </label>
+                  <label class="block">
+                    <span class="text-xs muted block mb-1">Automation level</span>
+                    <select class="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm">
+                      <option>Robotic</option><option>Semi-Automatic</option><option>Hard Automation</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <label class="flex items-center gap-2 px-3 py-2 rounded-md border border-accent bg-accent/5 cursor-pointer">
+                    <input type="checkbox" checked class="accent-accent" />
+                    <span class="text-sm">Includes controls</span>
+                  </label>
+                  <label class="flex items-center gap-2 px-3 py-2 rounded-md border border-accent bg-accent/5 cursor-pointer">
+                    <input type="checkbox" checked class="accent-accent" />
+                    <span class="text-sm">Includes robotics</span>
+                  </label>
+                  <label class="flex items-center gap-2 px-3 py-2 rounded-md border border-border cursor-pointer">
+                    <input type="checkbox" class="accent-accent" />
+                    <span class="text-sm">Retrofit project</span>
+                  </label>
+                  <label class="flex items-center gap-2 px-3 py-2 rounded-md border border-border cursor-pointer">
+                    <input type="checkbox" class="accent-accent" />
+                    <span class="text-sm">Duplicate of prior</span>
+                  </label>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 02 -->
+            <section class="mb-8">
+              <div class="flex items-baseline gap-3 mb-3">
+                <span class="numeric text-[10px] tracking-widest muted">02</span>
+                <div>
+                  <h2 class="text-lg font-medium leading-tight">Physical scale</h2>
+                  <p class="text-xs muted">Stations, robots, fixtures, and footprint</p>
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <label class="block"><span class="text-xs muted block mb-1">Stations count</span>
+                    <input type="number" value="14" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Robot count</span>
+                    <input type="number" value="6" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Fixture sets</span>
+                    <input type="number" value="8" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Part types</span>
+                    <input type="number" value="3" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Weldment perimeter (ft)</span>
+                    <input type="number" value="42" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Fence length (ft)</span>
+                    <input type="number" value="118" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Safety doors</span>
+                    <input type="number" value="4" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Safety devices count</span>
+                    <input type="number" value="22" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Conveyor length (ft)</span>
+                    <input type="number" value="64" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 03 -->
+            <section class="mb-8">
+              <div class="flex items-baseline gap-3 mb-3">
+                <span class="numeric text-[10px] tracking-widest muted">03</span>
+                <div>
+                  <h2 class="text-lg font-medium leading-tight">Controls &amp; automation</h2>
+                  <p class="text-xs muted">PLC/HMI platform, vision, panels, and drives</p>
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <label class="block"><span class="text-xs muted block mb-1">PLC family</span>
+                    <select class="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm">
+                      <option>AB Compact Logix</option><option>AB Control Logix</option><option>Siemens S7</option>
+                    </select></label>
+                  <label class="block"><span class="text-xs muted block mb-1">HMI family</span>
+                    <select class="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm">
+                      <option>AB PanelView Plus</option><option>Siemens Comfort Panel</option>
+                    </select></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Vision type</span>
+                    <select class="w-full rounded-md border border-border bg-surface px-3 py-2 text-sm">
+                      <option>2D</option><option>None</option><option>3D</option>
+                    </select></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Panel count</span>
+                    <input type="number" value="3" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Servo axes</span>
+                    <input type="number" value="9" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Drive count</span>
+                    <input type="number" value="11" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Pneumatic devices</span>
+                    <input type="number" value="18" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Vision systems count</span>
+                    <input type="number" value="2" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 04 -->
+            <section class="mb-8">
+              <div class="flex items-baseline gap-3 mb-3">
+                <span class="numeric text-[10px] tracking-widest muted">04</span>
+                <div>
+                  <h2 class="text-lg font-medium leading-tight">Product &amp; process</h2>
+                  <p class="text-xs muted">Familiarity, uncertainty, and product characteristics</p>
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                  <label class="block"><span class="text-xs muted block mb-1">Product familiarity (1–5)</span>
+                    <div class="flex items-center gap-3">
+                      <input type="range" min="1" max="5" value="4" class="flex-1" />
+                      <span class="numeric text-sm tabular-nums min-w-[3ch] text-right">4</span>
+                    </div></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Product rigidity (1–5)</span>
+                    <div class="flex items-center gap-3">
+                      <input type="range" min="1" max="5" value="3" class="flex-1" />
+                      <span class="numeric text-sm tabular-nums min-w-[3ch] text-right">3</span>
+                    </div></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Bulk rigidity (1–5)</span>
+                    <div class="flex items-center gap-3">
+                      <input type="range" min="1" max="5" value="2" class="flex-1" />
+                      <span class="numeric text-sm tabular-nums min-w-[3ch] text-right">2</span>
+                    </div></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Process uncertainty (1–5)</span>
+                    <div class="flex items-center gap-3">
+                      <input type="range" min="1" max="5" value="3" class="flex-1" />
+                      <span class="numeric text-sm tabular-nums min-w-[3ch] text-right">3</span>
+                    </div></label>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                  <label class="block"><span class="text-xs muted block mb-1">Changeover time (min)</span>
+                    <input type="number" value="12" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+                  <label class="flex items-center gap-2 px-3 py-2 rounded-md border border-border cursor-pointer">
+                    <input type="checkbox" class="accent-accent" /><span class="text-sm">Product deformable</span></label>
+                  <label class="flex items-center gap-2 px-3 py-2 rounded-md border border-border cursor-pointer">
+                    <input type="checkbox" class="accent-accent" /><span class="text-sm">Bulk product</span></label>
+                  <label class="flex items-center gap-2 px-3 py-2 rounded-md border border-border cursor-pointer">
+                    <input type="checkbox" class="accent-accent" /><span class="text-sm">Tricky packaging</span></label>
+                </div>
+              </div>
+            </section>
+
+            <!-- Section 05 -->
+            <section class="mb-8">
+              <div class="flex items-baseline gap-3 mb-3">
+                <span class="numeric text-[10px] tracking-widest muted">05</span>
+                <div>
+                  <h2 class="text-lg font-medium leading-tight">Complexity &amp; indices</h2>
+                  <p class="text-xs muted">Overall complexity and custom work</p>
+                </div>
+              </div>
+              <div class="card p-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
+                  <label class="block"><span class="text-xs muted block mb-1">Overall complexity (1–5)</span>
+                    <div class="flex items-center gap-3">
+                      <input type="range" min="1" max="5" value="4" class="flex-1" />
+                      <span class="numeric text-sm tabular-nums min-w-[3ch] text-right">4</span>
+                    </div></label>
+                  <label class="block"><span class="text-xs muted block mb-1">Custom %</span>
+                    <div class="flex items-center gap-3">
+                      <input type="range" min="0" max="100" value="65" class="flex-1" />
+                      <span class="numeric text-sm tabular-nums min-w-[3ch] text-right">65%</span>
+                    </div></label>
+                </div>
+                <details class="mt-2">
+                  <summary class="cursor-pointer muted text-xs tracking-widest">ADVANCED — DERIVED INDICES</summary>
+                  <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+                    <label class="block"><span class="text-xs muted block mb-1">Stations/robot idx</span>
+                      <input type="number" value="0" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" />
+                      <span class="text-[11px] muted block mt-1">Auto-computed server-side if left at 0</span></label>
+                    <label class="block"><span class="text-xs muted block mb-1">Mech complexity idx</span>
+                      <input type="number" value="0" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" />
+                      <span class="text-[11px] muted block mt-1">Auto-computed server-side if left at 0</span></label>
+                    <label class="block"><span class="text-xs muted block mb-1">Controls complexity idx</span>
+                      <input type="number" value="0" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" />
+                      <span class="text-[11px] muted block mt-1">Auto-computed server-side if left at 0</span></label>
+                    <label class="block"><span class="text-xs muted block mb-1">Physical scale idx</span>
+                      <input type="number" value="0" class="w-full rounded-md border border-border bg-transparent px-3 py-2 text-sm" />
+                      <span class="text-[11px] muted block mt-1">Auto-computed server-side if left at 0</span></label>
+                  </div>
+                </details>
+              </div>
+            </section>
+
+            <!-- Section 06 -->
+            <section class="mb-8">
+              <div class="flex items-baseline gap-3 mb-3">
+                <span class="numeric text-[10px] tracking-widest muted">06</span>
+                <div>
+                  <h2 class="text-lg font-medium leading-tight">Cost</h2>
+                  <p class="text-xs muted">Materials estimate — log-transformed before prediction</p>
+                </div>
+              </div>
+              <div class="card p-5">
+                <label class="block"><span class="text-xs muted block mb-1">Estimated materials cost ($)</span>
+                  <input type="number" value="285000" class="w-full md:w-1/2 rounded-md border border-border bg-transparent px-3 py-2 text-sm" /></label>
+              </div>
+            </section>
+
+            <section class="mb-8">
+              <button type="button" class="text-sm muted underline underline-offset-2">Optional: compare to your quoted hours</button>
+            </section>
+
+            <div class="flex items-center gap-3 mt-8">
+              <button type="submit" class="rounded-md bg-brand text-brand-foreground px-6 py-2.5 text-sm font-medium hover:bg-brand-hover">Estimate hours</button>
+              <button type="button" class="text-sm muted hover:text-ink">Reset form</button>
+              <span class="ml-auto hidden md:block text-xs muted">
+                Press
+                <kbd class="font-mono text-[10px] px-1.5 py-0.5 rounded border border-border bg-bg">Ctrl</kbd>+<kbd class="font-mono text-[10px] px-1.5 py-0.5 rounded border border-border bg-bg">Enter</kbd>
+                to submit
+              </span>
+            </div>
+          </form>
+        </div>
+
+        <!-- =========== RIGHT: Sticky result panel =========== -->
+        <aside class="lg:sticky lg:top-6 self-start">
+          <div class="space-y-4" id="quote-results">
+
+            <!-- HeroEstimate -->
+            <div class="card p-6 bg-gradient-to-br from-navy-900/[0.03] to-transparent">
+              <div class="text-[10px] tracking-widest muted font-semibold">ESTIMATED HOURS</div>
+              <div class="mt-2 text-display numeric leading-none text-ink">1,248</div>
+              <div class="mt-3 text-sm muted">Range 1,050 – 1,470 · 90% CI</div>
+              <div class="mt-3 flex items-center gap-2.5 text-sm">
+                <span class="muted">Confidence</span>
+                <span aria-hidden="true" class="flex gap-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
+                  <span class="w-1.5 h-1.5 rounded-full bg-steel-300"></span>
+                </span>
+                <span class="font-medium text-ink">Strong</span>
+              </div>
+            </div>
+
+            <!-- ResultTabs -->
+            <div class="card">
+              <div role="tablist" class="flex border-b border-border px-1 sm:px-2" id="tablist">
+                <button data-tab="estimate"  class="tab inline-flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm border-b-2 -mb-px text-ink font-semibold border-brand">Estimate</button>
+                <button data-tab="drivers"   class="tab inline-flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm border-b-2 -mb-px muted border-transparent">Drivers</button>
+                <button data-tab="similar"   class="tab inline-flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm border-b-2 -mb-px muted border-transparent">Similar</button>
+                <button data-tab="scenarios" class="tab inline-flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm border-b-2 -mb-px muted border-transparent">
+                  <span>Scenarios</span>
+                  <span class="inline-flex items-center justify-center min-w-[1.25rem] h-5 text-[10px] font-medium bg-brand text-brand-foreground rounded-full px-1.5 leading-none">2</span>
+                </button>
+              </div>
+
+              <!-- Estimate tab -->
+              <div role="tabpanel" class="p-5 panel" data-panel="estimate">
+                <div class="space-y-2.5" id="bucket-rows"></div>
+              </div>
+
+              <!-- Drivers tab -->
+              <div role="tabpanel" class="p-5 panel hidden" data-panel="drivers">
+                <div class="space-y-4">
+                  <div class="flex items-center gap-2 text-sm">
+                    <label class="muted">Operation</label>
+                    <select class="bg-surface border border-border rounded-md px-2 py-1 text-sm">
+                      <option>All</option><option>Mechanical</option><option>Controls</option><option>Robotics</option>
+                    </select>
+                  </div>
+                  <div class="space-y-2" id="driver-rows"></div>
+                </div>
+              </div>
+
+              <!-- Similar tab -->
+              <div role="tabpanel" class="p-5 panel hidden" data-panel="similar">
+                <div class="space-y-3" id="similar-rows"></div>
+              </div>
+
+              <!-- Scenarios tab -->
+              <div role="tabpanel" class="p-5 panel hidden" data-panel="scenarios">
+                <div class="space-y-3">
+                  <div class="space-y-2">
+                    <div class="card p-3 flex items-center gap-3 hover:border-steel-300">
+                      <div class="flex-1 min-w-0">
+                        <div class="font-medium truncate">Baseline (3 robots)</div>
+                        <div class="text-xs muted">4/17/2026, 9:14 AM</div>
+                      </div>
+                      <div class="numeric text-sm shrink-0">1,082 hrs</div>
+                      <button class="text-xs muted hover:text-danger shrink-0">Remove</button>
+                    </div>
+                    <div class="card p-3 flex items-center gap-3 hover:border-steel-300">
+                      <div class="flex-1 min-w-0">
+                        <div class="font-medium truncate">Add vision + extra fixtures</div>
+                        <div class="text-xs muted">4/17/2026, 9:22 AM</div>
+                      </div>
+                      <div class="numeric text-sm shrink-0">1,248 hrs</div>
+                      <button class="text-xs muted hover:text-danger shrink-0">Remove</button>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-2 pt-1">
+                    <button class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium bg-brand text-brand-foreground hover:bg-brand-hover">
+                      Compare 2 scenarios
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <button type="button" class="inline-flex items-center gap-2 px-4 py-2 rounded-md bg-brand text-brand-foreground text-sm font-medium hover:bg-brand-hover">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                Save scenario
+              </button>
+              <button type="button" class="inline-flex items-center gap-2 px-4 py-2 rounded-md border border-border text-ink text-sm font-medium hover:bg-steel-100">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Export PDF
+              </button>
+            </div>
+          </div>
+        </aside>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+/* ----------------------------------------------------------------
+  Sample data + tab wiring (no React; a faithful static replay).
+---------------------------------------------------------------- */
+
+const fmt = (n) => new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 }).format(n);
+
+// EstimateTab — per-bucket bars
+const BUCKETS = [
+  ["Mechanical",         312],
+  ["Electrical",         186],
+  ["Controls",           224],
+  ["Robotics",           164],
+  ["Assembly",            96],
+  ["Engineering",         88],
+  ["Project management",  64],
+  ["Install",             50],
+  ["Startup",             34],
+  ["Documentation",       18],
+  ["Shipping",            10],
+  ["Misc",                 2],
+];
+const total = BUCKETS.reduce((s, [, v]) => s + v, 0);
+document.getElementById('bucket-rows').innerHTML = BUCKETS.map(([label, v]) => {
+  const pct = Math.round(v / total * 100);
+  return `
+    <div class="flex items-center gap-3 text-sm">
+      <div class="w-36 muted truncate">${label}</div>
+      <div class="numeric w-16 text-right text-ink">${fmt(v)}</div>
+      <div class="flex-1 h-2 bg-steel-100 rounded-full overflow-hidden">
+        <div class="h-full bg-brand rounded-full" style="width:${pct}%"></div>
+      </div>
+      <div class="numeric w-10 text-right muted">${pct}%</div>
+    </div>`;
+}).join('');
+
+// DriversTab — signed contributions, centered
+const DRIVERS = [
+  ["Stations count · 14",        +96],
+  ["Servo axes · 9",             +72],
+  ["Vision type · 2D",           +48],
+  ["Custom % · 65",              +44],
+  ["Conveyor length · 64 ft",    +28],
+  ["Process uncertainty · 3",    +12],
+  ["Product familiarity · 4",    -34],
+  ["Duplicate of prior · No",     -8],
+];
+const maxAbs = Math.max(...DRIVERS.map(d => Math.abs(d[1])));
+document.getElementById('driver-rows').innerHTML = DRIVERS.map(([label, c]) => {
+  const pct = Math.abs(c) / maxAbs * 50;
+  const positive = c > 0;
+  const left = positive ? '50%' : `${50 - pct}%`;
+  const radius = positive
+    ? 'border-top-right-radius:999px;border-bottom-right-radius:999px;'
+    : 'border-top-left-radius:999px;border-bottom-left-radius:999px;';
+  const color = positive ? 'bg-brand' : 'bg-warning';
+  const sign = c > 0 ? '+' : '';
+  return `
+    <div class="flex items-center gap-2 text-sm">
+      <div class="w-48 text-ink truncate" title="${label}">${label}</div>
+      <div class="numeric w-16 text-right text-ink">${sign}${c} hrs</div>
+      <div class="flex-1 relative h-2 bg-steel-100 rounded-full">
+        <span class="absolute -top-0.5 -bottom-0.5 w-px bg-steel-400" style="left:50%"></span>
+        <div class="absolute top-0 h-2 ${color}" style="left:${left};width:${pct}%;${radius}"></div>
+      </div>
+    </div>`;
+}).join('');
+
+// SimilarTab
+const NEIGHBORS = [
+  { name:"Northland Conveyor Cell",  year:2024, segment:"General Industry", auto:"Robotic",        stations:12, hours:1180, sim:0.92 },
+  { name:"Apex Body-in-White Line",  year:2025, segment:"Automotive",       auto:"Robotic",        stations:16, hours:1416, sim:0.86 },
+  { name:"Riverbend Pack Cell",      year:2024, segment:"Food & Beverage",  auto:"Semi-Automatic", stations:10, hours: 968, sim:0.74 },
+  { name:"Cedar Mill Vision Sort",   year:2023, segment:"General Industry", auto:"Robotic",        stations: 8, hours: 842, sim:0.62 },
+];
+const ESTIMATE = 1248;
+const simDots = (s) => s>=0.90?5 : s>=0.80?4 : s>=0.65?3 : s>=0.50?2 : 1;
+document.getElementById('similar-rows').innerHTML = NEIGHBORS.map(n => {
+  const delta = n.hours - ESTIMATE;
+  const dpct  = (delta / ESTIMATE) * 100;
+  const dots = simDots(n.sim);
+  const pips = [1,2,3,4,5].map(k =>
+    `<span class="w-1.5 h-1.5 rounded-full ${k<=dots?'bg-brand':'bg-steel-300'}"></span>`
+  ).join('');
+  return `
+    <div class="card p-4 space-y-1.5">
+      <div class="flex items-start justify-between gap-3">
+        <div class="font-medium text-ink truncate min-w-0">${n.name}</div>
+        <div class="flex items-center gap-1 shrink-0 pt-1.5" title="Similarity ${Math.round(n.sim*100)}%">${pips}</div>
+      </div>
+      <div class="text-xs muted">${n.segment} · ${n.auto} · ${n.stations} stations · ${n.year}</div>
+      <div class="text-sm">
+        <span class="muted">Actual</span>
+        <span class="numeric text-ink"> ${fmt(n.hours)}</span>
+        <span class="muted"> · today's estimate ${fmt(ESTIMATE)} · Δ </span>
+        <span class="numeric text-ink">${delta>=0?'+':''}${fmt(delta)} (${dpct>=0?'+':''}${dpct.toFixed(1)}%)</span>
+      </div>
+    </div>`;
+}).join('');
+
+// Tab switching
+document.getElementById('tablist').addEventListener('click', (e) => {
+  const btn = e.target.closest('.tab');
+  if (!btn) return;
+  const id = btn.dataset.tab;
+  document.querySelectorAll('.tab').forEach(b => {
+    const sel = b.dataset.tab === id;
+    b.className = "tab inline-flex items-center gap-1.5 px-3 sm:px-4 py-2.5 text-sm border-b-2 -mb-px " +
+      (sel ? "text-ink font-semibold border-brand" : "muted border-transparent");
+    if (b.dataset.tab === 'scenarios') {
+      b.innerHTML = `<span>Scenarios</span><span class="inline-flex items-center justify-center min-w-[1.25rem] h-5 text-[10px] font-medium bg-brand text-brand-foreground rounded-full px-1.5 leading-none">2</span>`;
+    }
+  });
+  document.querySelectorAll('.panel').forEach(p => {
+    p.classList.toggle('hidden', p.dataset.panel !== id);
+  });
+});
+</script>
+
+</body>
+</html>

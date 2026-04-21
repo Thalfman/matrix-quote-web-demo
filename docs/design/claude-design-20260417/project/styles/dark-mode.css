@@ -1,0 +1,185 @@
+/* =======================================================
+   Matrix Quote · Dark mode overlay
+   Activated by [data-theme="dark"] on <html>.
+   Preserves existing Tailwind utility classes by remapping
+   the base tokens + a targeted list of element patterns.
+   ======================================================= */
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/* Page surfaces */
+:root[data-theme="dark"] html,
+:root[data-theme="dark"] body {
+  background: #0A1420 !important;
+  color: #E8E6DF !important;
+}
+
+/* --- Sidebar stays dark; push slightly deeper so cards pop --- */
+:root[data-theme="dark"] aside.bg-ink {
+  background: #060D17 !important;
+  border-right: 1px solid rgba(255,255,255,.04);
+}
+
+/* --- Paper → deep slate --- */
+:root[data-theme="dark"] .bg-paper,
+:root[data-theme="dark"] .bg-paper\/60,
+:root[data-theme="dark"] .bg-paper\/40,
+:root[data-theme="dark"] .hover\:bg-paper:hover {
+  background-color: #101C2B !important;
+}
+
+/* --- Surface / cards --- */
+:root[data-theme="dark"] .card,
+:root[data-theme="dark"] .bg-white,
+:root[data-theme="dark"] .bg-surface,
+:root[data-theme="dark"] .bg-white\/60 {
+  background-color: #15212F !important;
+  border-color: #25334A !important;
+}
+
+/* --- Hairlines --- */
+:root[data-theme="dark"] .hairline,
+:root[data-theme="dark"] [class*="border-line"],
+:root[data-theme="dark"] [class*="divide-line"] > * + *,
+:root[data-theme="dark"] .border-t,
+:root[data-theme="dark"] .border-b,
+:root[data-theme="dark"] .border-l,
+:root[data-theme="dark"] .border-r,
+:root[data-theme="dark"] .border {
+  border-color: #25334A !important;
+}
+:root[data-theme="dark"] .bg-line,
+:root[data-theme="dark"] .bg-line2 {
+  background-color: #25334A !important;
+}
+
+/* --- Text palette --- */
+:root[data-theme="dark"] .text-ink,
+:root[data-theme="dark"] .text-ink2 {
+  color: #EDEBE4 !important;
+}
+:root[data-theme="dark"] .text-ink\/80 { color: rgba(237,235,228,.80) !important; }
+:root[data-theme="dark"] .text-ink\/70 { color: rgba(237,235,228,.70) !important; }
+:root[data-theme="dark"] .text-ink\/60 { color: rgba(237,235,228,.60) !important; }
+:root[data-theme="dark"] .text-ink\/50 { color: rgba(237,235,228,.50) !important; }
+
+/* Sidebar wordmark + any text inside the navy sidebar must stay white */
+:root[data-theme="dark"] aside.bg-ink .text-ink,
+:root[data-theme="dark"] aside.bg-ink .display,
+:root[data-theme="dark"] aside.bg-ink .display-hero { color: #FFFFFF !important; }
+:root[data-theme="dark"] .text-muted {
+  color: #92A0B3 !important;
+}
+:root[data-theme="dark"] .text-muted2 {
+  color: #6B7A8E !important;
+}
+
+/* keep wordmark & sidebar text readable */
+:root[data-theme="dark"] aside.bg-ink .text-white,
+:root[data-theme="dark"] aside.bg-ink * {
+  /* no-op wrap — sidebar classes already use white/* which look fine */
+}
+
+/* --- Primary buttons (ink-on-white) remap --- */
+:root[data-theme="dark"] .bg-ink:not(aside):not(.bg-ink\/5):not(.bg-ink\/10) {
+  background-color: #F2B61F !important;
+  color: #0A1420 !important;
+}
+:root[data-theme="dark"] .hover\:bg-ink2:hover:not(aside) {
+  background-color: #E0A615 !important;
+}
+:root[data-theme="dark"] .text-white.bg-ink,
+:root[data-theme="dark"] .bg-ink.text-white {
+  color: #0A1420 !important;
+}
+/* revert for nav pills INSIDE sidebar */
+:root[data-theme="dark"] aside .bg-ink { background-color: #060D17 !important; color: #fff !important; }
+
+/* Sidebar itself: force white text on all descendants regardless */
+:root[data-theme="dark"] aside.bg-ink { color: #FFFFFF !important; }
+:root[data-theme="dark"] aside.bg-ink * { color: inherit; }
+:root[data-theme="dark"] aside.bg-ink .text-white\/60 { color: rgba(255,255,255,.60) !important; }
+:root[data-theme="dark"] aside.bg-ink .text-white\/50 { color: rgba(255,255,255,.50) !important; }
+:root[data-theme="dark"] aside.bg-ink .text-white\/40 { color: rgba(255,255,255,.40) !important; }
+:root[data-theme="dark"] aside.bg-ink .text-white\/80 { color: rgba(255,255,255,.80) !important; }
+:root[data-theme="dark"] aside.bg-ink .text-ink { color: #0A1420 !important; } /* amber badge text */
+
+/* segmented control active */
+:root[data-theme="dark"] .bg-ink.text-white[class*="mono"] {
+  background: #F2B61F !important; color:#0A1420 !important;
+}
+
+/* --- Soft tints --- */
+:root[data-theme="dark"] .bg-tealSoft { background-color: rgba(31,143,166,.18) !important; }
+:root[data-theme="dark"] .text-tealDark { color: #6FC6D8 !important; }
+:root[data-theme="dark"] .text-teal { color: #6FC6D8 !important; }
+:root[data-theme="dark"] .bg-amberSoft { background-color: rgba(242,182,31,.18) !important; }
+:root[data-theme="dark"] .text-amber { color: #F2B61F !important; }
+:root[data-theme="dark"] .text-success { color: #5BB898 !important; }
+:root[data-theme="dark"] .text-danger  { color: #E07456 !important; }
+:root[data-theme="dark"] .bg-success   { background-color: #2F8F6F !important; }
+:root[data-theme="dark"] .bg-danger    { background-color: #B5412B !important; }
+:root[data-theme="dark"] .bg-amber     { background-color: #F2B61F !important; color:#0A1420 !important; }
+:root[data-theme="dark"] .bg-teal      { background-color: #1F8FA6 !important; }
+
+/* --- Inputs --- */
+:root[data-theme="dark"] input,
+:root[data-theme="dark"] textarea,
+:root[data-theme="dark"] select {
+  background-color: #101C2B !important;
+  color: #EDEBE4 !important;
+  border-color: #25334A;
+}
+:root[data-theme="dark"] input::placeholder { color: #6B7A8E; }
+
+/* --- Grid backgrounds (chart lines) --- */
+:root[data-theme="dark"] .gridbg {
+  background-image: linear-gradient(to top, rgba(255,255,255,.06) 1px, transparent 1px) !important;
+}
+
+/* --- SVG strokes that were hard ink --- */
+:root[data-theme="dark"] svg [stroke="#0D1B2A"],
+:root[data-theme="dark"] svg [stroke="#1E2B3A"] {
+  stroke: #EDEBE4 !important;
+}
+:root[data-theme="dark"] svg [fill="#0D1B2A"],
+:root[data-theme="dark"] svg [fill="#1E2B3A"] {
+  fill: #EDEBE4 !important;
+}
+
+/* --- Row hover --- */
+:root[data-theme="dark"] .row-hover:hover { background: #1A2738 !important; }
+:root[data-theme="dark"] .hover\:bg-paper\/60:hover { background-color: #1A2738 !important; }
+
+/* --- Backdrop blur headers --- */
+:root[data-theme="dark"] .backdrop-blur.bg-white\/60,
+:root[data-theme="dark"] .bg-white\/60.backdrop-blur {
+  background-color: rgba(10,20,32,.70) !important;
+}
+
+/* --- Shadows → softer --- */
+:root[data-theme="dark"] .shadow,
+:root[data-theme="dark"] [class*="shadow-"] {
+  box-shadow: 0 1px 0 rgba(0,0,0,.4), 0 8px 24px -12px rgba(0,0,0,.6) !important;
+}
+
+/* --- Theme toggle floating button --- */
+.theme-toggle {
+  position: fixed; bottom: 16px; left: 16px; z-index: 60;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 999px;
+  background: #0D1B2A; color: #fff;
+  border: 1px solid #25334A;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px; letter-spacing: .04em;
+  cursor: pointer; user-select: none;
+  box-shadow: 0 6px 20px -8px rgba(0,0,0,.4);
+}
+.theme-toggle:hover { background:#1E2B3A; }
+:root[data-theme="dark"] .theme-toggle {
+  background: #F2B61F; color: #0A1420; border-color: transparent;
+}
+.theme-toggle .dot { width:8px; height:8px; border-radius:50%; background:#F2B61F; }
+:root[data-theme="dark"] .theme-toggle .dot { background:#0A1420; }

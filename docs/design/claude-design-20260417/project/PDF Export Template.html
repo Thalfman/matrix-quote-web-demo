@@ -1,0 +1,566 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Matrix Quote — PDF Export</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:"#0D1B2A", ink2:"#1E2B3A",
+          paper:"#F6F4EF",
+          line:"#E5E1D8", line2:"#D8D3C6",
+          muted:"#5A6573", muted2:"#8A94A1",
+          amber:"#F2B61F",
+          teal:"#1F8FA6", tealDark:"#177082",
+          success:"#2F8F6F", danger:"#B5412B",
+        },
+        fontFamily: {
+          sans:['Inter','ui-sans-serif','system-ui','sans-serif'],
+          display:['"Barlow Condensed"','Inter','sans-serif'],
+          mono:['"JetBrains Mono"','ui-monospace','monospace'],
+        },
+      }
+    }
+  };
+</script>
+<style>
+  html,body { background:#E8E4DB; color:#0D1B2A; }
+  body { font-family:'Inter',ui-sans-serif,system-ui,sans-serif; font-feature-settings:"cv02","cv03","cv04","cv11"; }
+  .eyebrow { font-family:'Barlow Condensed','Inter',sans-serif; font-weight:600; letter-spacing:.14em; text-transform:uppercase; }
+  .mono { font-family:'JetBrains Mono',ui-monospace,monospace; font-variant-numeric: tabular-nums; }
+  .display { font-family:'Barlow Condensed','Inter',sans-serif; font-weight:600; letter-spacing:-.01em; }
+  .tnum { font-variant-numeric: tabular-nums; }
+  .hairline { border-color:#E5E1D8; }
+
+  /* LETTER: 8.5 × 11 at 96dpi = 816×1056 */
+  .page {
+    width: 816px; height: 1056px;
+    background: #fff;
+    margin: 24px auto;
+    box-shadow: 0 20px 50px -20px rgba(13,27,42,.35), 0 2px 8px rgba(13,27,42,.08);
+    position: relative;
+    overflow: hidden;
+  }
+  .page-inner { position:absolute; inset: 56px 64px 72px 64px; display:flex; flex-direction:column; }
+
+  /* Print */
+  @media print {
+    html,body { background:#fff; }
+    .page { box-shadow:none; margin: 0; page-break-after: always; }
+    .no-print { display:none !important; }
+    @page { size: Letter; margin: 0; }
+  }
+
+  /* Toolbar */
+  .toolbar {
+    position: sticky; top: 0; z-index: 50;
+    background: rgba(246,244,239,.88);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid #E5E1D8;
+  }
+</style>
+<link rel="stylesheet" href="styles/dark-mode.css" />
+<script defer src="lib/theme-toggle.js"></script>
+</head>
+<body>
+
+<!-- ============================================================
+  PREVIEW TOOLBAR (screen-only)
+============================================================= -->
+<div class="toolbar no-print">
+  <div class="max-w-[920px] mx-auto px-6 h-14 flex items-center justify-between">
+    <div class="flex items-baseline gap-3">
+      <span class="display text-xl text-ink leading-none">Matrix</span>
+      <span class="eyebrow text-[10px] text-muted">Quote · PDF preview</span>
+    </div>
+    <div class="flex items-center gap-3 text-xs">
+      <span class="text-muted">Apex Body-in-White · v1</span>
+      <span class="w-px h-4 bg-line"></span>
+      <span class="mono text-muted">Letter · 4 pages</span>
+      <button onclick="window.print()" class="inline-flex items-center gap-2 px-3 py-1.5 bg-ink text-white rounded-sm hover:bg-ink2">
+        Print / Save PDF
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+  PAGE 1 — COVER
+============================================================= -->
+<div class="page">
+  <!-- Full-bleed top bar -->
+  <div class="absolute inset-x-0 top-0 h-2 bg-ink"></div>
+  <div class="absolute inset-x-0 top-2 h-1 bg-amber"></div>
+
+  <div class="page-inner">
+    <!-- Corporate header -->
+    <div class="flex items-start gap-6 pt-4 pb-6 border-b hairline">
+      <div class="flex items-start gap-5">
+        <div>
+          <div class="display text-xl leading-none text-ink">Matrix</div>
+          <div class="eyebrow text-[9px] text-muted mt-1">Design LLC · Est. 2004</div>
+        </div>
+        <div class="pl-5 border-l hairline">
+          <div class="eyebrow text-[10px] text-teal">Quote &amp; Estimate</div>
+          <div class="mono text-[11px] text-muted mt-1">Document · MQ-2026-0417-APX01</div>
+        </div>
+      </div>
+      <div class="ml-auto text-right text-[11px]">
+        <div class="eyebrow text-[9px] text-muted">Issued · Valid</div>
+        <div class="mono text-ink mt-0.5">Apr 17, 2026 · 30 days</div>
+      </div>
+    </div>
+
+    <!-- Title -->
+    <div class="pt-10">
+      <div class="eyebrow text-[11px] text-muted">Prepared for</div>
+      <div class="text-xl text-ink mt-1">Apex Motors · Greenfield Plant</div>
+
+      <h1 class="display text-[76px] leading-[0.9] tracking-tight text-ink mt-10 max-w-[640px]">
+        Body-in-White<br />Robotic Weld Cell
+      </h1>
+      <p class="text-sm text-muted mt-5 max-w-md">
+        A 14-station end-of-line automation cell with 6 robots, 2D vision,
+        and integrated safety — engineered, built, and commissioned by Matrix Design LLC.
+      </p>
+    </div>
+
+    <!-- Big estimate block -->
+    <div class="mt-auto">
+      <div class="border-t hairline pt-7">
+        <div class="flex items-start justify-between gap-10">
+          <div>
+            <div class="eyebrow text-[10px] text-muted">Total estimated hours</div>
+            <div class="flex items-baseline gap-3 mt-2">
+              <div class="display text-[96px] leading-none tnum text-ink">1,248</div>
+              <div class="pb-3">
+                <div class="eyebrow text-[10px] text-muted">hrs</div>
+              </div>
+            </div>
+            <div class="mono text-[11px] text-muted mt-2">
+              Range <span class="text-ink">1,050–1,470</span> · 90% CI · Confidence <span class="text-ink">Strong</span>
+            </div>
+          </div>
+          <!-- CI rail as a small inset -->
+          <div class="w-[260px] pt-2">
+            <div class="flex items-baseline justify-between text-[10px] mono text-muted">
+              <span>p10</span><span class="eyebrow">90% CI</span><span>p90</span>
+            </div>
+            <div class="relative h-2 mt-2 bg-line rounded-full">
+              <div class="absolute inset-y-0 bg-teal/30 rounded-full" style="left:18%;right:22%;"></div>
+              <div class="absolute top-1/2 -translate-y-1/2 w-3 h-3 rounded-full bg-ink border-2 border-amber" style="left:calc(47% - 6px);"></div>
+            </div>
+            <div class="flex justify-between mono text-[10px] text-ink mt-2 tnum">
+              <span>1,050</span><span>1,248</span><span>1,470</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Signature block -->
+      <div class="grid grid-cols-3 gap-6 mt-8 pt-6 border-t hairline">
+        <div>
+          <div class="eyebrow text-[9px] text-muted">Prepared by</div>
+          <div class="text-sm text-ink mt-1">Tyler Halfman</div>
+          <div class="text-[11px] text-muted">Sr. Estimator · Matrix Design LLC</div>
+        </div>
+        <div>
+          <div class="eyebrow text-[9px] text-muted">Reviewed by</div>
+          <div class="text-sm text-ink mt-1">—</div>
+          <div class="text-[11px] text-muted">Pending</div>
+        </div>
+        <div>
+          <div class="eyebrow text-[9px] text-muted">Model version</div>
+          <div class="mono text-sm text-ink mt-1">v2026.04.14</div>
+          <div class="text-[11px] text-muted">12 of 12 operation models</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <div class="absolute bottom-6 left-16 right-16 flex items-center justify-between text-[10px] text-muted mono">
+    <span>Matrix Design LLC · 1 Industry Way · Greenfield, IN</span>
+    <span>Page 1 of 4 · Cover</span>
+  </div>
+</div>
+
+<!-- ============================================================
+  PAGE 2 — ESTIMATE BREAKDOWN
+============================================================= -->
+<div class="page">
+  <div class="page-inner">
+    <!-- Running header -->
+    <div class="flex items-baseline justify-between pb-3 border-b hairline">
+      <div class="flex items-baseline gap-3">
+        <span class="display text-sm leading-none text-ink">Matrix</span>
+        <span class="eyebrow text-[9px] text-muted">MQ-2026-0417-APX01</span>
+      </div>
+      <div class="eyebrow text-[9px] text-muted">02 · Estimate breakdown</div>
+    </div>
+
+    <div class="pt-6">
+      <h2 class="display text-3xl text-ink">Estimate breakdown</h2>
+      <p class="text-xs text-muted mt-2 max-w-lg">
+        Hours grouped by Matrix operation code. Each row shows the operation, its predicted hours
+        with a 90% confidence interval, and its share of the total.
+      </p>
+    </div>
+
+    <!-- Summary strip -->
+    <div class="grid grid-cols-4 gap-3 mt-5">
+      <div class="border hairline rounded-sm px-4 py-3">
+        <div class="eyebrow text-[9px] text-muted">Total</div>
+        <div class="mono tnum text-2xl text-ink font-medium mt-0.5">1,248 <span class="text-xs text-muted">hrs</span></div>
+      </div>
+      <div class="border hairline rounded-sm px-4 py-3">
+        <div class="eyebrow text-[9px] text-muted">Largest bucket</div>
+        <div class="mono tnum text-2xl text-ink font-medium mt-0.5">ME <span class="text-xs text-muted">312 · 25%</span></div>
+      </div>
+      <div class="border hairline rounded-sm px-4 py-3">
+        <div class="eyebrow text-[9px] text-muted">Operations</div>
+        <div class="mono tnum text-2xl text-ink font-medium mt-0.5">12</div>
+      </div>
+      <div class="border hairline rounded-sm px-4 py-3 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-0.5 bg-amber"></div>
+        <div class="eyebrow text-[9px] text-muted">Confidence</div>
+        <div class="flex items-baseline gap-2 mt-0.5">
+          <div class="text-xl text-ink font-medium">Strong</div>
+          <div class="flex gap-0.5 pb-1">
+            <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-amber"></span>
+            <span class="w-1.5 h-1.5 rounded-full bg-line2"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table -->
+    <div class="mt-5 border hairline rounded-sm overflow-hidden">
+      <div class="grid grid-cols-[40px_minmax(0,2fr)_80px_120px_1fr_60px] items-center gap-x-3 px-4 py-2 bg-paper eyebrow text-[9px] text-muted">
+        <div>Code</div><div>Operation</div>
+        <div class="text-right">Hours</div>
+        <div class="text-right">Range (p10–p90)</div>
+        <div>Share</div>
+        <div class="text-right">%</div>
+      </div>
+      <div id="opTable"></div>
+      <div class="grid grid-cols-[40px_minmax(0,2fr)_80px_120px_1fr_60px] items-center gap-x-3 px-4 py-2.5 bg-ink text-white text-sm">
+        <div class="eyebrow text-[9px] text-white/60">Total</div>
+        <div>Project rollup</div>
+        <div class="mono tnum text-right font-semibold">1,248</div>
+        <div class="mono tnum text-right text-[11px] text-white/70">1,050–1,470</div>
+        <div></div>
+        <div class="mono tnum text-right">100%</div>
+      </div>
+    </div>
+
+    <!-- Mini bar chart -->
+    <div class="mt-6">
+      <div class="eyebrow text-[10px] text-muted mb-3">Visual distribution</div>
+      <div class="flex items-end gap-2 h-32 border-b hairline" id="bucketBars"></div>
+      <div class="flex justify-between mt-2 eyebrow text-[9px] text-muted" id="bucketAxis"></div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 left-16 right-16 flex items-center justify-between text-[10px] text-muted mono">
+    <span>Matrix Design LLC · Confidential</span>
+    <span>Page 2 of 4</span>
+  </div>
+</div>
+
+<!-- ============================================================
+  PAGE 3 — DRIVERS + SIMILAR
+============================================================= -->
+<div class="page">
+  <div class="page-inner">
+    <div class="flex items-baseline justify-between pb-3 border-b hairline">
+      <div class="flex items-baseline gap-3">
+        <span class="display text-sm leading-none text-ink">Matrix</span>
+        <span class="eyebrow text-[9px] text-muted">MQ-2026-0417-APX01</span>
+      </div>
+      <div class="eyebrow text-[9px] text-muted">03 · Why this number</div>
+    </div>
+
+    <div class="pt-6">
+      <h2 class="display text-3xl text-ink">Why this estimate</h2>
+      <p class="text-xs text-muted mt-2 max-w-lg">
+        The model's reasoning, grounded in the project inputs and nearest historical cells.
+      </p>
+    </div>
+
+    <!-- Drivers -->
+    <div class="mt-6">
+      <div class="flex items-baseline justify-between mb-3">
+        <div class="eyebrow text-[10px] text-ink">Top drivers</div>
+        <div class="flex items-center gap-3 text-[10px] text-muted">
+          <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 bg-amber rounded-sm"></span>Adds hours</span>
+          <span class="inline-flex items-center gap-1.5"><span class="w-2 h-2 bg-teal rounded-sm"></span>Removes hours</span>
+        </div>
+      </div>
+      <div class="space-y-2" id="pdfDrivers"></div>
+    </div>
+
+    <!-- Similar projects -->
+    <div class="mt-7">
+      <div class="flex items-baseline justify-between mb-3">
+        <div class="eyebrow text-[10px] text-ink">Nearest historical cells</div>
+        <div class="text-[10px] text-muted mono">Δ vs. current estimate</div>
+      </div>
+      <div class="border hairline rounded-sm overflow-hidden">
+        <div class="grid grid-cols-[minmax(0,2fr)_60px_minmax(0,1.4fr)_80px_90px_60px] items-center gap-x-3 px-4 py-2 bg-paper eyebrow text-[9px] text-muted">
+          <div>Project</div><div>Year</div><div>Segment · Auto.</div>
+          <div class="text-right">Actual hrs</div>
+          <div class="text-right">Δ vs est.</div>
+          <div class="text-right">Sim.</div>
+        </div>
+        <div id="neighborsPdf"></div>
+      </div>
+    </div>
+
+    <!-- Footnote box -->
+    <div class="mt-auto pt-6">
+      <div class="border-l-2 border-teal pl-3 py-1 text-[11px] text-muted max-w-lg">
+        <span class="eyebrow text-[9px] text-teal block mb-1">Interpretation</span>
+        The estimate lands on the higher side of its band because the project specifies
+        14 stations with 6 robots and a 2D vision layer — each of which consistently
+        adds hours in the training data. Product familiarity partly offsets this.
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 left-16 right-16 flex items-center justify-between text-[10px] text-muted mono">
+    <span>Matrix Design LLC · Confidential</span>
+    <span>Page 3 of 4</span>
+  </div>
+</div>
+
+<!-- ============================================================
+  PAGE 4 — ASSUMPTIONS + INPUTS
+============================================================= -->
+<div class="page">
+  <div class="page-inner">
+    <div class="flex items-baseline justify-between pb-3 border-b hairline">
+      <div class="flex items-baseline gap-3">
+        <span class="display text-sm leading-none text-ink">Matrix</span>
+        <span class="eyebrow text-[9px] text-muted">MQ-2026-0417-APX01</span>
+      </div>
+      <div class="eyebrow text-[9px] text-muted">04 · Assumptions &amp; inputs</div>
+    </div>
+
+    <div class="pt-6">
+      <h2 class="display text-3xl text-ink">Assumptions &amp; inputs</h2>
+      <p class="text-xs text-muted mt-2 max-w-lg">
+        The 28 project parameters the estimate is derived from, plus the scope and
+        exclusions implicit in the model training set.
+      </p>
+    </div>
+
+    <!-- Inputs table (3-col grid, tighter rows) -->
+    <div class="mt-5 grid grid-cols-3 gap-x-6 gap-y-0 border-t hairline" id="inputsGrid"></div>
+
+    <!-- Assumptions + Exclusions side-by-side, compact -->
+    <div class="mt-6 grid grid-cols-2 gap-8">
+      <div>
+        <div class="eyebrow text-[10px] text-ink mb-2">Scope assumptions</div>
+        <ul class="text-[10.5px] text-ink space-y-1 list-none leading-snug">
+          <li class="flex gap-2"><span class="mono text-teal shrink-0">01</span><span>Customer supplies utilities terminated at cell perimeter.</span></li>
+          <li class="flex gap-2"><span class="mono text-teal shrink-0">02</span><span>Controls standardized on AB ControlLogix + PanelView Plus.</span></li>
+          <li class="flex gap-2"><span class="mono text-teal shrink-0">03</span><span>Product CAD available at kickoff; changes via change order.</span></li>
+          <li class="flex gap-2"><span class="mono text-teal shrink-0">04</span><span>Single-shift commissioning; premiums apply after hours.</span></li>
+          <li class="flex gap-2"><span class="mono text-teal shrink-0">05</span><span>Single FTL to Greenfield; crating included, rigging excluded.</span></li>
+        </ul>
+      </div>
+      <div>
+        <div class="eyebrow text-[10px] text-ink mb-2">Exclusions</div>
+        <ul class="text-[10.5px] text-muted space-y-1 leading-snug">
+          <li>— Part tooling beyond the 8 fixture sets quoted.</li>
+          <li>— Plant-wide safety / CE / UL beyond cell envelope.</li>
+          <li>— Operator training past two 8-hour on-site sessions.</li>
+          <li>— Spare parts stocking after 1-year warranty.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Footer callout -->
+    <div class="mt-auto pt-5 border-t hairline">
+      <div class="flex items-start justify-between gap-6">
+        <div class="text-[10px] text-muted max-w-md leading-snug">
+          Produced by Matrix Quote Web, back-tested at
+          <span class="text-ink mono">11.4% MAPE</span> and
+          <span class="text-ink mono">R² = 0.84</span> over 62 closed projects.
+          Not a fixed-price commitment — final pricing confirmed at contract.
+        </div>
+        <div class="text-right shrink-0">
+          <div class="eyebrow text-[9px] text-muted">Questions</div>
+          <div class="text-[11px] text-ink mt-0.5">tyler.halfman@matrixdesignllc.com</div>
+          <div class="mono text-[10px] text-muted">+1 317 555 0142</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="absolute bottom-6 left-16 right-16 flex items-center justify-between text-[10px] text-muted mono">
+    <span>Matrix Design LLC · Confidential</span>
+    <span>Page 4 of 4</span>
+  </div>
+</div>
+
+<div class="h-8"></div>
+
+<script>
+const fmt = (n) => new Intl.NumberFormat('en-US',{maximumFractionDigits:0}).format(n);
+
+/* ---------- Page 2 : operation table ---------- */
+const OPS = [
+  ["ME 10",  "Mechanical Design",        210, 178, 248],
+  ["ME 15",  "Mechanical Detailing",     102,  88, 120],
+  ["EE 20",  "Electrical Design",        186, 156, 220],
+  ["RB 30",  "Robot Programming",        164, 138, 196],
+  ["CP 50",  "Controls Programming",     224, 186, 270],
+  ["SHP 150","Shipping",                  10,   8,  14],
+  ["INST 160","Installation",             64,  52,  82],
+  ["TRV 180","Travel & Logistics",        58,  48,  70],
+  ["DOC 190","Documentation",             56,  46,  70],
+  ["PM 200", "Project Management",        88,  74, 106],
+  ["BLD 100","Mechanical Build",          96,  80, 118],
+  ["ME 230", "Integration",               80,  66,  96],
+];
+const TOTAL = 1248;
+const opsMax = Math.max(...OPS.map(r => r[2]));
+document.getElementById('opTable').innerHTML = OPS.map(([code, name, hrs, lo, hi]) => {
+  const share = hrs / TOTAL * 100;
+  return `
+    <div class="grid grid-cols-[40px_minmax(0,2fr)_80px_120px_1fr_60px] items-center gap-x-3 px-4 py-2 border-b hairline last:border-b-0 text-[11px]">
+      <div class="mono text-muted2">${code}</div>
+      <div class="text-ink">${name}</div>
+      <div class="mono tnum text-right text-ink font-medium">${fmt(hrs)}</div>
+      <div class="mono tnum text-right text-muted text-[10px]">${fmt(lo)}–${fmt(hi)}</div>
+      <div class="h-1.5 bg-line rounded-sm overflow-hidden">
+        <div class="h-full bg-ink" style="width:${hrs/opsMax*100}%"></div>
+      </div>
+      <div class="mono tnum text-right text-muted">${share.toFixed(1)}%</div>
+    </div>`;
+}).join('');
+
+// bucket bars (rolled up to 9 sales buckets)
+const BUCKETS = [
+  ["ME", 312], ["EE", 186], ["Controls", 224], ["Robot", 164],
+  ["Build", 96], ["PM", 88], ["Install", 64], ["Travel", 58], ["Docs", 56],
+];
+const bmax = Math.max(...BUCKETS.map(b => b[1]));
+document.getElementById('bucketBars').innerHTML = BUCKETS.map(([k, v]) => `
+  <div class="flex-1 flex flex-col justify-end items-stretch">
+    <div class="mono tnum text-[10px] text-ink text-center mb-1">${v}</div>
+    <div class="w-full bg-ink rounded-t-sm" style="height:${v/bmax*100}%"></div>
+  </div>`).join('');
+document.getElementById('bucketAxis').innerHTML = BUCKETS.map(([k]) =>
+  `<span class="flex-1 text-center">${k}</span>`).join('');
+
+/* ---------- Page 3 : drivers + neighbors ---------- */
+const DRIVERS = [
+  ["Stations · 14 (vs. 8 typical)",   +96, "Project scale is ~40% above segment median."],
+  ["Robots · 6",                      +72, "Each added robot adds ~12–15 hrs across RB 30 + CP 50."],
+  ["Vision type · 2D",                +48, "2D vision integration is standard but non-trivial."],
+  ["Custom work · 65%",               +44, "Heavily tailored to a new product line."],
+  ["Conveyor · 64 ft",                +28, "Length drives EE + BLD."],
+  ["Process uncertainty · 3/5",       +12, "Some tuning expected in commissioning."],
+  ["Product familiarity · 4/5",       -34, "We've built similar cells in the last 24 months."],
+  ["Duplicate project · No",           -8, "Baseline adjustment."],
+];
+const dmax = Math.max(...DRIVERS.map(d => Math.abs(d[1])));
+document.getElementById('pdfDrivers').innerHTML = DRIVERS.map(([label, v, note]) => {
+  const pos = v > 0;
+  const pctW = Math.abs(v)/dmax*50;
+  const left = pos ? '50%' : (50-pctW)+'%';
+  const color = pos ? 'bg-amber' : 'bg-teal';
+  return `
+    <div class="grid grid-cols-[minmax(0,1.6fr)_50px_1fr_minmax(0,1.8fr)] items-center gap-4 text-[11px]">
+      <div class="text-ink truncate">${label}</div>
+      <div class="mono tnum text-right ${pos?'text-amber':'text-teal'} font-medium">${pos?'+':''}${v}</div>
+      <div class="relative h-2 bg-line rounded-sm">
+        <span class="absolute inset-y-0 w-px bg-muted2" style="left:50%"></span>
+        <div class="absolute inset-y-0 ${color} rounded-sm" style="left:${left};width:${pctW}%"></div>
+      </div>
+      <div class="text-muted text-[10px] leading-snug">${note}</div>
+    </div>`;
+}).join('');
+
+const NEIGHBORS = [
+  ["Northland Conveyor Cell", 2024, "General Industry · Robotic",       1180, 0.92],
+  ["Apex Body-in-White",      2025, "Automotive · Robotic",             1416, 0.86],
+  ["Riverbend Pack Cell",     2024, "Food & Beverage · Semi-Automatic",  968, 0.74],
+  ["Cedar Mill Vision Sort",  2023, "General Industry · Robotic",        842, 0.62],
+];
+const EST_HRS = 1248;
+document.getElementById('neighborsPdf').innerHTML = NEIGHBORS.map(([name, year, seg, hrs, sim]) => {
+  const d = hrs - EST_HRS;
+  const dp = d/EST_HRS*100;
+  const dColor = d>=0 ? 'text-amber' : 'text-teal';
+  const dots = sim>=.90?5:sim>=.80?4:sim>=.65?3:sim>=.50?2:1;
+  const pips = [1,2,3,4,5].map(k => `<span class="w-1 h-1 rounded-full ${k<=dots?'bg-ink':'bg-line2'}"></span>`).join('');
+  return `
+    <div class="grid grid-cols-[minmax(0,2fr)_60px_minmax(0,1.4fr)_80px_90px_60px] items-center gap-x-3 px-4 py-2 border-b hairline last:border-b-0 text-[11px]">
+      <div class="text-ink truncate">${name}</div>
+      <div class="mono text-muted2">${year}</div>
+      <div class="text-muted truncate text-[10px]">${seg}</div>
+      <div class="mono tnum text-right text-ink font-medium">${fmt(hrs)}</div>
+      <div class="mono tnum text-right ${dColor}">${d>=0?'+':''}${fmt(d)} <span class="text-muted text-[10px]">(${dp>=0?'+':''}${dp.toFixed(1)}%)</span></div>
+      <div class="flex items-center justify-end gap-0.5">${pips}</div>
+    </div>`;
+}).join('');
+
+/* ---------- Page 4 : inputs grid ---------- */
+const INPUTS = [
+  ["Industry segment","Automotive"],
+  ["System category","End of Line Automation"],
+  ["Automation level","Robotic"],
+  ["Includes controls","Yes"],
+  ["Includes robotics","Yes"],
+  ["Retrofit","No"],
+  ["Duplicate of prior","No"],
+  ["Stations","14"],
+  ["Robots","6"],
+  ["Fixture sets","8"],
+  ["Part types","3"],
+  ["Weldment length","42 ft"],
+  ["Fence length","118 ft"],
+  ["Safety doors","4"],
+  ["Safety devices","22"],
+  ["Conveyor length","64 ft"],
+  ["PLC family","AB ControlLogix"],
+  ["HMI family","AB PanelView Plus"],
+  ["Vision type","2D"],
+  ["Panels","3"],
+  ["Servo axes","9"],
+  ["Drives","11"],
+  ["Pneumatic actuators","18"],
+  ["Vision systems","2"],
+  ["Product familiarity","4 / 5"],
+  ["Product rigidity","3 / 5"],
+  ["Bulk rigidity","2 / 5"],
+  ["Process uncertainty","3 / 5"],
+  ["Changeover time","12 min"],
+  ["Overall complexity","4 / 5"],
+  ["Custom work","65 %"],
+  ["Estimated materials","$285,000"],
+];
+document.getElementById('inputsGrid').innerHTML = INPUTS.map(([k, v]) => `
+  <div class="flex items-baseline justify-between gap-2 py-1.5 border-b hairline text-[10.5px]">
+    <span class="text-muted truncate">${k}</span>
+    <span class="mono tnum text-ink font-medium text-right shrink-0">${v}</span>
+  </div>
+`).join('');
+</script>
+
+</body>
+</html>

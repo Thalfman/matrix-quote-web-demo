@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =======================================================
+   Matrix Quote · Design system base
+   Light-mode primary. Dark mode layered in Plan 7.
+======================================================= */
+
+:focus-visible {
+  outline: 2px solid #1F8FA6;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --density-y: 1rem;
+    --density-x: 1.25rem;
+  }
+  body {
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    font-weight: 400;
+    line-height: 1.6;
+    @apply bg-paper text-ink;
+  }
+  h1, h2, h3 {
+    font-weight: 500;
+    letter-spacing: -0.01em;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-surface border border-line rounded-card;
+  }
+  .muted {
+    @apply text-muted;
+  }
+  .numeric {
+    @apply font-mono tabular-nums;
+  }
+  .eyebrow {
+    font-family: "Barlow Condensed", Inter, sans-serif;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .display-hero {
+    font-family: "Barlow Condensed", Inter, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .mono {
+    font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+    font-variant-numeric: tabular-nums;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
+  }
+  .hairline {
+    border-color: #E5E1D8;
+  }
+  .pad-y { padding-top: var(--density-y); padding-bottom: var(--density-y); }
+  .pad-x { padding-left: var(--density-x); padding-right: var(--density-x); }
+  .density-compact { --density-y: 0.625rem; --density-x: 0.875rem; }
+  .density-comfy   { --density-y: 1rem;     --density-x: 1.25rem; }
+}

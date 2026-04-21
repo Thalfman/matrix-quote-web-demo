@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Matrix Quote — Batch Quotes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          ink:"#0D1B2A", ink2:"#1E2B3A",
+          paper:"#F6F4EF", surface:"#FFFFFF",
+          line:"#E5E1D8", line2:"#D8D3C6",
+          muted:"#5A6573", muted2:"#8A94A1",
+          amber:"#F2B61F", amberSoft:"#FAEBB5",
+          teal:"#1F8FA6", tealDark:"#177082", tealSoft:"#D7ECF1",
+          success:"#2F8F6F", danger:"#B5412B",
+        },
+        fontFamily: {
+          sans:['Inter','ui-sans-serif','system-ui','sans-serif'],
+          display:['"Barlow Condensed"','Inter','sans-serif'],
+          mono:['"JetBrains Mono"','ui-monospace','monospace'],
+        },
+      }
+    }
+  };
+</script>
+<style>
+  html,body { background:#F6F4EF; color:#0D1B2A; }
+  body { font-family:'Inter',ui-sans-serif,system-ui,sans-serif; }
+  .eyebrow { font-family:'Barlow Condensed','Inter',sans-serif; font-weight:600; letter-spacing:.14em; text-transform:uppercase; }
+  .mono { font-family:'JetBrains Mono',ui-monospace,monospace; font-variant-numeric: tabular-nums; }
+  .display { font-family:'Barlow Condensed','Inter',sans-serif; font-weight:600; letter-spacing:-.01em; }
+  .card { background:#fff; border:1px solid #E5E1D8; border-radius:2px; }
+  .hairline { border-color:#E5E1D8; }
+  .tnum { font-variant-numeric: tabular-nums; }
+  .state { display:none; } .state.active { display:block; }
+  .gridbg { background-image: linear-gradient(to top, rgba(13,27,42,.04) 1px, transparent 1px); background-size: 100% 25%; }
+  input[type=checkbox],input[type=radio] { accent-color:#1F8FA6; }
+  .row-hover:hover { background:#FBF9F3; }
+  .scrolly { scrollbar-width:thin; }
+  @keyframes pulseDot { 0%,100%{opacity:.35} 50%{opacity:1} }
+  .livedot { animation: pulseDot 1.2s ease-in-out infinite; }
+</style>
+<link rel="stylesheet" href="styles/dark-mode.css" />
+<script defer src="lib/theme-toggle.js"></script>
+</head>
+<body>
+<div class="min-h-screen flex">
+
+  <!-- Sidebar -->
+  <aside class="hidden lg:flex w-60 shrink-0 flex-col bg-ink text-white p-6 gap-7">
+    <div>
+      <div class="display text-2xl leading-none">Matrix</div>
+      <div class="eyebrow text-[10px] text-white/50 mt-1">Quote Estimation</div>
+    </div>
+    <nav class="flex flex-col gap-1">
+      <div class="eyebrow text-[10px] text-white/40 mb-1 px-3">Estimate</div>
+      <a href="Cockpit Redesign.html" class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Single Quote</a>
+      <a class="text-sm px-3 py-2 rounded-sm bg-white/5 border-l-2 border-amber text-white font-medium">Batch Quotes</a>
+    </nav>
+    <nav class="flex flex-col gap-1">
+      <div class="eyebrow text-[10px] text-white/40 mb-1 px-3">Library</div>
+      <a href="Saved Quotes + Compare.html" class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Saved Quotes</a>
+      <a href="Insights Dashboards.html" class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Insights</a>
+    </nav>
+    <nav class="flex flex-col gap-1">
+      <div class="eyebrow text-[10px] text-white/40 mb-1 px-3">Admin</div>
+      <a href="Admin Shell.html" class="text-sm px-3 py-2 rounded-sm text-white/60 hover:text-white hover:bg-white/5">Dashboard</a>
+    </nav>
+    <div class="mt-auto flex items-center gap-2 text-xs text-white/80">
+      <span class="w-6 h-6 rounded-full bg-amber text-ink grid place-items-center text-[10px] font-semibold">EG</span>
+      <div class="min-w-0"><div class="truncate">E. Granger</div><div class="mono text-[10px] text-white/40">estimator</div></div>
+    </div>
+  </aside>
+
+  <main class="flex-1 min-w-0">
+    <div class="border-b hairline bg-white/60 backdrop-blur">
+      <div class="max-w-[1400px] mx-auto px-8 h-12 flex items-center justify-between text-xs">
+        <div class="flex items-center gap-2 text-muted">
+          <span>Estimate</span>
+          <span class="text-muted2">/</span>
+          <span class="text-ink font-medium">Batch Quotes</span>
+          <span id="crumbJob" class="hidden items-center gap-2">
+            <span class="text-muted2">/</span>
+            <span class="text-ink font-medium mono" id="crumbJobName">—</span>
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <button id="demoToggle" class="text-muted hover:text-ink text-[11px] mono">← back to dropzone</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="max-w-[1400px] mx-auto px-8 py-8">
+
+      <!-- =================== STATE: UPLOAD =================== -->
+      <section class="state active" data-state="upload">
+        <header class="flex items-end justify-between gap-6 pb-6 mb-6 border-b hairline">
+          <div>
+            <div class="eyebrow text-[11px] text-teal">Estimate · Batch mode</div>
+            <h1 class="display text-4xl leading-none mt-2 text-ink">Batch Quotes</h1>
+            <p class="text-sm text-muted mt-3 max-w-2xl">Drop in a CSV or Excel with one project per row. The model returns hours per operation, totals, and confidence for every row — so you can compare a pipeline of opportunities in a single pass.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <a href="#" class="px-3 py-2 text-xs border hairline rounded-sm bg-white hover:bg-paper inline-flex items-center gap-2">
+              <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg>
+              Download template.csv
+            </a>
+          </div>
+        </header>
+
+        <div class="grid grid-cols-[1.3fr_1fr] gap-3">
+          <!-- Dropzone -->
+          <div class="card">
+            <div class="px-5 py-4 border-b hairline flex items-baseline justify-between">
+              <div>
+                <div class="eyebrow text-[11px] text-ink">1 · Upload your file</div>
+                <div class="text-xs text-muted">CSV or XLSX · up to 500 rows · one project per row</div>
+              </div>
+            </div>
+            <label class="block p-6">
+              <div class="border border-dashed border-line2 rounded-sm bg-paper/40 p-10 text-center cursor-pointer hover:bg-paper transition">
+                <div class="w-14 h-14 mx-auto rounded-sm bg-ink text-white grid place-items-center display text-xs">CSV</div>
+                <div class="display text-2xl mt-4 text-ink">Drop file here</div>
+                <div class="text-sm text-muted mt-1">or <span class="text-teal underline decoration-dotted underline-offset-2">browse</span> to upload</div>
+                <div class="mono text-[10px] text-muted2 mt-6">max 25 MB · up to 500 rows · UTF-8</div>
+              </div>
+              <input type="file" class="hidden" />
+            </label>
+            <div class="px-5 py-4 border-t hairline text-[11px] text-muted flex items-center justify-between">
+              <span>Rows that fail validation are flagged — you can fix and re-run them inline after the scan.</span>
+              <button id="simulateUpload" class="mono text-teal hover:text-tealDark">Simulate upload →</button>
+            </div>
+          </div>
+
+          <!-- Schema side -->
+          <div class="card">
+            <div class="px-5 py-4 border-b hairline">
+              <div class="eyebrow text-[11px] text-ink">2 · Expected columns</div>
+              <div class="text-xs text-muted">Minimum 6 required · 11 optional boost accuracy</div>
+            </div>
+            <div class="divide-y hairline text-xs">
+              <div class="grid grid-cols-[1.3fr_1fr_40px] items-center gap-3 px-5 py-2.5">
+                <div class="mono text-ink">project_name</div><div class="text-muted">text</div><div class="text-right eyebrow text-[9px] text-danger">req</div>
+              </div>
+              <div class="grid grid-cols-[1.3fr_1fr_40px] items-center gap-3 px-5 py-2.5">
+                <div class="mono text-ink">industry_segment</div><div class="text-muted">enum · 12</div><div class="text-right eyebrow text-[9px] text-danger">req</div>
+              </div>
+              <div class="grid grid-cols-[1.3fr_1fr_40px] items-center gap-3 px-5 py-2.5">
+                <div class="mono text-ink">stations_count</div><div class="text-muted">int</div><div class="text-right eyebrow text-[9px] text-danger">req</div>
+              </div>
+              <div class="grid grid-cols-[1.3fr_1fr_40px] items-center gap-3 px-5 py-2.5">
+                <div class="mono text-ink">robots_count</div><div class="text-muted">int</div><div class="text-right eyebrow text-[9px] text-danger">req</div>
+              </div>
+              <div class="grid grid-cols-[1.3fr_1fr_40px] items-center gap-3 px-5 py-2.5">
+                <div class="mono text-ink">servo_axes</div><div class="text-muted">int</div><div class="text-right eyebrow text-[9px] text-danger">req</div>
+              </div>
+              <div class="grid grid-cols-[1.3fr_1fr_40px] items-center gap-3 px-5 py-2.5">
+                <div class="mono text-ink">custom_pct</div><div class="text-muted">0–100</div><div class="text-right eyebrow text-[9px] text-danger">req</div>
+              </div>
+              <div class="grid grid-cols-[1.3fr_1fr_40px] items-center gap-3 px-5 py-2.5">
+                <div class="mono text-ink/80">vision_type</div><div class="text-muted">enum</div><div class="text-right eyebrow text-[9px] text-muted2">opt</div>
+              </div>
+              <div class="grid grid-cols-[1.3fr_1fr_40px] items-center gap-3 px-5 py-2.5">
+                <div class="mono text-ink/80">conveyor_length_ft</div><div class="text-muted">int</div><div class="text-right eyebrow text-[9px] text-muted2">opt</div>
+              </div>
+              <div class="grid grid-cols-[1.3fr_1fr_40px] items-center gap-3 px-5 py-2.5">
+                <div class="mono text-ink/80">complexity_score_1_5</div><div class="text-muted">1–5</div><div class="text-right eyebrow text-[9px] text-muted2">opt</div>
+              </div>
+              <div class="grid grid-cols-[1.3fr_1fr_40px] items-center gap-3 px-5 py-2.5">
+                <div class="mono text-ink/80">retrofit_flag</div><div class="text-muted">bool</div><div class="text-right eyebrow text-[9px] text-muted2">opt</div>
+              </div>
+            </div>
+            <div class="px-5 py-3 border-t hairline text-[11px] text-muted flex items-center justify-between">
+              <span>Unknown columns are kept but ignored.</span>
+              <button class="mono text-teal hover:text-tealDark">View full schema →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent batches -->
+        <div class="card mt-3">
+          <div class="px-5 py-4 border-b hairline flex items-baseline justify-between">
+            <div>
+              <div class="eyebrow text-[11px] text-ink">Recent batches</div>
+              <div class="text-xs text-muted">Last 30 days · your runs</div>
+            </div>
+            <button class="text-[11px] mono text-muted hover:text-ink">See all →</button>
+          </div>
+          <div class="grid grid-cols-[1.4fr_90px_80px_110px_110px_140px_90px] items-center gap-x-4 px-5 py-2 bg-paper eyebrow text-[10px] text-muted">
+            <div>Batch</div><div class="text-right">Rows</div><div class="text-right">OK</div><div class="text-right">Total hrs</div><div class="text-right">Median</div><div>Run</div><div></div>
+          </div>
+          <div id="recent"></div>
+        </div>
+      </section>
+
+      <!-- =================== STATE: REVIEWING =================== -->
+      <section class="state" data-state="reviewing">
+        <!-- Job header -->
+        <div class="flex items-end justify-between gap-6 pb-6 mb-6 border-b hairline">
+          <div>
+            <div class="eyebrow text-[11px] text-teal flex items-center gap-2">
+              <span class="inline-block w-1.5 h-1.5 rounded-full bg-teal livedot"></span>
+              Batch · running
+            </div>
+            <h1 class="display text-4xl leading-none mt-2 text-ink mono">pipeline-FY26-Q2.xlsx</h1>
+            <div class="flex items-center gap-4 mt-3 text-xs text-muted">
+              <span>Uploaded <span class="mono text-ink">11:02 AM</span></span>
+              <span class="w-px h-3 bg-line"></span>
+              <span><span class="mono text-ink">148</span> rows</span>
+              <span class="w-px h-3 bg-line"></span>
+              <span><span class="mono text-ink" id="procCount">94</span>/148 scored</span>
+              <span class="w-px h-3 bg-line"></span>
+              <span>ETA <span class="mono text-ink" id="etaText">00:18</span></span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button class="px-3 py-2 text-xs border hairline rounded-sm bg-white hover:bg-paper">Pause</button>
+            <button class="px-3 py-2 text-xs border hairline rounded-sm bg-white hover:bg-paper text-danger">Cancel</button>
+          </div>
+        </div>
+
+        <!-- Scan strip -->
+        <div class="card mb-3">
+          <div class="grid grid-cols-[1.3fr_1fr_1fr_1fr] divide-x hairline">
+            <div class="p-5">
+              <div class="eyebrow text-[10px] text-muted">Validation</div>
+              <div class="display text-3xl mt-1 text-ink tnum">148 <span class="text-lg text-muted">rows</span></div>
+              <div class="mt-4 flex h-2 rounded-sm overflow-hidden border hairline bg-paper">
+                <div class="bg-success" style="width:92.5%"></div>
+                <div class="bg-amber" style="width:5.4%"></div>
+                <div class="bg-danger" style="width:2.1%"></div>
+              </div>
+              <div class="mt-2 flex items-center gap-4 text-[11px]">
+                <span class="inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-success"></span><span class="mono text-ink">137</span> <span class="text-muted">ok</span></span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-amber"></span><span class="mono text-ink">8</span> <span class="text-muted">warn</span></span>
+                <span class="inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-danger"></span><span class="mono text-ink">3</span> <span class="text-muted">error</span></span>
+              </div>
+            </div>
+            <div class="p-5">
+              <div class="eyebrow text-[10px] text-muted">Total hours · projected</div>
+              <div class="display text-3xl mt-1 tnum text-ink">184,220</div>
+              <div class="mono text-[11px] text-muted mt-1">across 145 scoreable rows</div>
+              <div class="mt-4 text-[11px] text-muted">
+                <div class="flex justify-between"><span>Mean per project</span><span class="mono text-ink">1,271 hrs</span></div>
+                <div class="flex justify-between mt-1"><span>Median</span><span class="mono text-ink">1,144 hrs</span></div>
+              </div>
+            </div>
+            <div class="p-5">
+              <div class="eyebrow text-[10px] text-muted">Confidence mix</div>
+              <div class="mt-1 flex items-end gap-1.5 h-14">
+                <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-success" style="height:62%"></div><div class="eyebrow text-[9px] text-muted">high</div></div>
+                <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-amber" style="height:28%"></div><div class="eyebrow text-[9px] text-muted">med</div></div>
+                <div class="flex-1 flex flex-col items-center gap-1"><div class="w-full bg-danger/60" style="height:10%"></div><div class="eyebrow text-[9px] text-muted">low</div></div>
+              </div>
+              <div class="mt-3 text-[11px] text-muted">Low-confidence rows are flagged inline for review.</div>
+            </div>
+            <div class="p-5">
+              <div class="eyebrow text-[10px] text-muted">Progress</div>
+              <div class="display text-3xl mt-1 tnum text-ink"><span id="pctText">63</span>%</div>
+              <div class="mt-3 h-2 bg-paper border hairline rounded-sm overflow-hidden">
+                <div id="progBar" class="h-full bg-ink transition-all" style="width:63%"></div>
+              </div>
+              <div class="mono text-[11px] text-muted mt-2 flex justify-between"><span>started 11:02:14</span><span id="etaText2">00:18 left</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filter bar -->
+        <div class="card flex items-stretch divide-x hairline mb-3 text-xs">
+          <div class="flex items-center gap-2 px-4 py-2.5 flex-1">
+            <svg class="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <input class="flex-1 bg-transparent outline-none" placeholder="Search row or project name…" />
+          </div>
+          <button class="px-4 py-2.5 inline-flex items-center gap-2"><span class="eyebrow text-[10px] text-muted">Status</span><span class="text-ink font-medium">All</span></button>
+          <button class="px-4 py-2.5 inline-flex items-center gap-2"><span class="eyebrow text-[10px] text-muted">Industry</span><span class="text-ink font-medium">3 selected</span></button>
+          <button class="px-4 py-2.5 inline-flex items-center gap-2"><span class="eyebrow text-[10px] text-muted">Confidence</span><span class="text-ink font-medium">≥ Med</span></button>
+          <button class="px-4 py-2.5 inline-flex items-center gap-2"><span class="eyebrow text-[10px] text-muted">Hours</span><span class="text-ink font-medium">Any</span></button>
+        </div>
+
+        <!-- Main split: table + right inspector -->
+        <div class="grid grid-cols-[1fr_360px] gap-3">
+          <!-- Results table -->
+          <div class="card overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-2 bg-paper border-b hairline">
+              <div class="flex items-center gap-3 text-[11px]">
+                <label class="flex items-center gap-1.5"><input type="checkbox" /><span class="text-muted">Select all</span></label>
+                <span class="w-px h-4 bg-line"></span>
+                <span class="mono text-muted"><span class="text-ink">12</span> selected</span>
+                <button class="mono text-teal hover:text-tealDark">Save as quotes →</button>
+                <button class="mono text-muted hover:text-ink">Export selected</button>
+              </div>
+              <div class="text-[11px] text-muted">Sort by <span class="mono text-ink">hours desc</span></div>
+            </div>
+            <div class="grid grid-cols-[24px_60px_minmax(0,1.6fr)_110px_110px_80px_80px_100px_40px] items-center gap-x-3 px-4 py-2 bg-paper border-b hairline eyebrow text-[10px] text-muted">
+              <div></div><div>Row</div><div>Project</div><div>Industry</div><div class="text-right">Stations · Rob</div><div class="text-right">Cust%</div><div class="text-right">Conf</div><div class="text-right">Hours</div><div></div>
+            </div>
+            <div id="rows" class="max-h-[620px] overflow-auto scrolly"></div>
+            <div class="px-4 py-3 border-t hairline flex items-center justify-between text-xs text-muted">
+              <span>Showing <span class="mono text-ink">1–18</span> of <span class="mono text-ink">148</span></span>
+              <div class="flex items-center gap-1 mono">
+                <button class="px-2.5 py-1 border hairline rounded-sm bg-white text-muted2">‹</button>
+                <button class="px-2.5 py-1 border hairline rounded-sm bg-ink text-white">1</button>
+                <button class="px-2.5 py-1 border hairline rounded-sm bg-white">2</button>
+                <button class="px-2.5 py-1 border hairline rounded-sm bg-white">3</button>
+                <button class="px-2.5 py-1 border hairline rounded-sm bg-white">4</button>
+                <button class="px-2.5 py-1 border hairline rounded-sm bg-white">›</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Inspector -->
+          <aside class="card flex flex-col sticky top-4 self-start max-h-[calc(100vh-6rem)]">
+            <div class="px-5 py-4 border-b hairline">
+              <div class="eyebrow text-[11px] text-teal">Row inspector</div>
+              <div class="flex items-baseline gap-2 mt-1">
+                <span class="mono text-[11px] text-muted2">#037</span>
+                <h3 class="display text-xl text-ink leading-tight" id="insName">Apex BIW v1</h3>
+              </div>
+            </div>
+            <div class="p-5 space-y-5 overflow-auto scrolly">
+              <div class="flex items-baseline justify-between">
+                <div>
+                  <div class="eyebrow text-[10px] text-muted">Predicted total</div>
+                  <div class="display text-4xl tnum mt-1" id="insHrs">1,416</div>
+                  <div class="mono text-[11px] text-muted">hrs · 95% CI 1,310–1,540</div>
+                </div>
+                <span class="inline-block px-2 py-1 eyebrow text-[10px] rounded-sm bg-tealSoft text-tealDark">HIGH</span>
+              </div>
+
+              <div>
+                <div class="eyebrow text-[10px] text-muted mb-2">By operation</div>
+                <div class="space-y-1.5" id="insOps"></div>
+              </div>
+
+              <div>
+                <div class="eyebrow text-[10px] text-muted mb-2">Top drivers</div>
+                <div class="space-y-1.5 text-[12px]" id="insDrivers"></div>
+              </div>
+
+              <div>
+                <div class="eyebrow text-[10px] text-muted mb-2">Inputs</div>
+                <div class="grid grid-cols-2 gap-y-1.5 text-[12px]">
+                  <div class="text-muted">Industry</div><div class="text-ink text-right">Automotive</div>
+                  <div class="text-muted">Stations</div><div class="mono text-ink text-right">16</div>
+                  <div class="text-muted">Robots</div><div class="mono text-ink text-right">8</div>
+                  <div class="text-muted">Servo axes</div><div class="mono text-ink text-right">22</div>
+                  <div class="text-muted">Custom %</div><div class="mono text-ink text-right">72%</div>
+                  <div class="text-muted">Vision</div><div class="text-ink text-right">3D smart</div>
+                </div>
+              </div>
+            </div>
+            <div class="px-5 py-4 border-t hairline flex gap-2">
+              <button class="flex-1 px-3 py-2 text-xs border hairline rounded-sm bg-white hover:bg-paper">Open quote →</button>
+              <button class="flex-1 px-3 py-2 text-xs bg-ink text-white rounded-sm hover:bg-ink2">Save</button>
+            </div>
+          </aside>
+        </div>
+
+        <!-- Errors tray -->
+        <div class="card mt-3">
+          <div class="px-5 py-4 border-b hairline flex items-baseline justify-between">
+            <div>
+              <div class="eyebrow text-[11px] text-danger">Rows needing attention · 11</div>
+              <div class="text-xs text-muted">Fix inline or exclude from batch</div>
+            </div>
+            <div class="flex items-center gap-2">
+              <button class="text-[11px] mono text-muted hover:text-ink">Download errors CSV</button>
+              <button class="px-3 py-1.5 text-xs border hairline rounded-sm bg-white hover:bg-paper">Re-run 11</button>
+            </div>
+          </div>
+          <div id="issues"></div>
+        </div>
+
+        <!-- Bottom actions -->
+        <div class="flex items-center justify-between mt-5 text-xs">
+          <div class="text-muted">Output versions are saved automatically · last save <span class="mono text-ink">11:04 AM</span></div>
+          <div class="flex items-center gap-2">
+            <button class="px-3 py-2 border hairline rounded-sm bg-white hover:bg-paper">Download XLSX</button>
+            <button class="px-3 py-2 border hairline rounded-sm bg-white hover:bg-paper">Download PDF summary</button>
+            <button class="px-4 py-2 bg-ink text-white rounded-sm hover:bg-ink2">Save all as quotes →</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+const fmt = n => new Intl.NumberFormat('en-US').format(n);
+
+/* Recent batches */
+const RECENT = [
+  ["pipeline-FY26-Q1.xlsx",       112, 108, 141280, 1140, "Jan 12 · E. Granger"],
+  ["automotive-rfq-batch.csv",     38,  38,  61420, 1580, "Feb 03 · E. Granger"],
+  ["med-implants-lookahead.xlsx",  64,  61,  52880,  820, "Feb 20 · J. Chen"],
+  ["food-bev-oppty-list.csv",      82,  78,  74910,  890, "Mar 08 · E. Granger"],
+];
+document.getElementById('recent').innerHTML = RECENT.map(([f,r,ok,h,md,by])=>`
+  <div class="grid grid-cols-[1.4fr_90px_80px_110px_110px_140px_90px] items-center gap-x-4 px-5 py-2.5 border-b hairline last:border-b-0 text-[11.5px] row-hover">
+    <div class="text-ink truncate">${f}</div>
+    <div class="mono tnum text-right">${r}</div>
+    <div class="mono tnum text-right text-success">${ok}</div>
+    <div class="mono tnum text-right">${fmt(h)}</div>
+    <div class="mono tnum text-right">${fmt(md)}</div>
+    <div class="text-muted">${by}</div>
+    <div class="text-right"><button class="text-teal text-[11px] mono hover:text-tealDark">Open →</button></div>
+  </div>`).join('');
+
+/* Results rows */
+const INDUSTRIES = ["Automotive","Medical","Food & Bev","General","Heavy Equip","Aerospace","Consumer"];
+const NAMES = [
+  "Apex BIW v1","Northland Conveyor","Riverbend Pack Cell","Cedar Mill Sort",
+  "Halion Medical Asm","Orbit Heavy Weld","Polestar Paint","Ember Consumer Pack",
+  "Skyline Aero Drill","Forge Custom Line","Rally Stamping","Harbor Beverage Pick",
+  "Beacon Palletizer","Delta Seal Cell","Evergreen Label","Foxglove Pharma",
+  "Granite Press Tend","Ironwood Frame Asm"
+];
+const STATUS = ["ok","ok","ok","ok","low","ok","ok","ok","ok","warn","ok","ok","ok","err","ok","ok","ok","low"];
+const rowsHTML = NAMES.map((n,i)=>{
+  const ind = INDUSTRIES[i % INDUSTRIES.length];
+  const st = 6 + (i*7 % 14);
+  const rb = 2 + (i*3 % 9);
+  const cp = 25 + ((i*13)%70);
+  const hrs = 420 + (i*137 % 1800) + (i%3===0?600:0);
+  const conf = STATUS[i];
+  const confLabel = conf==='ok' ? {tag:'HIGH',cls:'bg-tealSoft text-tealDark'}
+                 : conf==='warn' ? {tag:'MED',cls:'bg-amberSoft text-ink'}
+                 : conf==='low' ? {tag:'LOW',cls:'bg-paper text-muted border border-line'}
+                 : {tag:'ERR',cls:'bg-danger/10 text-danger'};
+  const selected = (i===4);
+  const rowBg = selected ? 'bg-paper' : '';
+  return `
+  <div data-idx="${i}" class="row grid grid-cols-[24px_60px_minmax(0,1.6fr)_110px_110px_80px_80px_100px_40px] items-center gap-x-3 px-4 py-2.5 border-b hairline last:border-b-0 text-[11.5px] row-hover cursor-pointer ${rowBg}">
+    <div><input type="checkbox" ${i<12?'checked':''} /></div>
+    <div class="mono text-muted">#${String(i+1).padStart(3,'0')}</div>
+    <div class="text-ink truncate flex items-center gap-2">
+      ${conf==='err' ? '<span class="w-1.5 h-1.5 rounded-full bg-danger shrink-0"></span>' : conf==='warn' ? '<span class="w-1.5 h-1.5 rounded-full bg-amber shrink-0"></span>' : ''}
+      <span class="truncate">${n}</span>
+    </div>
+    <div class="text-muted truncate">${ind}</div>
+    <div class="mono tnum text-right text-muted">${st} · ${rb}</div>
+    <div class="mono tnum text-right">${cp}%</div>
+    <div class="text-right"><span class="inline-block px-1.5 py-0.5 eyebrow text-[9px] rounded-sm ${confLabel.cls}">${confLabel.tag}</span></div>
+    <div class="mono tnum text-right text-ink font-medium">${conf==='err'?'—':fmt(hrs)}</div>
+    <div class="text-muted2 text-right">›</div>
+  </div>`;
+}).join('');
+document.getElementById('rows').innerHTML = rowsHTML;
+
+/* Inspector operations + drivers */
+const OPS = [
+  ["ME 10 · Mech Design",  240, "HIGH"],
+  ["ME 15 · Mech Detail",  128, "HIGH"],
+  ["EE 20 · Elec Design",  188, "HIGH"],
+  ["EE 40 · PLC",          212, "MED"],
+  ["RB 30 · Robot Prog",   144, "HIGH"],
+  ["CP 50 · Controls",     180, "MED"],
+  ["INST 160 · Install",   196, "HIGH"],
+  ["CHK 200 · Debug",      128, "HIGH"],
+];
+const opMax = Math.max(...OPS.map(o=>o[1]));
+document.getElementById('insOps').innerHTML = OPS.map(([k,v,c])=>`
+  <div class="flex items-center gap-2 text-[12px]">
+    <div class="w-36 text-ink truncate">${k}</div>
+    <div class="flex-1 h-2 bg-line rounded-sm overflow-hidden"><div class="h-full ${c==='HIGH'?'bg-ink':'bg-amber'}" style="width:${v/opMax*100}%"></div></div>
+    <div class="w-12 text-right mono tnum text-muted">${v}</div>
+  </div>`).join('');
+
+const DRV = [
+  ["stations_count = 16",     "+180"],
+  ["custom_pct = 72%",        "+142"],
+  ["servo_axes = 22",         "+96"],
+  ["vision_type = 3D smart",  "+58"],
+  ["industry = Automotive",   "−34"],
+];
+document.getElementById('insDrivers').innerHTML = DRV.map(([k,v])=>{
+  const pos = v.startsWith('+');
+  return `<div class="flex items-center justify-between">
+    <span class="text-muted">${k}</span>
+    <span class="mono tnum ${pos?'text-danger':'text-success'}">${v} hrs</span>
+  </div>`;
+}).join('');
+
+/* Issues tray */
+const ISSUES = [
+  ["#014","Beacon Palletizer",  "Missing industry_segment",      "required",     "danger"],
+  ["#027","Forge Custom Line",  "Negative custom_pct (−12)",     "must be 0–100","danger"],
+  ["#052","Delta Seal Cell",    "robots_count > stations_count", "unusual",      "amber"],
+  ["#061","Ember Consumer Pack","Low training coverage (n=29)",  "low conf",     "amber"],
+  ["#079","Foxglove Pharma",    "Unknown vision_type: 'laser5D'","defaulted",    "amber"],
+];
+document.getElementById('issues').innerHTML = `
+  <div class="grid grid-cols-[80px_1fr_1.4fr_120px_120px] items-center gap-x-4 px-5 py-2 bg-paper eyebrow text-[10px] text-muted">
+    <div>Row</div><div>Project</div><div>Issue</div><div>Type</div><div class="text-right">Action</div>
+  </div>
+  ` + ISSUES.map(([r,n,msg,ty,tone])=>`
+  <div class="grid grid-cols-[80px_1fr_1.4fr_120px_120px] items-center gap-x-4 px-5 py-2.5 border-b hairline last:border-b-0 text-[11.5px]">
+    <div class="mono text-muted flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full ${tone==='danger'?'bg-danger':'bg-amber'}"></span>${r}</div>
+    <div class="text-ink truncate">${n}</div>
+    <div class="text-muted truncate">${msg}</div>
+    <div class="text-muted">${ty}</div>
+    <div class="text-right flex items-center justify-end gap-3">
+      <button class="text-teal text-[11px] mono hover:text-tealDark">Fix inline</button>
+      <button class="text-muted text-[11px] mono hover:text-ink">Skip</button>
+    </div>
+  </div>`).join('');
+
+/* Row selection → inspector */
+document.querySelectorAll('.row').forEach(r=>{
+  r.addEventListener('click', e=>{
+    if (e.target.matches('input[type=checkbox]')) return;
+    document.querySelectorAll('.row').forEach(x=>x.classList.remove('bg-paper'));
+    r.classList.add('bg-paper');
+    const i = +r.dataset.idx;
+    document.getElementById('insName').textContent = NAMES[i];
+    document.getElementById('insHrs').textContent = fmt(420 + (i*137 % 1800) + (i%3===0?600:0));
+  });
+});
+
+/* State toggle (upload ↔ reviewing) */
+function setState(name){
+  document.querySelectorAll('.state').forEach(s=>s.classList.toggle('active', s.dataset.state===name));
+  const cj = document.getElementById('crumbJob');
+  if (name==='reviewing') { cj.classList.remove('hidden'); cj.classList.add('flex'); document.getElementById('crumbJobName').textContent = 'pipeline-FY26-Q2.xlsx'; document.getElementById('demoToggle').textContent = '← back to dropzone'; }
+  else { cj.classList.add('hidden'); document.getElementById('demoToggle').textContent = 'simulate a running batch →'; }
+  window.scrollTo(0,0);
+}
+document.getElementById('simulateUpload').addEventListener('click', ()=>setState('reviewing'));
+document.getElementById('demoToggle').addEventListener('click', ()=>{
+  const active = document.querySelector('.state.active').dataset.state;
+  setState(active==='upload' ? 'reviewing' : 'upload');
+});
+
+/* Faux progress tick */
+let pct = 63;
+setInterval(()=>{
+  if (document.querySelector('.state.active').dataset.state !== 'reviewing') return;
+  pct = Math.min(99, pct + 0.6);
+  document.getElementById('pctText').textContent = Math.round(pct);
+  document.getElementById('progBar').style.width = pct + '%';
+  const done = Math.min(148, Math.round(148*pct/100));
+  document.getElementById('procCount').textContent = done;
+  const left = Math.max(0, 148-done);
+  const secs = Math.round(left*0.3);
+  const m = String(Math.floor(secs/60)).padStart(2,'0');
+  const s = String(secs%60).padStart(2,'0');
+  document.getElementById('etaText').textContent = `${m}:${s}`;
+  document.getElementById('etaText2').textContent = `${m}:${s} left`;
+}, 800);
+</script>
+</body>
+</html>

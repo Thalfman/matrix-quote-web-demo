@@ -1,0 +1,13 @@
+target,version,rows,mae,r2,model_path
+me10_actual_hours,v1,300,22.263653355597558,0.674718561357773,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\me10_actual_hours_v1.joblib
+me15_actual_hours,v1,300,14.798042458657997,0.7765531817712338,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\me15_actual_hours_v1.joblib
+me230_actual_hours,v1,300,16.08637401896399,0.7039573987300813,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\me230_actual_hours_v1.joblib
+ee20_actual_hours,v1,300,15.570670795344244,0.7617173333529061,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\ee20_actual_hours_v1.joblib
+rb30_actual_hours,v1,300,16.03979123156078,0.6331214820346847,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\rb30_actual_hours_v1.joblib
+cp50_actual_hours,v1,300,14.114958738776313,0.7089568239778676,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\cp50_actual_hours_v1.joblib
+bld100_actual_hours,v1,300,9.913928067463743,0.6418349747853522,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\bld100_actual_hours_v1.joblib
+shp150_actual_hours,v1,300,3.869610551230772,0.3183750878789704,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\shp150_actual_hours_v1.joblib
+inst160_actual_hours,v1,300,10.737571514765058,0.5727298056983321,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\inst160_actual_hours_v1.joblib
+trv180_actual_hours,v1,300,7.875711678049744,0.5132148235138304,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\trv180_actual_hours_v1.joblib
+doc190_actual_hours,v1,300,4.636418538849054,0.5443965364773575,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\doc190_actual_hours_v1.joblib
+pm200_actual_hours,v1,300,8.669292790347653,0.6309505995673521,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web\demo_assets\models\pm200_actual_hours_v1.joblib
