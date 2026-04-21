@@ -15,6 +15,7 @@ import { TopProjectsTable } from "./TopProjectsTable";
 type Props = {
   records: ProjectRecord[] | undefined;
   datasetLabel: string;
+  source?: "real" | "synthetic";
   isLoading: boolean;
   error: Error | null;
   emptyMessage?: string;
@@ -98,6 +99,7 @@ function LoadingSkeleton() {
 export function BusinessInsightsView({
   records,
   datasetLabel,
+  source = "real",
   isLoading,
   error,
   emptyMessage = "No projects to chart yet.",
@@ -153,7 +155,7 @@ export function BusinessInsightsView({
           <section aria-labelledby="insights-01-heading">
             <h2 className="sr-only" id="insights-01-heading">Portfolio KPIs</h2>
             <SectionHeader step="01" title="Portfolio KPIs" />
-            <PortfolioKpis kpis={portfolio.kpis} />
+            <PortfolioKpis kpis={portfolio.kpis} source={source} />
           </section>
 
           {/* Row 1: Hours by bucket + Hours by industry */}
