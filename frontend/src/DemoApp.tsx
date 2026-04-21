@@ -29,6 +29,11 @@ const MachineLearningInsights = lazy(() =>
     default: m.MachineLearningInsights,
   })),
 );
+const MachineLearningCompare = lazy(() =>
+  import("@/pages/demo/ml/MachineLearningCompare").then((m) => ({
+    default: m.MachineLearningCompare,
+  })),
+);
 
 function Fallback() {
   return (
@@ -53,9 +58,10 @@ export function DemoApp() {
           <Route path="compare/browse" element={<Navigate to="/compare/compare" replace />} />
           <Route path="compare/insights" element={<ComparisonInsights />} />
 
-          {/* Machine Learning Tool */}
+          {/* Machine Learning Tool — Synthetic Data */}
           <Route path="ml" element={<Navigate to="/ml/quote" replace />} />
           <Route path="ml/quote" element={<MachineLearningQuote />} />
+          <Route path="ml/compare" element={<MachineLearningCompare />} />
           <Route path="ml/insights" element={<MachineLearningInsights />} />
 
           {/* Legacy redirects — preserve shareable links */}
