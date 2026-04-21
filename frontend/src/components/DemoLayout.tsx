@@ -6,6 +6,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 const NAV = [
   { to: "/", label: "Home", end: true },
   { to: "/compare-tool", label: "Comparison Tool" },
+  { to: "/business", label: "Business Insights" },
   { to: "/ml-tool", label: "Machine Learning Tool" },
 ];
 

@@ -28,7 +28,7 @@ export function DemoHome() {
         description="Two ways to explore the quoting engine. The comparison tool is driven by real historical projects. The machine-learning tool runs the trained models live in your browser via Pyodide."
       />
 
-      <div className="mt-6 grid gap-6 md:grid-cols-2">
+      <div className="mt-6 grid gap-6 md:grid-cols-3">
         <Link
           to="/compare-tool"
           className="card p-6 flex flex-col gap-4 hover:border-teal transition-colors"
@@ -63,6 +63,24 @@ export function DemoHome() {
             browser via Pyodide) predict hours with P10–P90 confidence intervals.
           </p>
           <div className="mt-auto text-xs text-amber font-medium">Open →</div>
+        </Link>
+
+        <Link
+          to="/business"
+          className="card p-6 flex flex-col gap-4 hover:border-teal transition-colors"
+        >
+          <div className="flex items-center justify-between">
+            <span className="eyebrow text-[11px] text-teal">Insights · Portfolio</span>
+            <span className="text-[10px] eyebrow px-2 py-1 rounded-sm bg-tealSoft text-tealDark">
+              {manifest ? `${manifest.real_count} projects` : "loading…"}
+            </span>
+          </div>
+          <h2 className="display-hero text-2xl leading-none">Business Insights</h2>
+          <p className="text-sm text-muted">
+            Portfolio-level view of the 24 real projects — hours by discipline, industry mix,
+            complexity drivers.
+          </p>
+          <div className="mt-auto text-xs text-teal font-medium">Open →</div>
         </Link>
       </div>
     </>
