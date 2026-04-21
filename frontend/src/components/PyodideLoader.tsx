@@ -30,21 +30,28 @@ export function PyodideLoader() {
   const isReady = status.stage === "ready";
 
   return (
-    <div className="card p-6">
-      <div className="eyebrow text-[11px] text-teal mb-1">Pyodide · Warmup</div>
-      <h2 className="display-hero text-xl text-ink mt-2">
+    <div className="card p-6" aria-live="polite">
+      <div className="eyebrow text-[11px] text-teal mb-1">Runtime · Warmup</div>
+      <h2 className="display-hero text-xl text-ink mt-2 leading-tight">
         {isError
           ? "Runtime failed to load"
           : isReady
             ? "Runtime ready"
-            : "Loading Python runtime in your browser"}
+            : "Loading the Python runtime in your browser"}
       </h2>
       <p className="text-sm text-muted mt-2">{status.message}</p>
 
-      <div className="mt-5 h-1.5 bg-line2 rounded-sm overflow-hidden">
+      <div
+        className="mt-5 h-1.5 bg-line2 rounded-sm overflow-hidden"
+        role="progressbar"
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={Math.round(status.percent ?? 0)}
+        aria-label="Runtime warmup progress"
+      >
         <div
           className={cn(
-            "h-full transition-all duration-300",
+            "h-full transition-[width] duration-300 ease-out",
             isError ? "bg-danger" : "bg-teal",
           )}
           style={{ width: `${status.percent ?? 0}%` }}
@@ -56,7 +63,7 @@ export function PyodideLoader() {
           <div
             key={s.stage}
             className={cn(
-              "text-[10px] eyebrow text-center py-1.5 rounded-sm",
+              "text-[10px] eyebrow text-center py-1.5 rounded-sm transition-colors duration-150 ease-out",
               i < current
                 ? "bg-tealSoft text-tealDark"
                 : i === current && !isError

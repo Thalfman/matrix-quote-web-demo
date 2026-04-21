@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
+import { ArrowRight } from "lucide-react";
 
 import { DEMO_ASSETS } from "@/lib/demoMode";
 import { PageHeader } from "@/components/PageHeader";
@@ -9,6 +10,78 @@ type Manifest = {
   real_count: number;
   synthetic_count: number;
 };
+
+function CountChip({
+  tone,
+  value,
+  unit,
+}: {
+  tone: "teal" | "amber";
+  value: number | undefined;
+  unit: string;
+}) {
+  const toneClass =
+    tone === "teal"
+      ? "bg-tealSoft text-tealDark"
+      : "bg-amberSoft text-ink";
+  return (
+    <span
+      className={`text-[10px] eyebrow px-2 py-1 rounded-sm ${toneClass} tnum`}
+    >
+      {value != null ? `${value} ${unit}` : "…"}
+    </span>
+  );
+}
+
+function ToolCard({
+  to,
+  eyebrow,
+  eyebrowTone,
+  title,
+  description,
+  chip,
+  ctaTone,
+}: {
+  to: string;
+  eyebrow: string;
+  eyebrowTone: "teal" | "amber";
+  title: string;
+  description: string;
+  chip: React.ReactNode;
+  ctaTone: "teal" | "amber";
+}) {
+  const eyebrowClass =
+    eyebrowTone === "teal" ? "text-teal" : "text-amber";
+  const ctaClass =
+    ctaTone === "teal"
+      ? "text-teal group-hover:text-tealDark"
+      : "text-amber group-hover:text-amber";
+  return (
+    <Link
+      to={to}
+      className={
+        "group card p-6 flex flex-col gap-4 transition-colors duration-150 ease-out" +
+        " hover:border-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal"
+      }
+    >
+      <div className="flex items-center justify-between gap-3">
+        <span className={`eyebrow text-[11px] ${eyebrowClass}`}>{eyebrow}</span>
+        {chip}
+      </div>
+      <h2 className="display-hero text-2xl leading-tight text-ink">{title}</h2>
+      <p className="text-sm text-muted leading-relaxed">{description}</p>
+      <div className={`mt-auto text-xs font-medium inline-flex items-center gap-1.5 ${ctaClass}`}>
+        Open
+        <ArrowRight
+          size={14}
+          strokeWidth={1.75}
+          className="transition-transform duration-150 ease-out group-hover:translate-x-0.5"
+          aria-hidden="true"
+        />
+      </div>
+    </Link>
+  );
+}
 
 export function DemoHome() {
   const { data: manifest } = useQuery<Manifest>({
@@ -25,63 +98,39 @@ export function DemoHome() {
       <PageHeader
         eyebrow="Matrix · Demo"
         title="Pick a tool"
-        description="Two ways to explore the quoting engine. The comparison tool is driven by real historical projects. The machine-learning tool runs the trained models live in your browser via Pyodide."
+        description="Two ways to explore the quoting engine. The comparison tool ranks real historical projects against your inputs. The machine-learning tool runs twelve trained models in your browser and returns a live estimate."
       />
 
       <div className="mt-6 grid gap-6 md:grid-cols-3">
-        <Link
-          to="/compare-tool"
-          className="card p-6 flex flex-col gap-4 hover:border-teal transition-colors"
-        >
-          <div className="flex items-center justify-between">
-            <span className="eyebrow text-[11px] text-teal">Comparison · Real data</span>
-            <span className="text-[10px] eyebrow px-2 py-1 rounded-sm bg-tealSoft text-tealDark">
-              {manifest ? `${manifest.real_count} projects` : "loading…"}
-            </span>
-          </div>
-          <h2 className="display-hero text-2xl leading-none">Comparison Quote Tool</h2>
-          <p className="text-sm text-muted">
-            Browse 20–30 real projects side-by-side, or enter your own inputs and surface
-            the three closest matches from the historical pool.
-          </p>
-          <div className="mt-auto text-xs text-teal font-medium">Open →</div>
-        </Link>
+        <ToolCard
+          to="/compare/quote"
+          eyebrow="Comparison · Real data"
+          eyebrowTone="teal"
+          title="Comparison Quote Tool"
+          description="Browse the historical pool or enter inputs to surface the three closest matches by weighted distance."
+          ctaTone="teal"
+          chip={<CountChip tone="teal" value={manifest?.real_count} unit="projects" />}
+        />
 
-        <Link
-          to="/ml-tool"
-          className="card p-6 flex flex-col gap-4 hover:border-teal transition-colors"
-        >
-          <div className="flex items-center justify-between">
-            <span className="eyebrow text-[11px] text-amber">Machine Learning · Synthetic</span>
-            <span className="text-[10px] eyebrow px-2 py-1 rounded-sm bg-amberSoft text-ink">
-              {manifest ? `${manifest.synthetic_count} synthetic rows` : "loading…"}
-            </span>
-          </div>
-          <h2 className="display-hero text-2xl leading-none">Machine Learning Quote Tool</h2>
-          <p className="text-sm text-muted">
-            Fill in project parameters and let 12 Gradient Boosting models (running in your
-            browser via Pyodide) predict hours with P10–P90 confidence intervals.
-          </p>
-          <div className="mt-auto text-xs text-amber font-medium">Open →</div>
-        </Link>
+        <ToolCard
+          to="/ml/quote"
+          eyebrow="Machine Learning · Synthetic"
+          eyebrowTone="amber"
+          title="Machine Learning Quote Tool"
+          description="Fill in project parameters. Twelve Gradient Boosting models run locally and return P10–P90 confidence intervals."
+          ctaTone="amber"
+          chip={<CountChip tone="amber" value={manifest?.synthetic_count} unit="training rows" />}
+        />
 
-        <Link
-          to="/business"
-          className="card p-6 flex flex-col gap-4 hover:border-teal transition-colors"
-        >
-          <div className="flex items-center justify-between">
-            <span className="eyebrow text-[11px] text-teal">Insights · Portfolio</span>
-            <span className="text-[10px] eyebrow px-2 py-1 rounded-sm bg-tealSoft text-tealDark">
-              {manifest ? `${manifest.real_count} projects` : "loading…"}
-            </span>
-          </div>
-          <h2 className="display-hero text-2xl leading-none">Business Insights</h2>
-          <p className="text-sm text-muted">
-            Portfolio-level view of the 24 real projects — hours by discipline, industry mix,
-            complexity drivers.
-          </p>
-          <div className="mt-auto text-xs text-teal font-medium">Open →</div>
-        </Link>
+        <ToolCard
+          to="/compare/insights"
+          eyebrow="Insights · Portfolio"
+          eyebrowTone="teal"
+          title="Business Insights"
+          description="Portfolio-level view — hours by discipline, industry mix, and complexity drivers across the historical book."
+          ctaTone="teal"
+          chip={<CountChip tone="teal" value={manifest?.real_count} unit="projects" />}
+        />
       </div>
     </>
   );

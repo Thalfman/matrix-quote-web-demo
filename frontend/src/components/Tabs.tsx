@@ -20,7 +20,9 @@ export function Tabs({ tabs, defaultId }: { tabs: TabDef[]; defaultId?: string }
             aria-selected={active === t.id}
             onClick={() => setActive(t.id)}
             className={cn(
-              "px-4 py-2 text-sm border-b-2 -mb-px transition-colors",
+              "px-4 py-2 text-sm border-b-2 -mb-px",
+              "transition-[color,border-color] duration-150 ease-out",
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
               active === t.id
                 ? "border-teal text-ink font-medium"
                 : "border-transparent text-muted hover:text-ink",

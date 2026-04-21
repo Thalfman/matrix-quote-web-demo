@@ -69,13 +69,17 @@ export function CompareBrowseTab({ records }: Props) {
 
   if (showCompare && canCompare) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 fade-in">
         <button
           type="button"
           onClick={() => setShowCompare(false)}
-          className="inline-flex items-center gap-1.5 text-xs text-muted hover:text-ink"
+          className={
+            "inline-flex items-center gap-1.5 text-xs text-muted hover:text-ink" +
+            " transition-colors duration-150 ease-out" +
+            " focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal rounded-sm"
+          }
         >
-          <ArrowLeft size={12} strokeWidth={2} />
+          <ArrowLeft size={14} strokeWidth={1.75} aria-hidden="true" />
           Back to project list
         </button>
 
@@ -84,18 +88,18 @@ export function CompareBrowseTab({ records }: Props) {
         </div>
 
         <div>
-          <div className="eyebrow text-[10px] text-muted mb-2">Per-bucket hours (actuals)</div>
+          <div className="eyebrow text-[11px] text-muted mb-3">Per-bucket hours (actuals)</div>
           <CompareBucketsChart quotes={selectedQuotes} />
         </div>
 
         <div>
-          <div className="eyebrow text-[10px] text-muted mb-2">Input differences</div>
+          <div className="eyebrow text-[11px] text-muted mb-3">Input differences</div>
           <CompareInputDiff quotes={selectedQuotes} />
         </div>
 
-        <div className="card p-4 text-[11px] text-muted">
-          Hours shown are the project's actual recorded hours. The ±15% range is a visual
-          confidence band — real data doesn't ship with a learned interval.
+        <div className="card p-5 text-xs text-muted leading-relaxed">
+          Hours shown are each project's actual recorded total. The ±15% range is a
+          visual confidence band — real historical data doesn't carry a learned interval.
         </div>
       </div>
     );

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
+import { AlertTriangle } from "lucide-react";
 
 import { DropdownOptions, ExplainedQuoteResponse } from "@/api/types";
 import { PageHeader } from "@/components/PageHeader";
@@ -117,26 +118,39 @@ export function MachineLearningQuoteTool() {
       <PageHeader
         eyebrow="Machine Learning · Client-side"
         title="Machine Learning Quote Tool"
-        description="Twelve Gradient Boosting models run inside your browser via Pyodide. First load fetches ~30 MB of Python packages + model bundles; subsequent predictions are instant."
+        description="Twelve Gradient Boosting models run directly in your browser. The first visit warms up the runtime and caches ~30 MB of packages; every estimate after that is instant."
         chips={chips}
       />
 
       {!ready && !error && (
-        <div className="mt-6">
+        <div className="mt-6 fade-in">
           <PyodideLoader />
         </div>
       )}
 
       {error && (
-        <div className="card p-5 text-sm text-danger mt-6">
-          Could not load the Python runtime: {error}. Try refreshing; if this persists
-          the joblib bundles under <code className="mono">/demo-assets/models/</code> may
-          be missing or corrupted.
+        <div
+          className="card p-5 mt-6 flex items-start gap-3 text-sm text-danger"
+          role="alert"
+        >
+          <AlertTriangle
+            size={18}
+            strokeWidth={1.75}
+            className="shrink-0 mt-0.5"
+            aria-hidden="true"
+          />
+          <div>
+            <div className="font-medium">Couldn't warm up the in-browser runtime.</div>
+            <div className="text-muted mt-1">
+              Refresh the page to try again. Trained models and the Python runtime load
+              once; subsequent visits use the browser's cache.
+            </div>
+          </div>
         </div>
       )}
 
       {ready && (
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div className="mt-6 fade-in grid gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
           <div>
             <QuoteForm
               formRef={formRef}

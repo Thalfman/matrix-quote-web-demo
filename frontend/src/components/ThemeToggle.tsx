@@ -18,7 +18,16 @@ function applyTheme(theme: Theme) {
   else root.removeAttribute("data-theme");
 }
 
-export function ThemeToggle() {
+type Props = {
+  /**
+   * "fixed" (default) renders the toggle as a fixed pill in the bottom-left corner.
+   * "inline" removes fixed positioning so the toggle can be placed inside a sidebar
+   * or any other flow-positioned container.
+   */
+  variant?: "fixed" | "inline";
+};
+
+export function ThemeToggle({ variant = "fixed" }: Props) {
   const [theme, setTheme] = useState<Theme>("light");
 
   useEffect(() => {
@@ -42,7 +51,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      className="theme-toggle"
+      className={variant === "inline" ? "theme-toggle-inline" : "theme-toggle"}
       aria-label="Toggle dark mode"
       aria-pressed={theme === "dark"}
     >

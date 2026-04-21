@@ -144,3 +144,83 @@
 }
 .theme-toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: #F2B61F; }
 :root[data-theme="dark"] .theme-toggle .dot { background: #0A1420; }
+
+/* Inline variant — same visual style but no fixed positioning (used inside sidebars). */
+.theme-toggle-inline {
+  position: static;
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 8px 12px; border-radius: 999px;
+  background: #0D1B2A; color: #fff;
+  border: 1px solid #25334A;
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+  font-size: 11px; letter-spacing: 0.04em;
+  cursor: pointer; user-select: none;
+  width: 100%;
+  transition: background-color 200ms ease-out, color 200ms ease-out;
+}
+.theme-toggle-inline:hover { background: #1E2B3A; }
+.theme-toggle,
+.theme-toggle-inline {
+  transition: background-color 200ms ease-out, color 200ms ease-out;
+}
+:root[data-theme="dark"] .theme-toggle-inline {
+  background: #F2B61F; color: #0A1420; border-color: transparent;
+}
+.theme-toggle-inline .dot { width: 8px; height: 8px; border-radius: 50%; background: #F2B61F; }
+:root[data-theme="dark"] .theme-toggle-inline .dot { background: #0A1420; }
+
+/* =======================================================
+   Focus rings — brighter, accessible in dark mode
+   Shared focus-visible is teal (#1F8FA6). On the dark
+   sidebar (#060D17) this reads as 3.6:1 — acceptable
+   for decorative but risky for interactive focus on
+   busy surfaces. Swap to a brighter cyan + halo in dark.
+======================================================= */
+:root[data-theme="dark"] :focus-visible {
+  outline-color: #6FC6D8 !important;
+  box-shadow: 0 0 0 4px rgba(111, 198, 216, 0.18);
+}
+
+/* =======================================================
+   Recharts — dark-mode adjustments
+   Axis ticks lift from muted to a lighter tone; gridlines
+   soften; tooltip card flips to dark slate with light text.
+   All scoped inside [data-theme="dark"] so the production
+   Insights / Performance pages stay pixel-identical in light.
+======================================================= */
+:root[data-theme="dark"] .recharts-cartesian-axis-tick text,
+:root[data-theme="dark"] .recharts-polar-angle-axis text,
+:root[data-theme="dark"] .recharts-polar-radius-axis text,
+:root[data-theme="dark"] .recharts-text {
+  fill: #92A0B3 !important;
+}
+:root[data-theme="dark"] .recharts-cartesian-axis-line,
+:root[data-theme="dark"] .recharts-cartesian-grid line {
+  stroke: #25334A !important;
+}
+:root[data-theme="dark"] .recharts-default-tooltip,
+:root[data-theme="dark"] .recharts-tooltip-wrapper > div {
+  background-color: #15212F !important;
+  border-color: #25334A !important;
+  color: #EDEBE4 !important;
+  box-shadow: 0 6px 20px -8px rgba(0,0,0,0.6) !important;
+}
+:root[data-theme="dark"] .recharts-tooltip-label,
+:root[data-theme="dark"] .recharts-tooltip-item,
+:root[data-theme="dark"] .recharts-tooltip-item-name,
+:root[data-theme="dark"] .recharts-tooltip-item-value {
+  color: #EDEBE4 !important;
+}
+
+/* Scatter/legend custom-tooltip container is an inline-styled div — lift via
+   a rule that matches the wrapper's inline-styled HTML children. */
+:root[data-theme="dark"] .recharts-tooltip-wrapper div {
+  color: #EDEBE4 !important;
+}
+:root[data-theme="dark"] .recharts-tooltip-wrapper [style*="background-color: #FFFFFF"],
+:root[data-theme="dark"] .recharts-tooltip-wrapper [style*="background-color:#FFFFFF"],
+:root[data-theme="dark"] .recharts-tooltip-wrapper [style*="background: #FFFFFF"],
+:root[data-theme="dark"] .recharts-tooltip-wrapper [style*="background:#FFFFFF"] {
+  background-color: #15212F !important;
+  border-color: #25334A !important;
+}

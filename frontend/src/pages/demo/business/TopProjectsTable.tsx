@@ -19,20 +19,28 @@ export function TopProjectsTable({ rows }: { rows: RankedRow[] }) {
   }
 
   return (
-    <div className="card overflow-hidden">
-      <div className="flex items-baseline justify-between px-4 py-2.5 bg-paper/60 border-b hairline">
+    <div
+      className="card overflow-hidden"
+      role="table"
+      aria-label="Ranked projects by total p50 hours"
+    >
+      <div
+        className="flex items-baseline justify-between px-5 py-3 bg-paper/60 border-b hairline"
+      >
         <div className="eyebrow text-[10px] text-muted">Ranked by total p50 hours</div>
-        <div className="text-[11px] text-muted mono">{rows.length} projects</div>
+        <div className="text-[11px] text-muted mono tnum">{rows.length} projects</div>
       </div>
 
       {/* Header */}
       <div
-        className="grid items-center gap-3 px-4 py-2 border-b hairline bg-paper/40"
+        className="grid items-center gap-3 px-5 py-2.5 border-b hairline bg-paper/40"
         style={{ gridTemplateColumns: GRID_COLS }}
+        role="row"
       >
         {COLS.map((col) => (
           <div
             key={col.label}
+            role="columnheader"
             className={
               "eyebrow text-[10px] text-muted" + (col.align === "right" ? " text-right" : "")
             }
@@ -46,26 +54,31 @@ export function TopProjectsTable({ rows }: { rows: RankedRow[] }) {
       {rows.map((r, i) => (
         <div
           key={r.project_id || i}
-          className="grid items-center gap-3 px-4 py-2.5 border-b hairline last:border-b-0 hover:bg-paper/80 transition-colors"
+          role="row"
+          className="grid items-center gap-3 px-5 py-3 border-b hairline last:border-b-0 hover:bg-paper/80 transition-colors duration-150 ease-out"
           style={{ gridTemplateColumns: GRID_COLS }}
         >
           <div
+            role="cell"
             className="text-sm text-ink truncate font-medium"
             title={r.project_name}
           >
             {r.project_name}
           </div>
-          <div className="text-sm text-muted truncate" title={r.industry}>
+          <div role="cell" className="text-sm text-muted truncate" title={r.industry}>
             {r.industry}
           </div>
-          <div className="text-sm text-muted truncate" title={r.system_category}>
+          <div role="cell" className="text-sm text-muted truncate" title={r.system_category}>
             {r.system_category}
           </div>
-          <div className="mono tnum text-ink text-sm text-right">{r.stations}</div>
-          <div className="mono tnum text-ink text-sm text-right">
+          <div role="cell" className="mono tnum text-ink text-sm text-right">
+            {r.stations}
+          </div>
+          <div role="cell" className="mono tnum text-ink text-sm text-right">
             {fmtHours.format(r.total_hours)}
           </div>
           <div
+            role="cell"
             className="text-[11px] eyebrow text-muted truncate"
             title={r.primary_bucket}
           >

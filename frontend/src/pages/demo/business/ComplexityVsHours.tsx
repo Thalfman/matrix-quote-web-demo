@@ -73,12 +73,12 @@ export function ComplexityVsHours({ data }: { data: ScatterPoint[] }) {
   }
 
   return (
-    <div className="card p-4 h-80 flex flex-col">
-      <div className="flex items-baseline justify-between gap-3 mb-2">
+    <div className="card p-5 h-80 flex flex-col">
+      <div className="flex items-baseline justify-between gap-3 mb-3">
         <div className="eyebrow text-[10px] text-muted">
           One dot per project · color = industry
         </div>
-        <div className="text-[10px] text-muted mono">
+        <div className="text-[11px] text-muted mono tnum">
           {data.length} projects
         </div>
       </div>

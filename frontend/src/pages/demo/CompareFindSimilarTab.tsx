@@ -98,10 +98,10 @@ export function CompareFindSimilarTab({ records }: Props) {
 
   return (
     <div className="space-y-6">
-      <div className="card p-5 bg-paper/40 text-[12px] text-muted">
-        Fill out the form below, then press <strong>Regenerate estimate</strong> to find the
-        three closest real projects (weighted z-score distance across 33 numeric features,
-        plus a mismatch penalty on each of the 6 categoricals).
+      <div className="card p-5 bg-paper/40 text-xs text-muted leading-relaxed">
+        Fill out the form below, then press <strong className="text-ink">Regenerate estimate</strong>{" "}
+        to find the three closest real projects — ranked by a weighted distance across
+        thirty-three numeric features plus a mismatch penalty on six categoricals.
       </div>
 
       <QuoteForm
@@ -112,8 +112,8 @@ export function CompareFindSimilarTab({ records }: Props) {
       />
 
       {quotes.length > 0 && (
-        <div id="find-similar-results" className="space-y-6 pt-4 border-t hairline">
-          <div className="eyebrow text-[10px] text-muted">
+        <div id="find-similar-results" className="space-y-6 pt-6 border-t hairline fade-in">
+          <div className="eyebrow text-[11px] text-muted">
             Nearest {matches?.length ?? 0} projects · anchor = your inputs
           </div>
 
@@ -122,12 +122,12 @@ export function CompareFindSimilarTab({ records }: Props) {
           </div>
 
           <div>
-            <div className="eyebrow text-[10px] text-muted mb-2">Per-bucket hours (matched actuals)</div>
+            <div className="eyebrow text-[11px] text-muted mb-3">Per-bucket hours (matched actuals)</div>
             <CompareBucketsChart quotes={quotes} />
           </div>
 
           <div>
-            <div className="eyebrow text-[10px] text-muted mb-2">Input differences</div>
+            <div className="eyebrow text-[11px] text-muted mb-3">Input differences</div>
             <CompareInputDiff quotes={quotes} />
           </div>
         </div>

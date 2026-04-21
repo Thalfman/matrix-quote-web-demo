@@ -11,13 +11,14 @@ const fmtHours = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
 export function HoursBySalesBucket({ data }: { data: BucketRow[] }) {
   return (
-    <div className="card p-4 h-80">
-      <div className="eyebrow text-[10px] text-muted mb-2">
+    <div className="card p-5 h-80 flex flex-col">
+      <div className="eyebrow text-[10px] text-muted mb-3">
         Total p50 hours · all 24 projects
       </div>
       {data.length === 0 ? (
         <div className="text-sm text-muted">No data available.</div>
       ) : (
+        <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart
             data={data}
@@ -48,6 +49,7 @@ export function HoursBySalesBucket({ data }: { data: BucketRow[] }) {
             <Bar dataKey="hours" fill={CHART_COLORS.teal} radius={[0, 1, 1, 0]} />
           </BarChart>
         </ResponsiveContainer>
+        </div>
       )}
     </div>
   );

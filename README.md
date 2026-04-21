@@ -1,10 +1,9 @@
 # Matrix Quote Web — Demo
 
-Static, Vercel-hosted demo of the Matrix quoting engine. Three tools:
+Static, Vercel-hosted demo of the Matrix quoting engine. Two workspaces, each with its own Quote and Business Insights sub-tabs:
 
-- **Comparison Quote Tool** — browse ~20–30 real historical projects side-by-side, or enter custom inputs and surface the three closest matches.
-- **Machine Learning Quote Tool** — fill in project parameters and let 12 Gradient Boosting models (running client-side in your browser via Pyodide) predict hours with P10–P90 confidence intervals.
-- **Business Insights** (`/business`) — portfolio-level view of the 24 real projects: KPI strip, hours-by-sales-bucket bar chart, hours-by-industry bar chart, system-category donut, complexity-vs-hours scatter, and a ranked project table. Frontend-only; reads the same `real-projects.json` as the Comparison Tool.
+- **Comparison workspace** — browse ~20–30 real historical projects side-by-side, or enter custom inputs and surface the three closest matches (Quote tab); portfolio KPI strip, hours-by-bucket/industry charts, system-category donut, complexity-vs-hours scatter, and ranked project table over `real-projects.json` (Business Insights tab).
+- **Machine Learning workspace** — fill in project parameters and let 12 Gradient Boosting models (running client-side in your browser via Pyodide) predict hours with P10–P90 confidence intervals (Quote tab); same Business Insights view over `synthetic-pool.json` (Business Insights tab).
 
 Everything runs in the browser. There is no backend.
 
@@ -14,11 +13,26 @@ Everything runs in the browser. There is no backend.
 Vercel (static)                         Pyodide (CDN, lazy)
 ├── frontend/dist/                      ├── sklearn + pandas + joblib + numpy
 └── /demo-assets/                       │
-    ├── real-projects.json       ───► Comparison Tool
-    ├── synthetic-pool.json      ───► ML Tool dropdowns
+    ├── real-projects.json       ───► Comparison workspace (Quote + Insights)
+    ├── synthetic-pool.json      ───► ML workspace (Quote dropdowns + Insights)
     ├── models/*.joblib (12)     ───► Pyodide loadPackage
     └── py/{config,features,models,predict}.py
 ```
+
+Demo routes:
+
+```
+/                  DemoHome
+/compare/quote     ComparisonQuote
+/compare/insights  ComparisonInsights  (Business Insights over real-projects.json)
+/ml/quote          MachineLearningQuote
+/ml/insights       MachineLearningInsights  (Business Insights over synthetic-pool.json)
+/compare-tool      → redirect to /compare/quote    (legacy)
+/business          → redirect to /compare/insights (legacy)
+/ml-tool           → redirect to /ml/quote         (legacy)
+```
+
+The sidebar is sectioned: Home, divider, COMPARISON TOOL section (Quote, Business Insights), divider, MACHINE LEARNING TOOL section (Quote, Business Insights), Demo Controls panel, ThemeToggle. `src/pages/demo/business/BusinessInsightsView.tsx` is the shared component powering both Insights views — the only difference is the dataset passed in.
 
 - `core/` — feature-engineering + model-loading (pyodide imports these via the shim).
 - `service/` — `predict_lib.py`, vendored from the parent app (kept for parity).

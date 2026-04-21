@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import { renderWithProviders } from "@/test/render";
 import type { ProjectRecord } from "@/demo/realProjects";
 
+// BusinessInsights is now a shim that renders ComparisonInsights → BusinessInsightsView.
 import { BusinessInsights } from "./BusinessInsights";
 
 vi.mock("recharts", async () => {
@@ -52,15 +53,16 @@ vi.mock("@/demo/realProjects", async () => {
   };
 });
 
-describe("BusinessInsights page", () => {
+describe("BusinessInsights page (shim → ComparisonInsights → BusinessInsightsView)", () => {
   it("renders the page title", () => {
     renderWithProviders(<BusinessInsights />);
     expect(screen.getByText(/business insights/i)).toBeInTheDocument();
   });
 
-  it("renders the page eyebrow", () => {
+  it("renders the dataset eyebrow label", () => {
     renderWithProviders(<BusinessInsights />);
-    expect(screen.getByText(/insights · portfolio/i)).toBeInTheDocument();
+    // DatasetLabel is "Comparison · Real projects" → eyebrow says "Insights · Comparison · Real projects"
+    expect(screen.getByText(/comparison · real projects/i)).toBeInTheDocument();
   });
 
   it("renders the project count chip", () => {
@@ -71,18 +73,18 @@ describe("BusinessInsights page", () => {
 
   it("renders Portfolio KPIs section eyebrow", () => {
     renderWithProviders(<BusinessInsights />);
-    expect(screen.getByText(/portfolio kpis/i)).toBeInTheDocument();
+    // Eyebrow "01 · Portfolio KPIs" + the sibling sr-only <h2>Portfolio KPIs</h2>
+    // both surface the label, so multiple nodes is expected.
+    expect(screen.getAllByText(/portfolio kpis/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders Hours by Sales Bucket section eyebrow", () => {
     renderWithProviders(<BusinessInsights />);
-    // Both the page section eyebrow and the inner component heading use this text
     expect(screen.getAllByText(/hours by sales bucket/i).length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders Hours by Industry section eyebrow", () => {
     renderWithProviders(<BusinessInsights />);
-    // Page says "Hours by Industry"; component says "Avg Hours by Industry" — at least one matches
     expect(screen.getAllByText(/hours by industry/i).length).toBeGreaterThanOrEqual(1);
   });
 
@@ -93,7 +95,6 @@ describe("BusinessInsights page", () => {
 
   it("renders Complexity vs Hours section eyebrow", () => {
     renderWithProviders(<BusinessInsights />);
-    // Page says "Complexity vs Hours"; component says "Complexity vs Total Hours"
     expect(screen.getAllByText(/complexity vs/i).length).toBeGreaterThanOrEqual(1);
   });
 
@@ -102,10 +103,8 @@ describe("BusinessInsights page", () => {
     expect(screen.getByText(/06 · all projects/i)).toBeInTheDocument();
   });
 
-  it("renders loading state when isLoading=true and data is undefined", () => {
-    // Override for this one test by re-mocking inline is not possible;
-    // instead confirm it's NOT showing the loading state in the normal case.
+  it("does not show loading state when data is present", () => {
     renderWithProviders(<BusinessInsights />);
-    expect(screen.queryByText(/loading real projects/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/loading/i)).not.toBeInTheDocument();
   });
 });
