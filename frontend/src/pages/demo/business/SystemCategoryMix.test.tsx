@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "@/test/render";
@@ -36,5 +36,17 @@ describe("SystemCategoryMix", () => {
   it("does not render empty-state when data is populated", () => {
     renderWithProviders(<SystemCategoryMix data={CATEGORY_DATA} />);
     expect(screen.queryByText(/no data available/i)).not.toBeInTheDocument();
+  });
+
+  it("shows 'Click slice to filter' hint when onCategoryClick is provided", () => {
+    renderWithProviders(
+      <SystemCategoryMix data={CATEGORY_DATA} onCategoryClick={vi.fn()} />,
+    );
+    expect(screen.getByText(/click slice to filter/i)).toBeInTheDocument();
+  });
+
+  it("does not show click hint when onCategoryClick is not provided", () => {
+    renderWithProviders(<SystemCategoryMix data={CATEGORY_DATA} />);
+    expect(screen.queryByText(/click slice to filter/i)).not.toBeInTheDocument();
   });
 });

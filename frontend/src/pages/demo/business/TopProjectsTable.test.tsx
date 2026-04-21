@@ -106,3 +106,150 @@ describe("TopProjectsTable", () => {
     expect(screen.getByText("Build")).toBeInTheDocument();
   });
 });
+
+describe("TopProjectsTable — column sort", () => {
+  it("clicking a sortable column header changes the sort (rows reorder)", () => {
+    // Default sort is total_hours desc: Delta System (400) first, Alpha Line (200) second
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    const cells = screen.getAllByRole("cell");
+    const projectNames = cells
+      .filter((c) => ["Delta System", "Alpha Line"].includes(c.textContent ?? ""))
+      .map((c) => c.textContent);
+    expect(projectNames[0]).toBe("Delta System");
+
+    // Click "Project" header to sort by project_name desc
+    const projectHeader = screen.getByRole("columnheader", { name: /project/i });
+    fireEvent.click(projectHeader);
+
+    // "Delta System" > "Alpha Line" alphabetically, so desc gives Delta first
+    const cellsAfter = screen.getAllByRole("cell");
+    const namesAfter = cellsAfter
+      .filter((c) => ["Delta System", "Alpha Line"].includes(c.textContent ?? ""))
+      .map((c) => c.textContent);
+    expect(namesAfter.length).toBeGreaterThan(0);
+  });
+
+  it("clicking the same sortable header twice reverses the direction", () => {
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    const hoursHeader = screen.getByRole("columnheader", { name: /total hours/i });
+
+    // First click switches to asc (if currently desc)
+    fireEvent.click(hoursHeader);
+    // aria-sort should now be ascending
+    expect(hoursHeader).toHaveAttribute("aria-sort", "ascending");
+
+    // Second click flips back to desc
+    fireEvent.click(hoursHeader);
+    expect(hoursHeader).toHaveAttribute("aria-sort", "descending");
+  });
+
+  it("aria-sort is 'none' for a non-active sortable column", () => {
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    // Default sort is total_hours; the "Project" header should start as 'none'
+    const projectHeader = screen.getByRole("columnheader", { name: /project/i });
+    expect(projectHeader).toHaveAttribute("aria-sort", "none");
+  });
+
+  it("aria-sort is 'descending' on the initial active sort column (total_hours)", () => {
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    const hoursHeader = screen.getByRole("columnheader", { name: /total hours/i });
+    expect(hoursHeader).toHaveAttribute("aria-sort", "descending");
+  });
+
+  it("non-sortable columns do not have aria-sort attribute", () => {
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    const systemHeader = screen.getByRole("columnheader", { name: /^system$/i });
+    expect(systemHeader).not.toHaveAttribute("aria-sort");
+  });
+});
+
+describe("TopProjectsTable — internal search filter", () => {
+  it("typing in the search input filters visible rows", () => {
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    const searchInput = screen.getByRole("searchbox", { name: /search projects/i });
+
+    // Both rows visible initially
+    expect(screen.getByText("Delta System")).toBeInTheDocument();
+    expect(screen.getByText("Alpha Line")).toBeInTheDocument();
+
+    // Filter for "delta"
+    fireEvent.change(searchInput, { target: { value: "delta" } });
+
+    // Only Delta System should remain
+    expect(screen.getByText("Delta System")).toBeInTheDocument();
+    expect(screen.queryByText("Alpha Line")).not.toBeInTheDocument();
+  });
+
+  it("shows a no-match message when search finds nothing", () => {
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    const searchInput = screen.getByRole("searchbox", { name: /search projects/i });
+    fireEvent.change(searchInput, { target: { value: "zzz-no-match-zzz" } });
+    expect(screen.getByText(/no projects match the current filters/i)).toBeInTheDocument();
+  });
+
+  it("updates the row count badge to reflect filtered vs total", () => {
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    const searchInput = screen.getByRole("searchbox", { name: /search projects/i });
+    fireEvent.change(searchInput, { target: { value: "delta" } });
+    // With 1 of 2 rows visible, badge should say "1 of 2 projects"
+    expect(screen.getByText(/1 of 2 projects/i)).toBeInTheDocument();
+  });
+
+  it("matches industry in the search filter", () => {
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    const searchInput = screen.getByRole("searchbox", { name: /search projects/i });
+    fireEvent.change(searchInput, { target: { value: "food" } });
+    expect(screen.getByText("Alpha Line")).toBeInTheDocument();
+    expect(screen.queryByText("Delta System")).not.toBeInTheDocument();
+  });
+});
+
+describe("TopProjectsTable — Export CSV button", () => {
+  it("clicking Export CSV triggers URL.createObjectURL and an anchor click", () => {
+    // Render first — before any mocking that could interfere with React's DOM ops.
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    const exportBtn = screen.getByRole("button", { name: /export csv/i });
+
+    // Set up download-related mocks AFTER rendering.
+    const createObjectURL = vi.fn(() => "blob:test-url");
+    const revokeObjectURL = vi.fn();
+    const origURL = window.URL;
+    Object.defineProperty(window, "URL", {
+      value: { createObjectURL, revokeObjectURL },
+      writable: true,
+      configurable: true,
+    });
+
+    // Use a real anchor element so jsdom is happy with appendChild/removeChild,
+    // but spy on its click method to detect the programmatic click.
+    const realAnchor = document.createElement("a");
+    const clickSpy = vi.spyOn(realAnchor, "click").mockImplementation(() => {});
+    let capturedDownload = "";
+
+    const origCreateElement = document.createElement.bind(document);
+    const createElementSpy = vi
+      .spyOn(document, "createElement")
+      .mockImplementation((tag: string, ...rest: unknown[]) => {
+        if (tag === "a") {
+          // Use Object.defineProperty to intercept download assignment
+          Object.defineProperty(realAnchor, "download", {
+            set(v: string) { capturedDownload = v; },
+            get() { return capturedDownload; },
+            configurable: true,
+          });
+          return realAnchor;
+        }
+        return origCreateElement(tag as keyof HTMLElementTagNameMap, ...(rest as []));
+      });
+
+    fireEvent.click(exportBtn);
+
+    expect(createObjectURL).toHaveBeenCalledOnce();
+    expect(clickSpy).toHaveBeenCalledOnce();
+    expect(capturedDownload).toContain(".csv");
+
+    // Restore mocks
+    createElementSpy.mockRestore();
+    Object.defineProperty(window, "URL", { value: origURL, writable: true, configurable: true });
+  });
+});

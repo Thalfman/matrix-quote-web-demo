@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "@/test/render";
@@ -35,5 +35,43 @@ describe("ComplexityVsHours", () => {
   it("does not render empty-state when data is populated", () => {
     renderWithProviders(<ComplexityVsHours data={SCATTER_DATA} />);
     expect(screen.queryByText(/no data available/i)).not.toBeInTheDocument();
+  });
+
+  it("shows 'Click a dot for detail' hint when onPointClick is provided", () => {
+    renderWithProviders(<ComplexityVsHours data={SCATTER_DATA} onPointClick={vi.fn()} />);
+    expect(screen.getByText(/click a dot for detail/i)).toBeInTheDocument();
+  });
+
+  it("does not show click hint when onPointClick is not provided", () => {
+    renderWithProviders(<ComplexityVsHours data={SCATTER_DATA} />);
+    expect(screen.queryByText(/click a dot for detail/i)).not.toBeInTheDocument();
+  });
+
+  it("renders the project count in the sub-heading", () => {
+    renderWithProviders(<ComplexityVsHours data={SCATTER_DATA} />);
+    expect(screen.getByText("2 projects")).toBeInTheDocument();
+  });
+
+  it("renders industry labels in the compact legend", () => {
+    renderWithProviders(<ComplexityVsHours data={SCATTER_DATA} />);
+    expect(screen.getByText("Automotive")).toBeInTheDocument();
+    expect(screen.getByText("Food & Bev")).toBeInTheDocument();
+  });
+
+  it("clicking Complexity axis button keeps it selected (aria-pressed=true)", () => {
+    renderWithProviders(<ComplexityVsHours data={SCATTER_DATA} />);
+    const complexityBtn = screen.getByRole("button", { name: /^complexity$/i });
+    expect(complexityBtn).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("clicking Stations axis button switches aria-pressed to true", () => {
+    renderWithProviders(<ComplexityVsHours data={SCATTER_DATA} />);
+    const stationsBtn = screen.getByRole("button", { name: /^stations$/i });
+    fireEvent.click(stationsBtn);
+    expect(stationsBtn).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: /^complexity$/i })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
   });
 });
