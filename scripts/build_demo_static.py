@@ -136,21 +136,36 @@ def _feature_stats(df_real: pd.DataFrame, df_syn: pd.DataFrame) -> dict:
 
 
 def _copy_models() -> int:
+    """Copy joblib bundles to the output dir.
+
+    If the source joblibs are LFS pointers (e.g. LFS not fetched in CI), warn
+    and skip rather than failing the whole build — the ML tool will be broken
+    in that deployment, but the demo's other pages still ship.
+    """
     if not MODELS_SRC.exists():
-        _die(f"Joblib bundles not found at {MODELS_SRC}. Run `git lfs pull` first.")
+        print(
+            f"WARN: joblib bundles not found at {MODELS_SRC}. "
+            "ML tool will be non-functional in this build.",
+            file=sys.stderr,
+        )
+        return 0
     dst = OUT / "models"
     dst.mkdir(parents=True, exist_ok=True)
     count = 0
+    skipped_lfs = 0
     for src in sorted(MODELS_SRC.glob("*.joblib")):
         if src.stat().st_size < 1024:
-            _die(
-                f"{src.name} looks like an LFS pointer ({src.stat().st_size}B). "
-                "Enable LFS in Vercel project settings or run `git lfs pull` locally."
-            )
+            skipped_lfs += 1
+            continue
         shutil.copy2(src, dst / src.name)
         count += 1
-    if count == 0:
-        _die(f"No .joblib files found in {MODELS_SRC}.")
+    if skipped_lfs:
+        print(
+            f"WARN: {skipped_lfs} joblib(s) were LFS pointers and were skipped. "
+            "Enable LFS in Vercel project settings (or run `git lfs pull` locally) "
+            "to restore the ML tool.",
+            file=sys.stderr,
+        )
     return count
 
 

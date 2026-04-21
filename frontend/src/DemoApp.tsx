@@ -14,6 +14,11 @@ const MachineLearningQuoteTool = lazy(() =>
     default: m.MachineLearningQuoteTool,
   })),
 );
+const BusinessInsights = lazy(() =>
+  import("@/pages/demo/BusinessInsights").then((m) => ({
+    default: m.BusinessInsights,
+  })),
+);
 
 function Fallback() {
   return (
@@ -30,6 +35,7 @@ export function DemoApp() {
         <Route element={<DemoLayout />}>
           <Route index element={<DemoHome />} />
           <Route path="compare-tool" element={<ComparisonQuoteTool />} />
+          <Route path="business" element={<BusinessInsights />} />
           <Route path="ml-tool" element={<MachineLearningQuoteTool />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>

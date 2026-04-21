@@ -1,9 +1,10 @@
 # Matrix Quote Web — Demo
 
-Static, Vercel-hosted demo of the Matrix quoting engine. Two tools:
+Static, Vercel-hosted demo of the Matrix quoting engine. Three tools:
 
 - **Comparison Quote Tool** — browse ~20–30 real historical projects side-by-side, or enter custom inputs and surface the three closest matches.
 - **Machine Learning Quote Tool** — fill in project parameters and let 12 Gradient Boosting models (running client-side in your browser via Pyodide) predict hours with P10–P90 confidence intervals.
+- **Business Insights** (`/business`) — portfolio-level view of the 24 real projects: KPI strip, hours-by-sales-bucket bar chart, hours-by-industry bar chart, system-category donut, complexity-vs-hours scatter, and a ranked project table. Frontend-only; reads the same `real-projects.json` as the Comparison Tool.
 
 Everything runs in the browser. There is no backend.
 
