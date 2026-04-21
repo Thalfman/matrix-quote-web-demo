@@ -214,7 +214,6 @@ describe("BusinessInsightsView — table row click opens drawer", () => {
     expect(dialog!.className).toMatch(/translate-x-full/);
 
     // Click a table row — rows have role=button when onRowClick is provided
-    const rowBtns = screen.getAllByRole("button");
     // Project name "Alpha Project" appears in a table cell
     const alphaCell = screen.getByText("Alpha Project");
     const rowEl = alphaCell.closest("[role='button']");
