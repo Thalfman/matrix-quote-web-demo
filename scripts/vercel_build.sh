@@ -6,6 +6,12 @@
 # frontend/public/demo-assets/ and then runs the Vite demo build.
 set -euo pipefail
 
+echo "[vercel-build] fetching git-lfs objects"
+# Vercel's clone leaves LFS-tracked files as pointers. Fetch the real blobs
+# before Python tries to load the joblib models.
+git lfs install --local
+git lfs pull
+
 echo "[vercel-build] installing python deps"
 python3 -m pip install --quiet --disable-pip-version-check --break-system-packages pandas numpy scikit-learn joblib
 
