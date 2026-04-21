@@ -6,11 +6,14 @@
 # frontend/public/demo-assets/ and then runs the Vite demo build.
 set -euo pipefail
 
+echo "[vercel-build] creating python venv"
+python3 -m venv .venv
+
 echo "[vercel-build] installing python deps"
-python3 -m pip install --quiet --disable-pip-version-check pandas numpy scikit-learn joblib
+.venv/bin/pip install --quiet --disable-pip-version-check pandas numpy scikit-learn joblib
 
 echo "[vercel-build] building demo static assets"
-python3 scripts/build_demo_static.py
+.venv/bin/python scripts/build_demo_static.py
 
 echo "[vercel-build] building frontend in demo mode"
 cd frontend
