@@ -10,6 +10,7 @@ echo "[vercel-build] fetching git-lfs objects"
 # Vercel's clone leaves LFS-tracked files as pointers. Fetch the real blobs
 # before Python tries to load the joblib models.
 git lfs install --local
+git lfs env | grep -E '^\s*Endpoint' || true
 git lfs pull
 
 echo "[vercel-build] installing python deps"
