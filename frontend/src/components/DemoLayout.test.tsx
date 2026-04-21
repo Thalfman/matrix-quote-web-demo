@@ -17,30 +17,36 @@ function renderLayout(route = "/") {
 }
 
 describe("DemoLayout sidebar structure", () => {
-  it("renders COMPARISON TOOL label before MACHINE LEARNING TOOL label in the DOM", () => {
+  it("renders REAL DATA label before SYNTHETIC DATA label in the DOM", () => {
     renderLayout();
     // The section labels are plain <div>s with eyebrow text — use queryAllByText with regex.
-    const compareLabel = screen.getByText(/comparison tool/i);
-    const mlLabel = screen.getByText(/machine learning tool/i);
-    expect(compareLabel).toBeInTheDocument();
-    expect(mlLabel).toBeInTheDocument();
+    const realLabel = screen.getByText(/real data/i);
+    const syntheticLabel = screen.getByText(/synthetic data/i);
+    expect(realLabel).toBeInTheDocument();
+    expect(syntheticLabel).toBeInTheDocument();
     // compareDocumentPosition: if A precedes B, B.compareDocumentPosition(A) includes DOCUMENT_POSITION_PRECEDING (4)
-    const position = mlLabel.compareDocumentPosition(compareLabel);
+    const position = syntheticLabel.compareDocumentPosition(realLabel);
     expect(position & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
   });
 
-  it("has exactly four sub-links: Quote and Business Insights under each section, in order", () => {
+  it("has Quote, Compare, and Business Insights links under each section", () => {
     renderLayout();
     const links = screen.getAllByRole("link");
     const quoteLinks = links.filter((l) => l.textContent === "Quote");
+    const compareLinks = links.filter((l) => l.textContent === "Compare");
     const insightsLinks = links.filter((l) => l.textContent === "Business Insights");
     expect(quoteLinks).toHaveLength(2);
+    expect(compareLinks).toHaveLength(2);
     expect(insightsLinks).toHaveLength(2);
 
-    // Within each pair, Quote must precede its corresponding Business Insights link.
-    // Compare-section Quote precedes Compare-section Insights.
+    // Within each section, Quote must precede Compare, which precedes Business Insights.
     const compareQuote = links.find(
       (l) => l.textContent === "Quote" && (l as HTMLAnchorElement).href.includes("/compare/quote"),
+    );
+    const compareCompare = links.find(
+      (l) =>
+        l.textContent === "Compare" &&
+        (l as HTMLAnchorElement).href.includes("/compare/compare"),
     );
     const compareInsights = links.find(
       (l) =>
@@ -48,13 +54,18 @@ describe("DemoLayout sidebar structure", () => {
         (l as HTMLAnchorElement).href.includes("/compare/insights"),
     );
     expect(compareQuote).toBeTruthy();
+    expect(compareCompare).toBeTruthy();
     expect(compareInsights).toBeTruthy();
     const cmpPos = compareInsights!.compareDocumentPosition(compareQuote!);
     expect(cmpPos & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
 
-    // ML-section Quote precedes ML-section Insights.
+    // ML-section Quote precedes ML-section Compare, which precedes ML-section Insights.
     const mlQuote = links.find(
       (l) => l.textContent === "Quote" && (l as HTMLAnchorElement).href.includes("/ml/quote"),
+    );
+    const mlCompare = links.find(
+      (l) =>
+        l.textContent === "Compare" && (l as HTMLAnchorElement).href.includes("/ml/compare"),
     );
     const mlInsights = links.find(
       (l) =>
@@ -62,6 +73,7 @@ describe("DemoLayout sidebar structure", () => {
         (l as HTMLAnchorElement).href.includes("/ml/insights"),
     );
     expect(mlQuote).toBeTruthy();
+    expect(mlCompare).toBeTruthy();
     expect(mlInsights).toBeTruthy();
     const mlPos = mlInsights!.compareDocumentPosition(mlQuote!);
     expect(mlPos & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();

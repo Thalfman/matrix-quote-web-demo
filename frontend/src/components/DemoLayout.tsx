@@ -141,13 +141,14 @@ export function DemoLayout() {
                 compareActive ? "text-white/70" : "text-white/40",
               )}
             >
-              Comparison tool
+              Real Data
             </div>
             <SidebarLink to="/compare/quote" label="Quote" />
+            <SidebarLink to="/compare/compare" label="Compare" />
             <SidebarLink to="/compare/insights" label="Business Insights" />
           </div>
 
-          {/* Section divider + Machine Learning Tool */}
+          {/* Section divider + Synthetic Data */}
           <div
             className="border-t border-white/10 mt-0 mb-4"
             aria-hidden="true"
@@ -159,9 +160,10 @@ export function DemoLayout() {
                 mlActive ? "text-white/70" : "text-white/40",
               )}
             >
-              Machine learning tool
+              Synthetic Data
             </div>
             <SidebarLink to="/ml/quote" label="Quote" />
+            <SidebarLink to="/ml/compare" label="Compare" />
             <SidebarLink to="/ml/insights" label="Business Insights" />
           </div>
         </nav>
