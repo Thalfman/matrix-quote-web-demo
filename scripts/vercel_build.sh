@@ -7,7 +7,7 @@
 set -euo pipefail
 
 echo "[vercel-build] installing python deps"
-python3 -m pip install --quiet --disable-pip-version-check pandas numpy scikit-learn joblib
+python3 -m pip install --quiet --disable-pip-version-check --break-system-packages pandas numpy scikit-learn joblib
 
 echo "[vercel-build] building demo static assets"
 python3 scripts/build_demo_static.py
