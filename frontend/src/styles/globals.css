@@ -67,4 +67,32 @@
   .pad-x { padding-left: var(--density-x); padding-right: var(--density-x); }
   .density-compact { --density-y: 0.625rem; --density-x: 0.875rem; }
   .density-comfy   { --density-y: 1rem;     --density-x: 1.25rem; }
+
+  /* Mount fade — for chart containers and lazy-rendered panels.
+     Keeps motion subtle; stops dead when prefers-reduced-motion is on. */
+  .fade-in {
+    animation: matrix-fade-in 180ms ease-out both;
+  }
+}
+
+@keyframes matrix-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* =======================================================
+   Motion preferences
+   Respect `prefers-reduced-motion` across the whole app.
+   Keeps opacity transitions visible but kills translates,
+   scale effects, and long color crossfades.
+======================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

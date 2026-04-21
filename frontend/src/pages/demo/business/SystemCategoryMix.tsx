@@ -46,13 +46,14 @@ export function SystemCategoryMix({ data }: { data: CategoryRow[] }) {
   const total = data.reduce((s, d) => s + d.count, 0);
 
   return (
-    <div className="card p-4 h-80">
-      <div className="eyebrow text-[10px] text-muted mb-2">
+    <div className="card p-5 h-80 flex flex-col">
+      <div className="eyebrow text-[10px] text-muted mb-3">
         Share of projects · by system type
       </div>
       {data.length === 0 ? (
         <div className="text-sm text-muted">No data available.</div>
       ) : (
+        <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
@@ -95,6 +96,7 @@ export function SystemCategoryMix({ data }: { data: CategoryRow[] }) {
             />
           </PieChart>
         </ResponsiveContainer>
+        </div>
       )}
     </div>
   );

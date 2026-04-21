@@ -36,13 +36,14 @@ function CustomTooltip({
 
 export function HoursByIndustry({ data }: { data: IndustryRow[] }) {
   return (
-    <div className="card p-4 h-80">
-      <div className="eyebrow text-[10px] text-muted mb-2">
+    <div className="card p-5 h-80 flex flex-col">
+      <div className="eyebrow text-[10px] text-muted mb-3">
         Average hours per project · by industry
       </div>
       {data.length === 0 ? (
         <div className="text-sm text-muted">No data available.</div>
       ) : (
+        <div className="flex-1 min-h-0">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 4, right: 8, left: -8, bottom: 32 }}>
             <CartesianGrid {...GRID_STYLE} vertical={false} />
@@ -75,6 +76,7 @@ export function HoursByIndustry({ data }: { data: IndustryRow[] }) {
             <Bar dataKey="avgHours" fill={CHART_COLORS.ink} radius={[1, 1, 0, 0]} />
           </BarChart>
         </ResponsiveContainer>
+        </div>
       )}
     </div>
   );

@@ -21,16 +21,16 @@ function KpiCard({
   meta?: string;
 }) {
   return (
-    <div className="card p-4 relative overflow-hidden">
+    <div className="card p-5 relative overflow-hidden">
       {accent && (
         <span aria-hidden="true" className="absolute top-0 left-0 right-0 h-1 bg-amber" />
       )}
       <div className="eyebrow text-[10px] text-muted">{label}</div>
-      <div className="mt-2 flex items-baseline gap-1">
-        <span className="display-hero text-3xl tnum text-ink">{value}</span>
+      <div className="mt-3 flex items-baseline gap-1">
+        <span className="display-hero text-3xl tnum leading-none text-ink">{value}</span>
         {suffix && <span className="text-muted text-sm">{suffix}</span>}
       </div>
-      {meta && <div className="text-[11px] text-muted mt-1 mono">{meta}</div>}
+      {meta && <div className="text-[11px] text-muted mt-2 mono">{meta}</div>}
     </div>
   );
 }
