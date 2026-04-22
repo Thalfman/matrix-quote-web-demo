@@ -367,14 +367,7 @@ for _tgt, _fname in _files.items():
 `);
 
     notify({ stage, message: `${label} — done`, percent: basePercent + 16 });
-
-    // If both datasets are loaded, advance to ready.
-    const bothLoaded = modelPromises.real !== null && modelPromises.synthetic !== null;
-    if (bothLoaded) {
-      // Give the other promise a tick to settle before checking.
-      await Promise.allSettled([modelPromises.real, modelPromises.synthetic]);
-      notify({ stage: "ready", message: "Ready", percent: 100 });
-    }
+    notify({ stage: "ready", message: "Ready", percent: 100 });
   })().catch((err: Error) => {
     modelPromises[dataset] = null;
     notify({ stage: "error", message: err.message });
