@@ -96,7 +96,7 @@ export function MaterialVsLabor({ data }: { data: MaterialLaborPoint[] }) {
 
   if (data.length === 0) {
     return (
-      <div className="card p-5 text-sm text-muted h-80 flex items-center justify-center text-center">
+      <div className="card p-4 sm:p-5 text-sm text-muted h-96 lg:h-[28rem] flex items-center justify-center text-center">
         No projects with both material cost and labor hours in the current view.
       </div>
     );
@@ -107,7 +107,7 @@ export function MaterialVsLabor({ data }: { data: MaterialLaborPoint[] }) {
   const zMax = Math.max(...stationSizes);
 
   return (
-    <div className="card p-5 h-96 flex flex-col">
+    <div className="card p-4 sm:p-5 h-96 lg:h-[28rem] flex flex-col">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="eyebrow text-xs text-muted">
           Material cost vs labor hours · sized by stations, colored by industry

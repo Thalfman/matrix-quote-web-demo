@@ -34,15 +34,12 @@ type Props = {
 };
 
 /**
- * SectionHeader — shared eyebrow row for the six insights sections.
- * One weight, one size, one letter-spacing. The numeric prefix reads
- * the same Barlow Condensed face as the title; kept in a single
- * text node so test assertions on the full "NN · Label" string match.
+ * SectionHeader — eyebrow row above each chart section.
  */
-function SectionHeader({ step, title }: { step: string; title: string }) {
+function SectionHeader({ title }: { title: string }) {
   return (
     <div className="eyebrow text-sm text-muted mb-3">
-      {step} · {title}
+      {title}
     </div>
   );
 }
@@ -53,7 +50,7 @@ function SectionHeader({ step, title }: { step: string; title: string }) {
  */
 function SectionEmptyCard({ message }: { message: string }) {
   return (
-    <div className="card p-5 text-sm text-muted h-80 flex items-center justify-center text-center">
+    <div className="card p-4 sm:p-5 text-sm text-muted h-80 lg:h-96 flex items-center justify-center text-center">
       {message}
     </div>
   );
@@ -123,6 +120,15 @@ function applyFilter(records: ProjectRecord[], filter: InsightsFilterState): Pro
   });
 }
 
+type TabId = "overview" | "accuracy" | "mix" | "projects";
+
+const TABS: { id: TabId; label: string }[] = [
+  { id: "overview",  label: "Overview"  },
+  { id: "accuracy",  label: "Accuracy"  },
+  { id: "mix",       label: "Mix"       },
+  { id: "projects",  label: "Projects"  },
+];
+
 export function BusinessInsightsView({
   records,
   datasetLabel,
@@ -133,6 +139,7 @@ export function BusinessInsightsView({
 }: Props) {
   const [filter, setFilter] = useState<InsightsFilterState>(DEFAULT_FILTER);
   const [drawerRow, setDrawerRow] = useState<RankedRow | null>(null);
+  const [activeTab, setActiveTab] = useState<TabId>("overview");
 
   // Derive available filter options from the full (unfiltered) record set
   const availableIndustries = useMemo(() => {
@@ -282,155 +289,191 @@ export function BusinessInsightsView({
             filteredCount={filteredRecords.length}
           />
 
-          {/* Page-level action row: download the whole insights pack. Scope is
-              the current filtered view, so "what I see is what I get". */}
-          {portfolio && (
-            <div className="flex items-center justify-end -mt-6">
-              <button
-                type="button"
-                onClick={() => handleDownloadPack(portfolio)}
-                disabled={isPackBuilding}
-                className={cn(
-                  "inline-flex items-center gap-1.5 text-sm eyebrow px-2.5 py-1.5 rounded-sm",
-                  "border hairline bg-surface text-muted hover:text-ink hover:bg-paper",
-                  "transition-colors duration-150 ease-out",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
-                  "disabled:opacity-50 disabled:cursor-not-allowed",
-                )}
-                title="Download a zip with the filtered CSV, raw JSON, and a one-page summary"
-              >
-                <Download size={12} strokeWidth={1.75} aria-hidden="true" />
-                {isPackBuilding ? "Building…" : "Download insights pack"}
-              </button>
+          {/* Tab bar + page-level download action in one row.
+              On narrow screens the tabs scroll horizontally, and the
+              download button wraps to the next line via flex-wrap. */}
+          <div className="flex items-end gap-3 flex-wrap -mt-6 border-b hairline">
+            <div
+              role="tablist"
+              aria-label="Business insights views"
+              className="flex gap-0 overflow-x-auto -mb-px"
+            >
+              {TABS.map((t) => {
+                const selected = activeTab === t.id;
+                return (
+                  <button
+                    key={t.id}
+                    role="tab"
+                    id={`insights-tab-${t.id}`}
+                    aria-selected={selected}
+                    aria-controls={`insights-panel-${t.id}`}
+                    onClick={() => setActiveTab(t.id)}
+                    className={cn(
+                      "shrink-0 px-4 py-2 text-sm border-b-2 -mb-px whitespace-nowrap",
+                      "transition-[color,border-color] duration-150 ease-out",
+                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
+                      selected
+                        ? "border-teal text-ink font-medium"
+                        : "border-transparent text-muted hover:text-ink",
+                    )}
+                  >
+                    {t.label}
+                    {t.id === "projects" && portfolio && (
+                      <span className="ml-1.5 mono text-[10px] text-muted tnum">
+                        ({portfolio.ranked.length})
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
-          )}
+            {portfolio && (
+              <div className="ml-auto pb-2">
+                <button
+                  type="button"
+                  onClick={() => handleDownloadPack(portfolio)}
+                  disabled={isPackBuilding}
+                  className={cn(
+                    "inline-flex items-center gap-1.5 text-sm eyebrow px-2.5 py-1.5 rounded-sm",
+                    "border hairline bg-surface text-muted hover:text-ink hover:bg-paper",
+                    "transition-colors duration-150 ease-out",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                  )}
+                  title="Download a zip with the filtered CSV, raw JSON, and a one-page summary"
+                >
+                  <Download size={12} strokeWidth={1.75} aria-hidden="true" />
+                  <span className="hidden sm:inline">
+                    {isPackBuilding ? "Building…" : "Download insights pack"}
+                  </span>
+                  <span className="sm:hidden">
+                    {isPackBuilding ? "Building…" : "Pack"}
+                  </span>
+                </button>
+              </div>
+            )}
+          </div>
 
           {portfolio ? (
-            <>
-              {/* KPI strip */}
-              <section aria-labelledby="insights-01-heading">
-                <h2 className="sr-only" id="insights-01-heading">Portfolio KPIs</h2>
-                <SectionHeader step="01" title="Portfolio KPIs" />
-                <PortfolioKpis kpis={portfolio.kpis} source={source} />
-              </section>
-
-              {/* Row 1: Hours by bucket + Hours by industry */}
-              <div className="grid gap-6 lg:grid-cols-2">
-                <section aria-labelledby="insights-02-heading">
-                  <h2 className="sr-only" id="insights-02-heading">Hours by sales bucket</h2>
-                  <SectionHeader step="02" title="Hours by sales bucket" />
-                  {portfolio.buckets.length > 0 ? (
-                    <HoursBySalesBucket data={portfolio.buckets} />
-                  ) : (
-                    <SectionEmptyCard message="Not available for this dataset." />
+            <div
+              role="tabpanel"
+              id={`insights-panel-${activeTab}`}
+              aria-labelledby={`insights-tab-${activeTab}`}
+              className="space-y-8 sm:space-y-10"
+            >
+              {activeTab === "overview" && (
+                <>
+                  {/* Industry deep-dive sits at the top of Overview when a
+                      single industry is selected — it's the most context-rich
+                      snapshot for that slice. */}
+                  {industryDetail && (
+                    <section aria-labelledby="insights-deepdive-heading">
+                      <h2 className="sr-only" id="insights-deepdive-heading">Industry deep-dive</h2>
+                      <SectionHeader title={`Industry deep-dive · ${industryDetail.industry}`} />
+                      <IndustryDeepDive detail={industryDetail} />
+                    </section>
                   )}
-                </section>
-                <section aria-labelledby="insights-03-heading">
-                  <h2 className="sr-only" id="insights-03-heading">Hours by industry</h2>
-                  <SectionHeader step="03" title="Hours by industry" />
-                  {portfolio.industries.length > 0 ? (
-                    <HoursByIndustry
-                      data={portfolio.industries}
-                      selectedIndustries={filter.industries}
-                      onIndustryClick={handleIndustryClick}
-                    />
-                  ) : (
-                    <SectionEmptyCard message="Not available for this dataset." />
-                  )}
-                </section>
-              </div>
 
-              {/* Row 2: System category mix + Complexity vs hours */}
-              <div className="grid gap-6 lg:grid-cols-2">
-                <section aria-labelledby="insights-04-heading">
-                  <h2 className="sr-only" id="insights-04-heading">System category mix</h2>
-                  <SectionHeader step="04" title="System category mix" />
-                  {portfolio.categories.length > 0 ? (
-                    <SystemCategoryMix
-                      data={portfolio.categories}
-                      selectedCategories={filter.categories}
-                      onCategoryClick={handleCategoryClick}
-                    />
-                  ) : (
-                    <SectionEmptyCard message="Not available for this dataset." />
-                  )}
-                </section>
-                <section aria-labelledby="insights-05-heading">
-                  <h2 className="sr-only" id="insights-05-heading">Complexity vs hours</h2>
-                  <SectionHeader step="05" title="Complexity vs hours" />
-                  {portfolio.scatter.length > 0 ? (
-                    <ComplexityVsHours data={portfolio.scatter} />
-                  ) : (
-                    <SectionEmptyCard message="Not available for this dataset." />
-                  )}
-                </section>
-              </div>
+                  <section aria-labelledby="insights-kpis-heading">
+                    <h2 className="sr-only" id="insights-kpis-heading">Portfolio KPIs</h2>
+                    <SectionHeader title="Portfolio KPIs" />
+                    <PortfolioKpis kpis={portfolio.kpis} source={source} />
+                  </section>
 
-              {/* Row 3: Estimation accuracy (full width) */}
-              <section aria-labelledby="insights-06-heading">
-                <h2 className="sr-only" id="insights-06-heading">Estimation accuracy</h2>
-                <SectionHeader step="06" title="Estimation accuracy" />
-                <EstimationAccuracy data={portfolio.accuracy} />
-              </section>
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <section aria-labelledby="insights-industry-heading">
+                      <h2 className="sr-only" id="insights-industry-heading">Hours by industry</h2>
+                      <SectionHeader title="Hours by industry" />
+                      {portfolio.industries.length > 0 ? (
+                        <HoursByIndustry
+                          data={portfolio.industries}
+                          selectedIndustries={filter.industries}
+                          onIndustryClick={handleIndustryClick}
+                        />
+                      ) : (
+                        <SectionEmptyCard message="Not available for this dataset." />
+                      )}
+                    </section>
+                    <section aria-labelledby="insights-category-heading">
+                      <h2 className="sr-only" id="insights-category-heading">System category mix</h2>
+                      <SectionHeader title="System category mix" />
+                      {portfolio.categories.length > 0 ? (
+                        <SystemCategoryMix
+                          data={portfolio.categories}
+                          selectedCategories={filter.categories}
+                          onCategoryClick={handleCategoryClick}
+                        />
+                      ) : (
+                        <SectionEmptyCard message="Not available for this dataset." />
+                      )}
+                    </section>
+                  </div>
 
-              {/* Row 4: Risk factors vs overrun (full width — pairs with accuracy above) */}
-              <section aria-labelledby="insights-07-heading">
-                <h2 className="sr-only" id="insights-07-heading">Risk factors vs overrun</h2>
-                <SectionHeader step="07" title="Risk factors vs overrun" />
-                <RiskFactorCorrelation data={portfolio.riskCorrelations} />
-              </section>
-
-              {/* Row 5: Discipline mix by industry + Material vs labor */}
-              <div className="grid gap-6 lg:grid-cols-2">
-                <section aria-labelledby="insights-08-heading">
-                  <h2 className="sr-only" id="insights-08-heading">Discipline mix by industry</h2>
-                  <SectionHeader step="08" title="Discipline mix by industry" />
-                  {portfolio.disciplineByIndustry.length > 0 ? (
-                    <DisciplineMixByIndustry data={portfolio.disciplineByIndustry} />
-                  ) : (
-                    <SectionEmptyCard message="Not available for this dataset." />
-                  )}
-                </section>
-                <section aria-labelledby="insights-09-heading">
-                  <h2 className="sr-only" id="insights-09-heading">Material cost vs labor hours</h2>
-                  <SectionHeader step="09" title="Material cost vs labor hours" />
-                  {portfolio.materialLabor.length > 0 ? (
-                    <MaterialVsLabor data={portfolio.materialLabor} />
-                  ) : (
-                    <SectionEmptyCard message="Not available for this dataset." />
-                  )}
-                </section>
-              </div>
-
-              {/* Conditional industry deep-dive: appears when exactly one industry is filter-selected */}
-              {industryDetail && (
-                <section aria-labelledby="insights-10-heading">
-                  <h2 className="sr-only" id="insights-10-heading">Industry deep-dive</h2>
-                  <SectionHeader step="10" title={`Industry deep-dive · ${industryDetail.industry}`} />
-                  <IndustryDeepDive detail={industryDetail} />
-                </section>
+                  <div className="grid gap-6 lg:grid-cols-2">
+                    <section aria-labelledby="insights-bucket-heading">
+                      <h2 className="sr-only" id="insights-bucket-heading">Hours by sales bucket</h2>
+                      <SectionHeader title="Hours by sales bucket" />
+                      {portfolio.buckets.length > 0 ? (
+                        <HoursBySalesBucket data={portfolio.buckets} />
+                      ) : (
+                        <SectionEmptyCard message="Not available for this dataset." />
+                      )}
+                    </section>
+                    <section aria-labelledby="insights-complexity-heading">
+                      <h2 className="sr-only" id="insights-complexity-heading">Complexity vs hours</h2>
+                      <SectionHeader title="Complexity vs hours" />
+                      {portfolio.scatter.length > 0 ? (
+                        <ComplexityVsHours data={portfolio.scatter} />
+                      ) : (
+                        <SectionEmptyCard message="Not available for this dataset." />
+                      )}
+                    </section>
+                  </div>
+                </>
               )}
 
-              {/* Ranked project table (collapsed by default) */}
-              <section aria-labelledby="insights-11-heading">
-                <h2 className="sr-only" id="insights-11-heading">All projects</h2>
-                <details className="group">
-                  <summary
-                    className="list-none cursor-pointer select-none flex items-center gap-2 mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal rounded-sm"
-                  >
-                    <div className="eyebrow text-sm text-muted">
-                      11 · All projects
-                    </div>
-                    <span className="text-sm text-muted mono tnum">
-                      ({portfolio.ranked.length})
-                    </span>
-                    <span
-                      aria-hidden="true"
-                      className="ml-auto text-sm text-muted transition-transform duration-150 ease-out group-open:rotate-180"
-                    >
-                      ▾
-                    </span>
-                  </summary>
+              {activeTab === "accuracy" && (
+                <>
+                  <section aria-labelledby="insights-accuracy-heading">
+                    <h2 className="sr-only" id="insights-accuracy-heading">Estimation accuracy</h2>
+                    <SectionHeader title="Estimation accuracy" />
+                    <EstimationAccuracy data={portfolio.accuracy} />
+                  </section>
+                  <section aria-labelledby="insights-risk-heading">
+                    <h2 className="sr-only" id="insights-risk-heading">Risk factors vs overrun</h2>
+                    <SectionHeader title="Risk factors vs overrun" />
+                    <RiskFactorCorrelation data={portfolio.riskCorrelations} />
+                  </section>
+                </>
+              )}
+
+              {activeTab === "mix" && (
+                <>
+                  <section aria-labelledby="insights-discipline-heading">
+                    <h2 className="sr-only" id="insights-discipline-heading">Discipline mix by industry</h2>
+                    <SectionHeader title="Discipline mix by industry" />
+                    {portfolio.disciplineByIndustry.length > 0 ? (
+                      <DisciplineMixByIndustry data={portfolio.disciplineByIndustry} />
+                    ) : (
+                      <SectionEmptyCard message="Not available for this dataset." />
+                    )}
+                  </section>
+                  <section aria-labelledby="insights-material-heading">
+                    <h2 className="sr-only" id="insights-material-heading">Material cost vs labor hours</h2>
+                    <SectionHeader title="Material cost vs labor hours" />
+                    {portfolio.materialLabor.length > 0 ? (
+                      <MaterialVsLabor data={portfolio.materialLabor} />
+                    ) : (
+                      <SectionEmptyCard message="Not available for this dataset." />
+                    )}
+                  </section>
+                </>
+              )}
+
+              {activeTab === "projects" && (
+                <section aria-labelledby="insights-projects-heading">
+                  <h2 className="sr-only" id="insights-projects-heading">All projects</h2>
+                  <SectionHeader title={`All projects · ${portfolio.ranked.length}`} />
                   {portfolio.ranked.length > 0 ? (
                     <TopProjectsTable
                       rows={portfolio.ranked}
@@ -441,9 +484,9 @@ export function BusinessInsightsView({
                   ) : (
                     <SectionEmptyCard message="Not available for this dataset." />
                   )}
-                </details>
-              </section>
-            </>
+                </section>
+              )}
+            </div>
           ) : (
             <div className="card p-6 text-sm text-muted text-center">
               No projects match the current filters. Try resetting the filters.

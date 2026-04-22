@@ -89,7 +89,7 @@ export function IndustryDeepDive({ detail }: { detail: IndustryDetail }) {
     .sort((a, b) => b[1] - a[1]);
 
   return (
-    <div className="card p-5">
+    <div className="card p-4 sm:p-5">
       <div className="flex items-baseline justify-between gap-3 mb-4">
         <div>
           <div className="eyebrow text-xs text-muted">Industry deep-dive</div>

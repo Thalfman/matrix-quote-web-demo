@@ -129,14 +129,14 @@ export function EstimationAccuracy({ data }: { data: AccuracyStats }) {
 
   if (!hasData) {
     return (
-      <div className="card p-5 text-sm text-muted h-96 flex items-center justify-center text-center">
+      <div className="card p-4 sm:p-5 text-sm text-muted h-96 lg:h-[28rem] flex items-center justify-center text-center">
         No projects with both a sales quote and billed actuals in the current view.
       </div>
     );
   }
 
   return (
-    <div className="card p-5 h-96 flex flex-col">
+    <div className="card p-4 sm:p-5 h-96 lg:h-[28rem] flex flex-col">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="eyebrow text-xs text-muted">
           {view === "scatter"

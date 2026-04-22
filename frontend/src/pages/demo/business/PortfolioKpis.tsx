@@ -21,7 +21,7 @@ function KpiCard({
   meta?: string;
 }) {
   return (
-    <div className="card p-5 relative overflow-hidden">
+    <div className="card p-4 sm:p-5 relative overflow-hidden">
       {accent && (
         <span aria-hidden="true" className="absolute top-0 left-0 right-0 h-1 bg-amber" />
       )}
