@@ -13,6 +13,13 @@ const FULL_ROW: RankedRow = {
   stations: 8,
   total_hours: 12500,
   primary_bucket: "ME",
+  complexity: 3,
+  peerMedian: null,
+  peerP10: null,
+  peerP90: null,
+  peerCount: 0,
+  outlierZ: null,
+  outlierDirection: null,
 };
 
 describe("ProjectDetailDrawer — renders visible fields", () => {
@@ -55,6 +62,33 @@ describe("ProjectDetailDrawer — renders visible fields", () => {
     renderWithProviders(<ProjectDetailDrawer row={FULL_ROW} onClose={vi.fn()} />);
     expect(screen.getByText(/identity/i)).toBeInTheDocument();
     expect(screen.getByText(/metrics/i)).toBeInTheDocument();
+  });
+});
+
+describe("ProjectDetailDrawer — peer benchmark (R7)", () => {
+  it("does not render the Peer benchmark section when peer fields are null", () => {
+    renderWithProviders(<ProjectDetailDrawer row={FULL_ROW} onClose={vi.fn()} />);
+    expect(screen.queryByText(/peer benchmark/i)).not.toBeInTheDocument();
+  });
+
+  it("renders Peer benchmark with median, p10–p90, and outlier chip when peers are present", () => {
+    const row: RankedRow = {
+      ...FULL_ROW,
+      peerMedian: 9000,
+      peerP10: 7500,
+      peerP90: 11000,
+      peerCount: 5,
+      outlierZ: 2.1,
+      outlierDirection: "high",
+    };
+    renderWithProviders(<ProjectDetailDrawer row={row} onClose={vi.fn()} />);
+    expect(screen.getByText(/peer benchmark/i)).toBeInTheDocument();
+    // The human-readable chip for the outlier
+    expect(screen.getByText(/high outlier/i)).toBeInTheDocument();
+    // Median renders as a formatted hours value
+    expect(screen.getByText(/9,000 h/)).toBeInTheDocument();
+    // Range renders as "p10–p90 h"
+    expect(screen.getByText(/7,500–11,000 h/)).toBeInTheDocument();
   });
 });
 

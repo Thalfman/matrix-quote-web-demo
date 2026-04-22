@@ -258,10 +258,32 @@ export function TopProjectsTable({
           >
             <div
               role="cell"
-              className="text-sm text-ink truncate font-medium"
+              className="text-sm text-ink truncate font-medium flex items-center gap-2 min-w-0"
               title={r.project_name}
             >
-              {r.project_name}
+              <span className="truncate">{r.project_name}</span>
+              {r.outlierDirection && (
+                <span
+                  className={cn(
+                    "shrink-0 text-[9px] eyebrow tracking-normal normal-case px-1.5 py-0.5 rounded-sm mono",
+                    r.outlierDirection === "high"
+                      ? "bg-danger/10 text-danger"
+                      : "bg-success/10 text-success",
+                  )}
+                  title={
+                    r.outlierDirection === "high"
+                      ? "Outlier: above peer hours for its complexity tier"
+                      : "Outlier: below peer hours for its complexity tier"
+                  }
+                  aria-label={
+                    r.outlierDirection === "high"
+                      ? "High outlier"
+                      : "Low outlier"
+                  }
+                >
+                  {r.outlierDirection === "high" ? "HIGH" : "LOW"}
+                </span>
+              )}
             </div>
             <div role="cell" className="text-sm text-muted truncate" title={r.industry}>
               {r.industry}

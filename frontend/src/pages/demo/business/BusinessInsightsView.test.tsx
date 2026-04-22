@@ -66,6 +66,7 @@ describe("BusinessInsightsView — happy path", () => {
     expect(screen.getByRole("heading", { name: /system category mix/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /complexity vs hours/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /estimation accuracy/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /risk factors vs overrun/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /discipline mix by industry/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /material cost vs labor hours/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /all projects/i })).toBeInTheDocument();

@@ -20,6 +20,7 @@ import { EstimationAccuracy } from "./EstimationAccuracy";
 import { DisciplineMixByIndustry } from "./DisciplineMixByIndustry";
 import { MaterialVsLabor } from "./MaterialVsLabor";
 import { IndustryDeepDive } from "./IndustryDeepDive";
+import { RiskFactorCorrelation } from "./RiskFactorCorrelation";
 
 type Props = {
   records: ProjectRecord[] | undefined;
@@ -335,20 +336,27 @@ export function BusinessInsightsView({
                 <EstimationAccuracy data={portfolio.accuracy} />
               </section>
 
-              {/* Row 4: Discipline mix by industry + Material vs labor */}
+              {/* Row 4: Risk factors vs overrun (full width — pairs with accuracy above) */}
+              <section aria-labelledby="insights-07-heading">
+                <h2 className="sr-only" id="insights-07-heading">Risk factors vs overrun</h2>
+                <SectionHeader step="07" title="Risk factors vs overrun" />
+                <RiskFactorCorrelation data={portfolio.riskCorrelations} />
+              </section>
+
+              {/* Row 5: Discipline mix by industry + Material vs labor */}
               <div className="grid gap-6 lg:grid-cols-2">
-                <section aria-labelledby="insights-07-heading">
-                  <h2 className="sr-only" id="insights-07-heading">Discipline mix by industry</h2>
-                  <SectionHeader step="07" title="Discipline mix by industry" />
+                <section aria-labelledby="insights-08-heading">
+                  <h2 className="sr-only" id="insights-08-heading">Discipline mix by industry</h2>
+                  <SectionHeader step="08" title="Discipline mix by industry" />
                   {portfolio.disciplineByIndustry.length > 0 ? (
                     <DisciplineMixByIndustry data={portfolio.disciplineByIndustry} />
                   ) : (
                     <SectionEmptyCard message="Not available for this dataset." />
                   )}
                 </section>
-                <section aria-labelledby="insights-08-heading">
-                  <h2 className="sr-only" id="insights-08-heading">Material cost vs labor hours</h2>
-                  <SectionHeader step="08" title="Material cost vs labor hours" />
+                <section aria-labelledby="insights-09-heading">
+                  <h2 className="sr-only" id="insights-09-heading">Material cost vs labor hours</h2>
+                  <SectionHeader step="09" title="Material cost vs labor hours" />
                   {portfolio.materialLabor.length > 0 ? (
                     <MaterialVsLabor data={portfolio.materialLabor} />
                   ) : (
@@ -359,22 +367,22 @@ export function BusinessInsightsView({
 
               {/* Conditional industry deep-dive: appears when exactly one industry is filter-selected */}
               {industryDetail && (
-                <section aria-labelledby="insights-09-heading">
-                  <h2 className="sr-only" id="insights-09-heading">Industry deep-dive</h2>
-                  <SectionHeader step="09" title={`Industry deep-dive · ${industryDetail.industry}`} />
+                <section aria-labelledby="insights-10-heading">
+                  <h2 className="sr-only" id="insights-10-heading">Industry deep-dive</h2>
+                  <SectionHeader step="10" title={`Industry deep-dive · ${industryDetail.industry}`} />
                   <IndustryDeepDive detail={industryDetail} />
                 </section>
               )}
 
               {/* Ranked project table (collapsed by default) */}
-              <section aria-labelledby="insights-10-heading">
-                <h2 className="sr-only" id="insights-10-heading">All projects</h2>
+              <section aria-labelledby="insights-11-heading">
+                <h2 className="sr-only" id="insights-11-heading">All projects</h2>
                 <details className="group">
                   <summary
                     className="list-none cursor-pointer select-none flex items-center gap-2 mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal rounded-sm"
                   >
                     <div className="eyebrow text-sm text-muted">
-                      10 · All projects
+                      11 · All projects
                     </div>
                     <span className="text-sm text-muted mono tnum">
                       ({portfolio.ranked.length})

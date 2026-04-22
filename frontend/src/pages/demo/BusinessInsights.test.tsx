@@ -103,7 +103,7 @@ describe("BusinessInsights page (shim → ComparisonInsights → BusinessInsight
 
   it("renders All Projects ranked section eyebrow", () => {
     renderWithProviders(<BusinessInsights />);
-    expect(screen.getByText(/10 · all projects/i)).toBeInTheDocument();
+    expect(screen.getByText(/11 · all projects/i)).toBeInTheDocument();
   });
 
   it("does not show loading state when data is present", () => {
