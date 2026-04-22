@@ -23,12 +23,12 @@ export function PageHeader({
   chips?: Chip[];
 }) {
   return (
-    <header className="flex items-end justify-between gap-6 pb-6 mb-8 border-b hairline flex-wrap">
+    <header className="flex items-end justify-between gap-4 sm:gap-6 pb-5 sm:pb-6 mb-6 sm:mb-8 border-b hairline flex-wrap">
       <div>
-        {eyebrow && <div className="eyebrow text-sm text-teal">{eyebrow}</div>}
-        <h1 className="display-hero text-4xl leading-none mt-2 text-ink">{title}</h1>
+        {eyebrow && <div className="eyebrow text-xs sm:text-sm text-teal">{eyebrow}</div>}
+        <h1 className="display-hero text-3xl sm:text-4xl leading-none mt-1.5 sm:mt-2 text-ink">{title}</h1>
         {description && (
-          <p className="text-sm text-muted mt-3 max-w-xl">{description}</p>
+          <p className="text-sm text-muted mt-2 sm:mt-3 max-w-xl">{description}</p>
         )}
       </div>
       {chips && chips.length > 0 && (

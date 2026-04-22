@@ -263,6 +263,72 @@ describe("buildPortfolio – ranked", () => {
       expect(typeof row.stations).toBe("number");
       expect(typeof row.total_hours).toBe("number");
       expect(typeof row.primary_bucket).toBe("string");
+      expect(typeof row.complexity).toBe("number");
+      expect(typeof row.peerCount).toBe("number");
     }
+  });
+});
+
+describe("buildPortfolio – R7 peer benchmarks", () => {
+  it("fills peer median/p10/p90 and flags high outliers at the same complexity tier", () => {
+    // Five projects at complexity=3 with a wide spread so peer std > 0.
+    // One is an extreme outlier (2000 hrs vs peers in 100-300 range).
+    const records: ProjectRecord[] = [
+      makeRecord({ project_id: "p1", me10_actual_hours: 100, complexity_score_1_5: 3 }),
+      makeRecord({ project_id: "p2", me10_actual_hours: 150, complexity_score_1_5: 3 }),
+      makeRecord({ project_id: "p3", me10_actual_hours: 200, complexity_score_1_5: 3 }),
+      makeRecord({ project_id: "p4", me10_actual_hours: 250, complexity_score_1_5: 3 }),
+      makeRecord({ project_id: "p5", me10_actual_hours: 2000, complexity_score_1_5: 3 }),
+    ];
+    const { ranked } = buildPortfolio(records);
+    const outlier = ranked.find((r) => r.project_id === "p5");
+    expect(outlier).toBeDefined();
+    expect(outlier!.outlierDirection).toBe("high");
+    expect(outlier!.peerMedian).not.toBeNull();
+    expect(outlier!.peerP10).not.toBeNull();
+    expect(outlier!.peerP90).not.toBeNull();
+    expect(outlier!.peerCount).toBe(4);
+  });
+
+  it("leaves peer fields null when the tier has fewer than 2 peers", () => {
+    // Only one record at complexity=3 → no peers.
+    const records: ProjectRecord[] = [
+      makeRecord({ project_id: "solo", me10_actual_hours: 200, complexity_score_1_5: 3 }),
+    ];
+    const { ranked } = buildPortfolio(records);
+    expect(ranked[0].peerMedian).toBeNull();
+    expect(ranked[0].outlierDirection).toBeNull();
+  });
+});
+
+describe("buildPortfolio – R5 risk correlations", () => {
+  it("returns a row per risk factor, sorted by correlation magnitude", () => {
+    // Build a dataset where custom_pct perfectly tracks overrun %.
+    const records: ProjectRecord[] = [];
+    for (let i = 0; i < 8; i++) {
+      const q = 100;
+      const a = 100 + i * 20; // overrun 0, 20%, 40%, ...
+      records.push(
+        makeRecord({
+          project_id: `p${i}`,
+          me10_actual_hours: a,
+          quoted_me10_hours: q,
+          custom_pct: i / 10,
+          complexity_score_1_5: 3,
+        }),
+      );
+    }
+    const { riskCorrelations } = buildPortfolio(records);
+    expect(riskCorrelations.length).toBeGreaterThan(0);
+    // Sorted by |r| desc.
+    for (let i = 1; i < riskCorrelations.length; i++) {
+      expect(Math.abs(riskCorrelations[i - 1].correlation))
+        .toBeGreaterThanOrEqual(Math.abs(riskCorrelations[i].correlation));
+    }
+    // custom_pct should have the strongest correlation (near +1).
+    const custom = riskCorrelations.find((r) => r.factor === "custom_pct");
+    expect(custom).toBeDefined();
+    expect(custom!.correlation).toBeGreaterThan(0.9);
+    expect(custom!.meaning).toMatch(/strong/i);
   });
 });

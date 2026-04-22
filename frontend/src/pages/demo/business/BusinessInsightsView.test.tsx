@@ -26,7 +26,9 @@ const FAKE_RECORDS: ProjectRecord[] = [
     stations_count: 4,
     complexity_score_1_5: 2,
     log_quoted_materials_cost: Math.log(1000),
+    quoted_materials_cost: 1000,
     me10_actual_hours: 150,
+    quoted_me10_hours: 140,
   },
   {
     project_id: "r2",
@@ -36,7 +38,9 @@ const FAKE_RECORDS: ProjectRecord[] = [
     stations_count: 6,
     complexity_score_1_5: 3,
     log_quoted_materials_cost: Math.log(2000),
+    quoted_materials_cost: 2000,
     me10_actual_hours: 250,
+    quoted_me10_hours: 230,
   },
 ];
 
@@ -54,20 +58,65 @@ describe("BusinessInsightsView — happy path", () => {
     expect(screen.getByText(/test · dataset/i)).toBeInTheDocument();
   });
 
-  it("renders all six section headings", () => {
+  it("renders the four sub-tabs with the right labels", () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    expect(screen.getByRole("tab", { name: /overview/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /accuracy/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /mix/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /projects/i })).toBeInTheDocument();
+  });
+
+  it("defaults to the Overview tab and renders its section headings", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    expect(screen.getByRole("tab", { name: /overview/i })).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("heading", { name: /portfolio kpis/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /hours by sales bucket/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /hours by industry/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /system category mix/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /hours by sales bucket/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /complexity vs hours/i })).toBeInTheDocument();
+    // Accuracy/Mix/Projects sections are NOT in the DOM on Overview.
+    expect(screen.queryByRole("heading", { name: /estimation accuracy/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /all projects/i })).not.toBeInTheDocument();
+  });
+
+  it("Accuracy tab renders Estimation accuracy + Risk factors, hides Overview sections", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    fireEvent.click(screen.getByRole("tab", { name: /accuracy/i }));
+    expect(screen.getByRole("heading", { name: /estimation accuracy/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /risk factors vs overrun/i })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: /portfolio kpis/i })).not.toBeInTheDocument();
+  });
+
+  it("Mix tab renders Discipline mix + Material vs labor", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    fireEvent.click(screen.getByRole("tab", { name: /mix/i }));
+    expect(screen.getByRole("heading", { name: /discipline mix by industry/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /material cost vs labor hours/i })).toBeInTheDocument();
+  });
+
+  it("Projects tab renders All projects heading", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    fireEvent.click(screen.getByRole("tab", { name: /projects/i }));
     expect(screen.getByRole("heading", { name: /all projects/i })).toBeInTheDocument();
   });
 
-  it("does not render any SectionEmptyCard when records have data", () => {
+  it("shows the industry deep-dive section at top of Overview when exactly one industry is selected", async () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    // Not selected by default
+    expect(screen.queryByRole("heading", { name: /industry deep-dive/i })).not.toBeInTheDocument();
+    const chipButtons = screen.getAllByRole("button");
+    const automotiveChip = chipButtons.find((b) => b.textContent === "Automotive");
+    expect(automotiveChip).toBeDefined();
+    fireEvent.click(automotiveChip!);
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /industry deep-dive/i })).toBeInTheDocument();
+    });
+  });
+
+  it("does not render any SectionEmptyCard on Overview when records have data", () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
     // SectionEmptyCard only appears for sections with no data; with valid records all
-    // sections should have content.
+    // Overview sections should have content.
     const emptyCards = screen.queryAllByText(/not available for this dataset\./i);
     expect(emptyCards).toHaveLength(0);
   });
@@ -75,6 +124,13 @@ describe("BusinessInsightsView — happy path", () => {
   it("does not render an error alert when there is no error", () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  it("renders the Download insights pack button when records are present", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    expect(
+      screen.getByRole("button", { name: /download insights pack/i }),
+    ).toBeInTheDocument();
   });
 });
 
@@ -203,15 +259,16 @@ describe("BusinessInsightsView — filter chip interaction", () => {
   });
 });
 
-function openAllProjectsDetails() {
-  const details = document.querySelector("details");
-  if (details) details.open = true;
+/** Switch to the Projects tab so the TopProjectsTable renders. */
+function openProjectsTab() {
+  const tab = screen.getByRole("tab", { name: /projects/i });
+  fireEvent.click(tab);
 }
 
 describe("BusinessInsightsView — table row click opens drawer", () => {
   it("clicking a table row opens the project detail drawer with the row's project name", async () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
-    openAllProjectsDetails();
+    openProjectsTab();
 
     // The drawer starts hidden (no project name visible as the dialog label)
     const dialog = document.querySelector("[role='dialog']");
@@ -236,7 +293,7 @@ describe("BusinessInsightsView — table row click opens drawer", () => {
 
   it("drawer closes when the X button is clicked", async () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
-    openAllProjectsDetails();
+    openProjectsTab();
 
     // Open the drawer
     const alphaCell = screen.getByText("Alpha Project");
@@ -259,7 +316,7 @@ describe("BusinessInsightsView — table row click opens drawer", () => {
 
   it("drawer closes on Escape key after being opened", async () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
-    openAllProjectsDetails();
+    openProjectsTab();
 
     const alphaCell = screen.getByText("Alpha Project");
     const rowEl = alphaCell.closest("[role='button']");

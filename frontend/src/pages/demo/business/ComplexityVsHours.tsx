@@ -83,7 +83,7 @@ export function ComplexityVsHours({ data }: Props) {
   const hasAny = rows.some((r) => r.count > 0);
 
   return (
-    <div className="card p-5 h-80 flex flex-col">
+    <div className="card p-4 sm:p-5 h-80 lg:h-96 flex flex-col">
       <div className="flex items-baseline justify-between gap-3 mb-2">
         <div className="eyebrow text-xs text-muted">
           Average hours per complexity level

@@ -101,9 +101,9 @@ describe("BusinessInsights page (shim → ComparisonInsights → BusinessInsight
     expect(screen.getAllByText(/complexity vs/i).length).toBeGreaterThanOrEqual(1);
   });
 
-  it("renders All Projects ranked section eyebrow", () => {
+  it("renders a Projects tab in the tab bar", () => {
     renderWithProviders(<BusinessInsights />);
-    expect(screen.getByText(/06 · all projects/i)).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /projects/i })).toBeInTheDocument();
   });
 
   it("does not show loading state when data is present", () => {

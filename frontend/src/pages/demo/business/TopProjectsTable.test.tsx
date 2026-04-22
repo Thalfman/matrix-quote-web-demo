@@ -6,6 +6,16 @@ import { renderWithProviders } from "@/test/render";
 import { TopProjectsTable } from "./TopProjectsTable";
 import type { RankedRow } from "./portfolioStats";
 
+const PEER_DEFAULTS = {
+  complexity: 3,
+  peerMedian: null,
+  peerP10: null,
+  peerP90: null,
+  peerCount: 0,
+  outlierZ: null,
+  outlierDirection: null,
+} as const;
+
 const ROWS: RankedRow[] = [
   {
     project_id: "p1",
@@ -15,6 +25,7 @@ const ROWS: RankedRow[] = [
     stations: 8,
     total_hours: 400,
     primary_bucket: "ME",
+    ...PEER_DEFAULTS,
   },
   {
     project_id: "p2",
@@ -24,6 +35,7 @@ const ROWS: RankedRow[] = [
     stations: 4,
     total_hours: 200,
     primary_bucket: "Build",
+    ...PEER_DEFAULTS,
   },
 ];
 
@@ -65,6 +77,7 @@ describe("TopProjectsTable", () => {
         stations: 10,
         total_hours: 12500,
         primary_bucket: "ME",
+        ...PEER_DEFAULTS,
       },
     ];
     renderWithProviders(<TopProjectsTable rows={rows} />);
@@ -104,6 +117,44 @@ describe("TopProjectsTable", () => {
     renderWithProviders(<TopProjectsTable rows={ROWS} />);
     expect(screen.getByText("ME")).toBeInTheDocument();
     expect(screen.getByText("Build")).toBeInTheDocument();
+  });
+
+  it("renders a HIGH outlier badge on rows flagged as high outliers", () => {
+    const rows: RankedRow[] = [
+      {
+        ...ROWS[0],
+        outlierDirection: "high",
+        outlierZ: 2.4,
+        peerMedian: 200,
+        peerP10: 150,
+        peerP90: 300,
+        peerCount: 4,
+      },
+    ];
+    renderWithProviders(<TopProjectsTable rows={rows} />);
+    expect(screen.getByText("HIGH")).toBeInTheDocument();
+  });
+
+  it("renders a LOW outlier badge on rows flagged as low outliers", () => {
+    const rows: RankedRow[] = [
+      {
+        ...ROWS[0],
+        outlierDirection: "low",
+        outlierZ: -2.1,
+        peerMedian: 500,
+        peerP10: 400,
+        peerP90: 700,
+        peerCount: 4,
+      },
+    ];
+    renderWithProviders(<TopProjectsTable rows={rows} />);
+    expect(screen.getByText("LOW")).toBeInTheDocument();
+  });
+
+  it("does not render an outlier badge when outlierDirection is null", () => {
+    renderWithProviders(<TopProjectsTable rows={ROWS} />);
+    expect(screen.queryByText("HIGH")).not.toBeInTheDocument();
+    expect(screen.queryByText("LOW")).not.toBeInTheDocument();
   });
 });
 

@@ -67,15 +67,20 @@ describe("ComparisonInsights — happy path", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders all six section headings when data is loaded", () => {
+  it("renders the four sub-tabs and Overview's section headings by default", () => {
     mockHookReturn = { data: FAKE_RECORDS, isLoading: false, error: null };
     renderWithProviders(<ComparisonInsights />);
+    // The four sub-tabs
+    expect(screen.getByRole("tab", { name: /overview/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /accuracy/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /mix/i })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: /projects/i })).toBeInTheDocument();
+    // Overview tab content
     expect(screen.getByRole("heading", { name: /portfolio kpis/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /hours by sales bucket/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /hours by industry/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /system category mix/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /complexity vs hours/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: /all projects/i })).toBeInTheDocument();
   });
 
   it("does not render an error alert when data loads successfully", () => {

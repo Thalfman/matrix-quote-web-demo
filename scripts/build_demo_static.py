@@ -37,6 +37,13 @@ OUT = REPO_ROOT / "frontend" / "public" / "demo-assets"
 SYNTHETIC_POOL_CAP = 500
 IDENTIFIER_COLS = ["project_id", "project_name", "year"]
 
+# Extra columns kept in the JSON emission beyond training features + targets so
+# the Business Insights dashboard can render estimation-accuracy and
+# material-vs-labor views. These are pass-through: the models don't use them.
+_OPS = [t[: -len("_actual_hours")] for t in TARGETS]  # e.g. ["me10", "me15", ...]
+QUOTED_HOUR_COLS = [f"quoted_{op}_hours" for op in _OPS]
+EXTRA_INSIGHT_COLS = QUOTED_HOUR_COLS + ["quoted_materials_cost"]
+
 
 def _die(msg: str) -> None:
     print(f"ERROR: {msg}", file=sys.stderr)
@@ -86,6 +93,9 @@ def _prep(df: pd.DataFrame) -> pd.DataFrame:
     for target in TARGETS:
         if target in df.columns:
             df[target] = pd.to_numeric(df[target], errors="coerce")
+    for col in EXTRA_INSIGHT_COLS:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors="coerce")
     return df
 
 
@@ -93,6 +103,7 @@ def _records(df: pd.DataFrame, include_targets: bool) -> list[dict]:
     keep = IDENTIFIER_COLS + QUOTE_CAT_FEATURES + list(QUOTE_NUM_FEATURES)
     if include_targets:
         keep = keep + [t for t in TARGETS if t in df.columns]
+    keep = keep + [c for c in EXTRA_INSIGHT_COLS if c in df.columns]
     keep = [c for c in keep if c in df.columns]
     out = df[keep].copy()
     # JSON can't serialize NaN/NaT; convert NaN numerics to null.

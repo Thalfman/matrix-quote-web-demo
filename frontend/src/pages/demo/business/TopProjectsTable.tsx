@@ -2,6 +2,7 @@ import { useState, useMemo, KeyboardEvent } from "react";
 import { ArrowDown, ArrowUp, ArrowUpDown, Download, Search } from "lucide-react";
 
 import { cn } from "@/lib/utils";
+import { useIsNarrow } from "@/lib/useMediaQuery";
 import { RankedRow } from "./portfolioStats";
 import { toCsv, downloadCsv } from "./csv";
 
@@ -43,6 +44,7 @@ export function TopProjectsTable({
   const [internalSearch, setInternalSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("total_hours");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
+  const isNarrow = useIsNarrow();
 
   const search = externalSearch ?? internalSearch;
 
@@ -159,7 +161,8 @@ export function TopProjectsTable({
         </div>
       </div>
 
-      {/* Column headers */}
+      {/* Column headers — hidden on narrow screens where rows render as stacked cards */}
+      {!isNarrow && (
       <div
         className="grid items-center gap-3 px-5 py-2.5 border-b hairline bg-paper/40"
         style={{ gridTemplateColumns: GRID_COLS }}
@@ -233,6 +236,7 @@ export function TopProjectsTable({
           );
         })}
       </div>
+      )}
 
       {/* Rows */}
       {sorted.length === 0 ? (
@@ -240,50 +244,112 @@ export function TopProjectsTable({
           No projects match the current filters.
         </div>
       ) : (
-        sorted.map((r, i) => (
-          <div
-            key={r.project_id || i}
-            role={onRowClick ? "button" : "row"}
-            tabIndex={onRowClick ? 0 : undefined}
-            onClick={onRowClick ? () => onRowClick(r) : undefined}
-            onKeyDown={onRowClick ? (e) => handleRowKeyDown(e, r) : undefined}
-            className={cn(
-              "grid items-center gap-3 px-5 py-3 border-b hairline last:border-b-0",
-              "transition-colors duration-150 ease-out",
-              onRowClick
-                ? "cursor-pointer hover:bg-tealSoft/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal"
-                : "hover:bg-paper/80",
-            )}
-            style={{ gridTemplateColumns: GRID_COLS }}
-          >
-            <div
-              role="cell"
-              className="text-sm text-ink truncate font-medium"
-              title={r.project_name}
+        sorted.map((r, i) => {
+          const rowBase = cn(
+            "border-b hairline last:border-b-0",
+            "transition-colors duration-150 ease-out",
+            onRowClick
+              ? "cursor-pointer hover:bg-tealSoft/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-teal"
+              : "hover:bg-paper/80",
+          );
+          const outlierChip = r.outlierDirection && (
+            <span
+              className={cn(
+                "shrink-0 text-[9px] eyebrow tracking-normal normal-case px-1.5 py-0.5 rounded-sm mono",
+                r.outlierDirection === "high"
+                  ? "bg-danger/10 text-danger"
+                  : "bg-success/10 text-success",
+              )}
+              title={
+                r.outlierDirection === "high"
+                  ? "Outlier: above peer hours for its complexity tier"
+                  : "Outlier: below peer hours for its complexity tier"
+              }
+              aria-label={r.outlierDirection === "high" ? "High outlier" : "Low outlier"}
             >
-              {r.project_name}
-            </div>
-            <div role="cell" className="text-sm text-muted truncate" title={r.industry}>
-              {r.industry}
-            </div>
-            <div role="cell" className="text-sm text-muted truncate" title={r.system_category}>
-              {r.system_category}
-            </div>
-            <div role="cell" className="mono tnum text-ink text-sm text-right">
-              {r.stations}
-            </div>
-            <div role="cell" className="mono tnum text-ink text-sm text-right">
-              {fmtHours.format(r.total_hours)}
-            </div>
+              {r.outlierDirection === "high" ? "HIGH" : "LOW"}
+            </span>
+          );
+          return (
             <div
-              role="cell"
-              className="text-xs eyebrow text-muted truncate"
-              title={r.primary_bucket}
+              key={r.project_id || i}
+              role={onRowClick ? "button" : "row"}
+              tabIndex={onRowClick ? 0 : undefined}
+              onClick={onRowClick ? () => onRowClick(r) : undefined}
+              onKeyDown={onRowClick ? (e) => handleRowKeyDown(e, r) : undefined}
+              className={rowBase}
             >
-              {r.primary_bucket}
+              {isNarrow ? (
+                <div className="px-4 py-3 flex flex-col gap-1.5">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <span
+                      className="text-sm text-ink font-medium truncate"
+                      title={r.project_name}
+                    >
+                      {r.project_name}
+                    </span>
+                    {outlierChip}
+                  </div>
+                  <div className="text-xs text-muted truncate">
+                    {r.industry}
+                    {r.system_category && (
+                      <>
+                        <span className="mx-1.5 opacity-50">·</span>
+                        {r.system_category}
+                      </>
+                    )}
+                  </div>
+                  <div className="flex items-baseline flex-wrap gap-x-4 gap-y-0.5 text-xs mono tnum text-muted mt-0.5">
+                    <span>
+                      <span className="text-muted">Hours </span>
+                      <span className="text-ink">{fmtHours.format(r.total_hours)}</span>
+                    </span>
+                    <span>
+                      <span className="text-muted">Stations </span>
+                      <span className="text-ink">{r.stations}</span>
+                    </span>
+                    <span className="eyebrow text-[10px] text-muted tracking-normal normal-case">
+                      {r.primary_bucket}
+                    </span>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="grid items-center gap-3 px-5 py-3"
+                  style={{ gridTemplateColumns: GRID_COLS }}
+                >
+                  <div
+                    role="cell"
+                    className="text-sm text-ink truncate font-medium flex items-center gap-2 min-w-0"
+                    title={r.project_name}
+                  >
+                    <span className="truncate">{r.project_name}</span>
+                    {outlierChip}
+                  </div>
+                  <div role="cell" className="text-sm text-muted truncate" title={r.industry}>
+                    {r.industry}
+                  </div>
+                  <div role="cell" className="text-sm text-muted truncate" title={r.system_category}>
+                    {r.system_category}
+                  </div>
+                  <div role="cell" className="mono tnum text-ink text-sm text-right">
+                    {r.stations}
+                  </div>
+                  <div role="cell" className="mono tnum text-ink text-sm text-right">
+                    {fmtHours.format(r.total_hours)}
+                  </div>
+                  <div
+                    role="cell"
+                    className="text-xs eyebrow text-muted truncate"
+                    title={r.primary_bucket}
+                  >
+                    {r.primary_bucket}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        ))
+          );
+        })
       )}
     </div>
   );

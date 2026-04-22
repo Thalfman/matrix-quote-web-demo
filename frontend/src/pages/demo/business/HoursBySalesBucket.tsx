@@ -47,7 +47,7 @@ export function HoursBySalesBucket({
     metric === "share" ? fmtPct.format(v) : fmtHours.format(v);
 
   return (
-    <div className="card p-5 h-80 flex flex-col">
+    <div className="card p-4 sm:p-5 h-80 lg:h-96 flex flex-col">
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="eyebrow text-xs text-muted">
           {metric === "total"

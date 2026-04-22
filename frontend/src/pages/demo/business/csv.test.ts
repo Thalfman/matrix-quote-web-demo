@@ -13,6 +13,13 @@ function makeRow(overrides: Partial<RankedRow> = {}): RankedRow {
     stations: 4,
     total_hours: 200,
     primary_bucket: "ME",
+    complexity: 3,
+    peerMedian: null,
+    peerP10: null,
+    peerP90: null,
+    peerCount: 0,
+    outlierZ: null,
+    outlierDirection: null,
     ...overrides,
   };
 }

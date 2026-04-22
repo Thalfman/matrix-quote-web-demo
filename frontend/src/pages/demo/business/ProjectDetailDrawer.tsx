@@ -123,6 +123,52 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
                   />
                 </div>
               </section>
+
+              {/* Peer benchmark (R7) */}
+              {row.peerMedian != null && row.peerP10 != null && row.peerP90 != null && (
+                <section>
+                  <div className="eyebrow text-xs text-muted mb-3 flex items-center gap-2">
+                    <span>Peer benchmark</span>
+                    {row.outlierDirection && (
+                      <span
+                        className={cn(
+                          "text-[9px] eyebrow tracking-normal normal-case px-1.5 py-0.5 rounded-sm mono",
+                          row.outlierDirection === "high"
+                            ? "bg-danger/10 text-danger"
+                            : "bg-success/10 text-success",
+                        )}
+                      >
+                        {row.outlierDirection === "high" ? "HIGH OUTLIER" : "LOW OUTLIER"}
+                      </span>
+                    )}
+                  </div>
+                  <div>
+                    <Field
+                      label={`Complexity tier ${Math.round(row.complexity)}`}
+                      value={`${row.peerCount} peer${row.peerCount === 1 ? "" : "s"}`}
+                      mono={false}
+                    />
+                    <Field
+                      label="Peer median"
+                      value={`${row.peerMedian.toLocaleString("en-US", { maximumFractionDigits: 0 })} h`}
+                    />
+                    <Field
+                      label="Peer p10–p90"
+                      value={`${row.peerP10.toLocaleString("en-US", { maximumFractionDigits: 0 })}–${row.peerP90.toLocaleString("en-US", { maximumFractionDigits: 0 })} h`}
+                    />
+                    {row.outlierZ != null && (
+                      <Field
+                        label="Z-score"
+                        value={row.outlierZ.toLocaleString("en-US", {
+                          maximumFractionDigits: 2,
+                          minimumFractionDigits: 2,
+                          signDisplay: "exceptZero",
+                        })}
+                      />
+                    )}
+                  </div>
+                </section>
+              )}
             </div>
 
             {/* Footer hint */}
