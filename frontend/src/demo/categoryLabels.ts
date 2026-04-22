@@ -1,3 +1,4 @@
+/** Maps each of the 12 `*_actual_hours` model targets to the business-language work-category label shown in QuoteResultPanel's per-category breakdown. */
 export const CATEGORY_LABEL: Record<string, string> = {
   me10_actual_hours: "Mechanical Engineering — primary",
   me15_actual_hours: "Mechanical Engineering — detailing",

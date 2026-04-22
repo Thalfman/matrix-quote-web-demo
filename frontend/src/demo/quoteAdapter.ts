@@ -1,3 +1,4 @@
+/** Adapter that transforms raw Pyodide prediction + feature importances + model metrics into a UnifiedQuoteResult for QuoteResultPanel. */
 import type { QuoteInput } from "@/api/types";
 import { type FeatureStats, type ProjectRecord, QUOTE_NUM_FIELDS } from "@/demo/realProjects";
 import { nearestK } from "@/lib/nearestNeighbor";

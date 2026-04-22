@@ -1,3 +1,4 @@
+/** Fetches `model_metrics_{real|synthetic}.json` and exposes per-target R²/MAE data used by the adapter to compute confidence chips. */
 import { useQuery } from "@tanstack/react-query";
 
 import { DEMO_ASSETS } from "@/lib/demoMode";

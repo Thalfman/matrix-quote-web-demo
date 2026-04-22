@@ -1,3 +1,4 @@
+/** Canonical result shape produced by the adapter and consumed by QuoteResultPanel — shared by both Real and Synthetic Quote tabs. */
 export interface UnifiedQuoteResult {
   estimateHours: number;
   likelyRangeLow: number;

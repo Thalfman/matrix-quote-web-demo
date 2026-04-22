@@ -1,3 +1,4 @@
+/** Manages the Pyodide runtime and lazy-loads one or both model bundles (Dataset "real" | "synthetic") on demand, caching each after first load. */
 import { QuoteInput, QuotePrediction } from "@/api/types";
 import { DEMO_ASSETS } from "@/lib/demoMode";
 

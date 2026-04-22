@@ -1,3 +1,4 @@
+/** "What this is trained on" disclosure popover — variant="real" describes 24 historical projects, variant="synthetic" describes the 500-row generated training pool. */
 import { Info } from "lucide-react";
 
 import { cn } from "@/lib/utils";
