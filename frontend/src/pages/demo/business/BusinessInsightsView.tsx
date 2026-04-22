@@ -1,12 +1,13 @@
 import { useMemo, useState, useCallback } from "react";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Download } from "lucide-react";
 
 import { DataProvenanceNote } from "@/components/DataProvenanceNote";
 import { PageHeader } from "@/components/PageHeader";
 import { ProjectRecord } from "@/demo/realProjects";
+import { cn } from "@/lib/utils";
 
 import { buildPortfolio, computeIndustryDetail } from "./portfolioStats";
-import type { RankedRow } from "./portfolioStats";
+import type { RankedRow, PortfolioStats } from "./portfolioStats";
 import { PortfolioKpis } from "./PortfolioKpis";
 import { HoursBySalesBucket } from "./HoursBySalesBucket";
 import { HoursByIndustry } from "./HoursByIndustry";
@@ -21,6 +22,7 @@ import { DisciplineMixByIndustry } from "./DisciplineMixByIndustry";
 import { MaterialVsLabor } from "./MaterialVsLabor";
 import { IndustryDeepDive } from "./IndustryDeepDive";
 import { RiskFactorCorrelation } from "./RiskFactorCorrelation";
+import { buildInsightsPack, downloadBlob, packFilename } from "./exportPack";
 
 type Props = {
   records: ProjectRecord[] | undefined;
@@ -217,6 +219,18 @@ export function BusinessInsightsView({
     setFilter(next);
   }, []);
 
+  const [isPackBuilding, setIsPackBuilding] = useState(false);
+  const handleDownloadPack = useCallback(async (pack: PortfolioStats) => {
+    setIsPackBuilding(true);
+    try {
+      const now = new Date();
+      const blob = await buildInsightsPack(pack, datasetLabel, now);
+      downloadBlob(blob, packFilename(datasetLabel, now));
+    } finally {
+      setIsPackBuilding(false);
+    }
+  }, [datasetLabel]);
+
   return (
     <>
       <PageHeader
@@ -267,6 +281,29 @@ export function BusinessInsightsView({
             totalCount={records.length}
             filteredCount={filteredRecords.length}
           />
+
+          {/* Page-level action row: download the whole insights pack. Scope is
+              the current filtered view, so "what I see is what I get". */}
+          {portfolio && (
+            <div className="flex items-center justify-end -mt-6">
+              <button
+                type="button"
+                onClick={() => handleDownloadPack(portfolio)}
+                disabled={isPackBuilding}
+                className={cn(
+                  "inline-flex items-center gap-1.5 text-sm eyebrow px-2.5 py-1.5 rounded-sm",
+                  "border hairline bg-surface text-muted hover:text-ink hover:bg-paper",
+                  "transition-colors duration-150 ease-out",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
+                  "disabled:opacity-50 disabled:cursor-not-allowed",
+                )}
+                title="Download a zip with the filtered CSV, raw JSON, and a one-page summary"
+              >
+                <Download size={12} strokeWidth={1.75} aria-hidden="true" />
+                {isPackBuilding ? "Building…" : "Download insights pack"}
+              </button>
+            </div>
+          )}
 
           {portfolio ? (
             <>

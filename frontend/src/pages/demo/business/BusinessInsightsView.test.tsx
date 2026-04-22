@@ -97,6 +97,13 @@ describe("BusinessInsightsView — happy path", () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
+
+  it("renders the Download insights pack button when records are present", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    expect(
+      screen.getByRole("button", { name: /download insights pack/i }),
+    ).toBeInTheDocument();
+  });
 });
 
 describe("BusinessInsightsView — loading state", () => {
