@@ -26,7 +26,9 @@ const FAKE_RECORDS: ProjectRecord[] = [
     stations_count: 4,
     complexity_score_1_5: 2,
     log_quoted_materials_cost: Math.log(1000),
+    quoted_materials_cost: 1000,
     me10_actual_hours: 150,
+    quoted_me10_hours: 140,
   },
   {
     project_id: "r2",
@@ -36,7 +38,9 @@ const FAKE_RECORDS: ProjectRecord[] = [
     stations_count: 6,
     complexity_score_1_5: 3,
     log_quoted_materials_cost: Math.log(2000),
+    quoted_materials_cost: 2000,
     me10_actual_hours: 250,
+    quoted_me10_hours: 230,
   },
 ];
 
@@ -54,14 +58,30 @@ describe("BusinessInsightsView — happy path", () => {
     expect(screen.getByText(/test · dataset/i)).toBeInTheDocument();
   });
 
-  it("renders all six section headings", () => {
+  it("renders all section headings", () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
     expect(screen.getByRole("heading", { name: /portfolio kpis/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /hours by sales bucket/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /hours by industry/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /system category mix/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /complexity vs hours/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /estimation accuracy/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /discipline mix by industry/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /material cost vs labor hours/i })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /all projects/i })).toBeInTheDocument();
+  });
+
+  it("shows the industry deep-dive section only when exactly one industry is selected", async () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    // Not selected by default
+    expect(screen.queryByRole("heading", { name: /industry deep-dive/i })).not.toBeInTheDocument();
+    const chipButtons = screen.getAllByRole("button");
+    const automotiveChip = chipButtons.find((b) => b.textContent === "Automotive");
+    expect(automotiveChip).toBeDefined();
+    fireEvent.click(automotiveChip!);
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /industry deep-dive/i })).toBeInTheDocument();
+    });
   });
 
   it("does not render any SectionEmptyCard when records have data", () => {

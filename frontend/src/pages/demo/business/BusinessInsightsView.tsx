@@ -5,7 +5,7 @@ import { DataProvenanceNote } from "@/components/DataProvenanceNote";
 import { PageHeader } from "@/components/PageHeader";
 import { ProjectRecord } from "@/demo/realProjects";
 
-import { buildPortfolio } from "./portfolioStats";
+import { buildPortfolio, computeIndustryDetail } from "./portfolioStats";
 import type { RankedRow } from "./portfolioStats";
 import { PortfolioKpis } from "./PortfolioKpis";
 import { HoursBySalesBucket } from "./HoursBySalesBucket";
@@ -16,6 +16,10 @@ import { TopProjectsTable } from "./TopProjectsTable";
 import { InsightsFilters, InsightsFilterState } from "./InsightsFilters";
 import { DEFAULT_FILTER } from "./insightsFilterDefaults";
 import { ProjectDetailDrawer } from "./ProjectDetailDrawer";
+import { EstimationAccuracy } from "./EstimationAccuracy";
+import { DisciplineMixByIndustry } from "./DisciplineMixByIndustry";
+import { MaterialVsLabor } from "./MaterialVsLabor";
+import { IndustryDeepDive } from "./IndustryDeepDive";
 
 type Props = {
   records: ProjectRecord[] | undefined;
@@ -162,6 +166,28 @@ export function BusinessInsightsView({
     [filteredRecords],
   );
 
+  // Portfolio-wide (unfiltered) median overrun — baseline the deep-dive card
+  // compares the selected industry against.
+  const portfolioMedianOverrun = useMemo(() => {
+    if (!records || records.length === 0) return null;
+    return buildPortfolio(records).accuracy.medianOverrunPct;
+  }, [records]);
+
+  // Industry deep-dive activates when exactly one industry filter is selected
+  // (and no category filter narrows the record set further, to keep the
+  // "this is the industry" framing unambiguous).
+  const deepDiveIndustry =
+    filter.industries.size === 1 ? Array.from(filter.industries)[0] : null;
+
+  const industryDetail = useMemo(() => {
+    if (!deepDiveIndustry || filteredRecords.length === 0) return null;
+    return computeIndustryDetail(
+      filteredRecords,
+      deepDiveIndustry,
+      portfolioMedianOverrun,
+    );
+  }, [deepDiveIndustry, filteredRecords, portfolioMedianOverrun]);
+
   const isEmpty = !isLoading && !error && (!records || records.length === 0);
 
   const handleIndustryClick = useCallback((name: string) => {
@@ -302,15 +328,53 @@ export function BusinessInsightsView({
                 </section>
               </div>
 
-              {/* Ranked project table (collapsed by default) */}
+              {/* Row 3: Estimation accuracy (full width) */}
               <section aria-labelledby="insights-06-heading">
-                <h2 className="sr-only" id="insights-06-heading">All projects</h2>
+                <h2 className="sr-only" id="insights-06-heading">Estimation accuracy</h2>
+                <SectionHeader step="06" title="Estimation accuracy" />
+                <EstimationAccuracy data={portfolio.accuracy} />
+              </section>
+
+              {/* Row 4: Discipline mix by industry + Material vs labor */}
+              <div className="grid gap-6 lg:grid-cols-2">
+                <section aria-labelledby="insights-07-heading">
+                  <h2 className="sr-only" id="insights-07-heading">Discipline mix by industry</h2>
+                  <SectionHeader step="07" title="Discipline mix by industry" />
+                  {portfolio.disciplineByIndustry.length > 0 ? (
+                    <DisciplineMixByIndustry data={portfolio.disciplineByIndustry} />
+                  ) : (
+                    <SectionEmptyCard message="Not available for this dataset." />
+                  )}
+                </section>
+                <section aria-labelledby="insights-08-heading">
+                  <h2 className="sr-only" id="insights-08-heading">Material cost vs labor hours</h2>
+                  <SectionHeader step="08" title="Material cost vs labor hours" />
+                  {portfolio.materialLabor.length > 0 ? (
+                    <MaterialVsLabor data={portfolio.materialLabor} />
+                  ) : (
+                    <SectionEmptyCard message="Not available for this dataset." />
+                  )}
+                </section>
+              </div>
+
+              {/* Conditional industry deep-dive: appears when exactly one industry is filter-selected */}
+              {industryDetail && (
+                <section aria-labelledby="insights-09-heading">
+                  <h2 className="sr-only" id="insights-09-heading">Industry deep-dive</h2>
+                  <SectionHeader step="09" title={`Industry deep-dive · ${industryDetail.industry}`} />
+                  <IndustryDeepDive detail={industryDetail} />
+                </section>
+              )}
+
+              {/* Ranked project table (collapsed by default) */}
+              <section aria-labelledby="insights-10-heading">
+                <h2 className="sr-only" id="insights-10-heading">All projects</h2>
                 <details className="group">
                   <summary
                     className="list-none cursor-pointer select-none flex items-center gap-2 mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal rounded-sm"
                   >
                     <div className="eyebrow text-sm text-muted">
-                      06 · All projects
+                      10 · All projects
                     </div>
                     <span className="text-sm text-muted mono tnum">
                       ({portfolio.ranked.length})
