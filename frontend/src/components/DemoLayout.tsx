@@ -1,4 +1,5 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -9,7 +10,16 @@ const NAV = [
   { to: "/ml-tool", label: "Machine Learning Tool" },
 ];
 
+function activeLabel(pathname: string): string {
+  const match = NAV.find((n) => (n.end ? pathname === n.to : pathname.startsWith(n.to)));
+  return match?.label ?? "Matrix";
+}
+
 export function DemoLayout() {
+  const { pathname } = useLocation();
+  const isHome = pathname === "/";
+  const label = activeLabel(pathname);
+
   return (
     <div className="min-h-screen flex bg-paper">
       <aside className="hidden lg:flex w-60 shrink-0 flex-col bg-ink text-white p-6 gap-8">
@@ -50,8 +60,23 @@ export function DemoLayout() {
 
       <main className="flex-1 min-w-0">
         <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b hairline bg-surface">
-          <div className="display-hero text-lg leading-none">Matrix</div>
-          <span className="text-[10px] eyebrow px-2 py-1 rounded-sm bg-amber/20 text-amber">
+          <div className="flex items-center gap-3 min-w-0">
+            {isHome ? (
+              <div className="display-hero text-lg leading-none">Matrix</div>
+            ) : (
+              <>
+                <Link
+                  to="/"
+                  aria-label="Back to demo home"
+                  className="inline-flex items-center justify-center w-8 h-8 -ml-1 rounded-sm text-muted hover:text-ink hover:bg-black/5"
+                >
+                  <ArrowLeft size={16} strokeWidth={2} />
+                </Link>
+                <div className="display-hero text-base leading-none truncate">{label}</div>
+              </>
+            )}
+          </div>
+          <span className="text-[10px] eyebrow px-2 py-1 rounded-sm bg-amber/20 text-amber shrink-0">
             Demo
           </span>
         </div>

@@ -18,7 +18,7 @@ export function QuotesFilters({
   onChange,
 }: Props) {
   return (
-    <div className="card flex items-stretch overflow-hidden">
+    <div className="card flex flex-col md:flex-row md:items-stretch overflow-hidden divide-y divide-line md:divide-y-0 md:divide-x">
       <div className="relative flex-1 min-w-0 flex items-center">
         <Search
           size={14}
@@ -33,8 +33,7 @@ export function QuotesFilters({
           className="flex-1 bg-transparent pl-9 pr-3 py-2.5 text-sm outline-none placeholder:text-muted"
         />
       </div>
-      <div className="w-px bg-line" aria-hidden="true" />
-      <label className="flex items-center gap-2 px-3 py-2.5">
+      <label className="flex items-center justify-between md:justify-start gap-2 px-3 py-2.5">
         <span className="eyebrow text-[10px] text-muted">Project</span>
         <select
           value={project ?? ""}
@@ -50,8 +49,7 @@ export function QuotesFilters({
           ))}
         </select>
       </label>
-      <div className="w-px bg-line" aria-hidden="true" />
-      <label className="flex items-center gap-2 px-3 py-2.5">
+      <label className="flex items-center justify-between md:justify-start gap-2 px-3 py-2.5">
         <span className="eyebrow text-[10px] text-muted">Industry</span>
         <select
           value={industry ?? ""}
