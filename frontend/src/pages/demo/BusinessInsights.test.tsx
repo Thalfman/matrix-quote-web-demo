@@ -61,8 +61,11 @@ describe("BusinessInsights page (shim → ComparisonInsights → BusinessInsight
 
   it("renders the dataset eyebrow label", () => {
     renderWithProviders(<BusinessInsights />);
-    // DatasetLabel is "Comparison · Real projects" → eyebrow says "Insights · Comparison · Real projects"
-    expect(screen.getByText(/comparison · real projects/i)).toBeInTheDocument();
+    // DatasetLabel is "Real Data · Historical projects" → eyebrow says
+    // "Insights · Real Data · Historical projects"
+    expect(
+      screen.getByText(/real data · historical projects/i),
+    ).toBeInTheDocument();
   });
 
   it("renders the project count chip", () => {

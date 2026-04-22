@@ -4,16 +4,16 @@ Run after any schema change to QuoteInput or after training-pipeline changes:
     python scripts/generate_demo_assets.py
 
 Outputs (checked in):
-    demo_assets/data/master/projects_master.parquet
-    demo_assets/models/metrics_summary.csv
-    demo_assets/models/*.joblib
-    demo_assets/models/metrics_history.parquet
-    demo_assets/models/calibration.parquet
+    demo_assets/models_real/*.joblib          (n=24 real projects)
+    demo_assets/models_real/metrics_summary.csv
+    demo_assets/models_synthetic/*.joblib     (n=500 synthetic projects)
+    demo_assets/models_synthetic/metrics_summary.csv
+    demo_assets/models_synthetic/metrics_history.parquet
+    demo_assets/models_synthetic/calibration.parquet
 
-Training uses core.models.train_one_op in a loop over core.config.TARGETS — the
-same pattern as scripts/build_test_fixtures.py. The original plan referenced
-service.train_lib.train_all_operations which does not exist; train_one_op is the
-correct entry point into the vendored ML library.
+Both bundles are trained through the IDENTICAL train_one_op call with default
+hyperparameters.  No hyperparameter overrides on either side.  The real-side
+overfit (low R²) is intentional — it drives the "today vs at-scale" demo story.
 """
 
 from __future__ import annotations
@@ -29,39 +29,39 @@ import pandas as pd
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEMO_ROOT = REPO_ROOT / "demo_assets"
 
+REAL_CSV      = DEMO_ROOT / "data" / "real" / "projects_real.csv"
+SYNTHETIC_CSV = DEMO_ROOT / "data" / "synthetic" / "projects_synthetic.csv"
 
-def build_master(n: int = 300) -> pd.DataFrame:
-    sys.path.insert(0, str(REPO_ROOT))
-    from scripts.build_test_fixtures import build_synthetic_master
-    return build_synthetic_master(n)
+MODELS_REAL      = DEMO_ROOT / "models_real"
+MODELS_SYNTHETIC = DEMO_ROOT / "models_synthetic"
 
 
-def train_and_write_models(df: pd.DataFrame, out_models: Path) -> pd.DataFrame:
+def train_bundle(df: pd.DataFrame, out_dir: Path) -> pd.DataFrame:
+    """Train 12 GBR models with default hyperparameters; write joblibs + metrics."""
     sys.path.insert(0, str(REPO_ROOT))
     from core.config import TARGETS
     from core.models import train_one_op
 
-    out_models.mkdir(parents=True, exist_ok=True)
-    metrics_rows = []
+    out_dir.mkdir(parents=True, exist_ok=True)
+    rows = []
     for target in TARGETS:
-        result = train_one_op(df, target, models_dir=str(out_models), version="v1")
+        # NOTE: identical call on both sides. No hyperparameter override.
+        result = train_one_op(df, target, models_dir=str(out_dir), version="v1")
         if result:
-            metrics_rows.append(result)
+            rows.append(result)
             print(f"  trained {target}")
         else:
             print(f"  skipped {target} (not enough data)")
-    summary_df = pd.DataFrame(metrics_rows)
-    summary_df.to_csv(out_models / "metrics_summary.csv", index=False)
-    return summary_df
+    summary = pd.DataFrame(rows)
+    summary.to_csv(out_dir / "metrics_summary.csv", index=False)
+    return summary
 
 
-def write_metrics_history(out_models: Path) -> None:
-    """Synthetic per-run history: 6 runs stepping down MAPE over the last 6 months,
-    plus per-op x quarter rows so the MAPE heatmap has data.
+def write_metrics_history(out_dir: Path) -> None:
+    """Synthetic per-run history for the Insights accuracy heatmap.
 
-    The `operation` column uses the actual TARGETS codes (e.g. 'me10_actual_hours')
-    so the values match what a real training-pipeline run would write and the
-    accuracy_heatmap aggregator in backend/app/insights.py can display them directly.
+    Preserved on the synthetic side only — real-side metrics are too noisy for
+    a history chart to be meaningful.
     """
     sys.path.insert(0, str(REPO_ROOT))
     from core.config import TARGETS
@@ -93,10 +93,10 @@ def write_metrics_history(out_models: Path) -> None:
                 "quarter": q,
                 "mape": float(max(5.0, 12 + rng.normal(0, 3))),
             })
-    pd.DataFrame(runs + heat_rows).to_parquet(out_models / "metrics_history.parquet", index=False)
+    pd.DataFrame(runs + heat_rows).to_parquet(out_dir / "metrics_history.parquet", index=False)
 
 
-def write_calibration(df: pd.DataFrame, out_models: Path) -> None:
+def write_calibration(df: pd.DataFrame, out_dir: Path) -> None:
     """Synthetic calibration: predicted low/high/actual points, ~90% inside band."""
     rng = np.random.default_rng(13)
     n = 120
@@ -112,31 +112,42 @@ def write_calibration(df: pd.DataFrame, out_models: Path) -> None:
         "predicted_high": high,
         "actual": actual,
         "inside_band": inside_band,
-    }).to_parquet(out_models / "calibration.parquet", index=False)
+    }).to_parquet(out_dir / "calibration.parquet", index=False)
 
 
 def main() -> None:
-    (DEMO_ROOT / "data" / "master").mkdir(parents=True, exist_ok=True)
-    out_models = DEMO_ROOT / "models"
-    out_models.mkdir(parents=True, exist_ok=True)
+    # --- Validate inputs ---
+    if not REAL_CSV.exists():
+        print(f"ERROR: {REAL_CSV} not found", file=sys.stderr)
+        sys.exit(1)
+    if not SYNTHETIC_CSV.exists():
+        print(f"ERROR: {SYNTHETIC_CSV} not found", file=sys.stderr)
+        sys.exit(1)
 
-    print("Building synthetic master dataset (n=300)...")
-    df = build_master()
-    df.to_parquet(DEMO_ROOT / "data" / "master" / "projects_master.parquet", index=False)
-    print(f"  Wrote projects_master.parquet ({len(df)} rows)")
+    real_df = pd.read_csv(REAL_CSV)
+    syn_df  = pd.read_csv(SYNTHETIC_CSV)
 
-    print("Training models...")
-    train_and_write_models(df, out_models)
-    joblib_count = len(list(out_models.glob("*.joblib")))
-    print(f"  Wrote metrics_summary.csv + {joblib_count} joblib files")
+    print(f"Training real bundle   (n={len(real_df)}) -> {MODELS_REAL.name}/")
+    train_bundle(real_df, MODELS_REAL)
 
-    print("Writing metrics_history.parquet...")
-    write_metrics_history(out_models)
+    print(f"\nTraining synthetic bundle (n={len(syn_df)}) -> {MODELS_SYNTHETIC.name}/")
+    train_bundle(syn_df, MODELS_SYNTHETIC)
 
-    print("Writing calibration.parquet...")
-    write_calibration(df, out_models)
+    # Preserve metrics_history and calibration on synthetic side only.
+    print("\nWriting metrics_history.parquet (synthetic)...")
+    write_metrics_history(MODELS_SYNTHETIC)
 
-    print(f"\nWrote demo assets under {DEMO_ROOT}")
+    print("Writing calibration.parquet (synthetic)...")
+    write_calibration(syn_df, MODELS_SYNTHETIC)
+
+    real_jl = len(list(MODELS_REAL.glob("*.joblib")))
+    syn_jl  = len(list(MODELS_SYNTHETIC.glob("*.joblib")))
+    print(
+        f"\nDone.\n"
+        f"  {MODELS_REAL.name}/  : {real_jl} joblibs + metrics_summary.csv\n"
+        f"  {MODELS_SYNTHETIC.name}/: {syn_jl} joblibs + metrics_summary.csv"
+        f" + metrics_history.parquet + calibration.parquet"
+    )
 
 
 if __name__ == "__main__":

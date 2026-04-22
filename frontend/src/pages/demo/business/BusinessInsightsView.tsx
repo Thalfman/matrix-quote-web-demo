@@ -1,6 +1,7 @@
 import { useMemo, useState, useCallback } from "react";
 import { AlertTriangle } from "lucide-react";
 
+import { DataProvenanceNote } from "@/components/DataProvenanceNote";
 import { PageHeader } from "@/components/PageHeader";
 import { ProjectRecord } from "@/demo/realProjects";
 
@@ -208,6 +209,7 @@ export function BusinessInsightsView({
             : []
         }
       />
+      <DataProvenanceNote variant={source} />
 
       {error ? (
         <div

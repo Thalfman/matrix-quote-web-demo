@@ -1,2 +1,4 @@
 demo_assets/models/**/*.joblib filter=lfs diff=lfs merge=lfs -text
+demo_assets/models_real/**/*.joblib filter=lfs diff=lfs merge=lfs -text
+demo_assets/models_synthetic/**/*.joblib filter=lfs diff=lfs merge=lfs -text
 tests/fixtures/tiny_models/**/*.joblib filter=lfs diff=lfs merge=lfs -text

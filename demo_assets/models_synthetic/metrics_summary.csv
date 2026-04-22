@@ -1,0 +1,13 @@
+target,version,rows,mae,r2,model_path
+me10_actual_hours,v1,499,294.53756113823243,0.23157419943258573,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\me10_actual_hours_v1.joblib
+me15_actual_hours,v1,500,68.13325850380353,0.198034280375894,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\me15_actual_hours_v1.joblib
+me230_actual_hours,v1,500,159.50837621325405,-0.06926303820813473,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\me230_actual_hours_v1.joblib
+ee20_actual_hours,v1,500,156.4105152906338,0.13813664496750422,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\ee20_actual_hours_v1.joblib
+rb30_actual_hours,v1,466,443.9596952816029,0.011606526155887309,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\rb30_actual_hours_v1.joblib
+cp50_actual_hours,v1,367,236.69741702755587,0.002139852381372487,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\cp50_actual_hours_v1.joblib
+bld100_actual_hours,v1,500,632.3643607362641,-0.27371567446940626,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\bld100_actual_hours_v1.joblib
+shp150_actual_hours,v1,498,54.40262995241774,0.19729456962821146,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\shp150_actual_hours_v1.joblib
+inst160_actual_hours,v1,500,240.38171566378657,0.1381562158943339,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\inst160_actual_hours_v1.joblib
+trv180_actual_hours,v1,500,55.18156726063431,0.16906224133674896,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\trv180_actual_hours_v1.joblib
+doc190_actual_hours,v1,500,62.16132744654661,0.07057037434357627,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\doc190_actual_hours_v1.joblib
+pm200_actual_hours,v1,499,223.43209119042723,0.049023673736650286,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_synthetic\pm200_actual_hours_v1.joblib

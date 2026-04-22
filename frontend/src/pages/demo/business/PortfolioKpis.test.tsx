@@ -17,7 +17,8 @@ const BASE_KPIS: PortfolioKpisType = {
 describe("PortfolioKpis", () => {
   it("renders all four card labels", () => {
     renderWithProviders(<PortfolioKpis kpis={BASE_KPIS} />);
-    expect(screen.getByText(/projects/i)).toBeInTheDocument();
+    // "Projects" appears as the exact eyebrow label AND as part of "billed projects" meta
+    expect(screen.getByText(/^projects$/i)).toBeInTheDocument();
     expect(screen.getByText(/total hours/i)).toBeInTheDocument();
     expect(screen.getByText(/avg hours \/ project/i)).toBeInTheDocument();
     expect(screen.getByText(/avg materials cost/i)).toBeInTheDocument();
@@ -50,14 +51,14 @@ describe("PortfolioKpis", () => {
     expect(screen.getByText(/median 490/i)).toBeInTheDocument();
   });
 
-  it("renders 'real historical' meta on Projects card when source is real (default)", () => {
+  it("renders 'billed projects' meta on Projects card when source is real (default)", () => {
     renderWithProviders(<PortfolioKpis kpis={BASE_KPIS} />);
-    expect(screen.getByText("real historical")).toBeInTheDocument();
+    expect(screen.getByText("billed projects")).toBeInTheDocument();
   });
 
-  it("renders 'synthetic pool' meta on Projects card when source is synthetic", () => {
+  it("renders 'training projects' meta on Projects card when source is synthetic", () => {
     renderWithProviders(<PortfolioKpis kpis={BASE_KPIS} source="synthetic" />);
-    expect(screen.getByText("synthetic pool")).toBeInTheDocument();
+    expect(screen.getByText("training projects")).toBeInTheDocument();
   });
 
   it("renders accent stripe only on the Projects card", () => {

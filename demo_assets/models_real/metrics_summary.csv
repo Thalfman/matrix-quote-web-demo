@@ -1,0 +1,13 @@
+target,version,rows,mae,r2,model_path
+me10_actual_hours,v1,22,129.90799244516106,-1.9289575555162952,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\me10_actual_hours_v1.joblib
+me15_actual_hours,v1,22,69.32405776035588,-0.6293068732937506,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\me15_actual_hours_v1.joblib
+me230_actual_hours,v1,24,45.70140683891856,0.7737716879638434,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\me230_actual_hours_v1.joblib
+ee20_actual_hours,v1,23,77.88952127685569,0.09646933699657712,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\ee20_actual_hours_v1.joblib
+rb30_actual_hours,v1,21,226.7715500814633,-0.7452235720181668,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\rb30_actual_hours_v1.joblib
+cp50_actual_hours,v1,17,148.91438397967744,-0.16900157156967022,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\cp50_actual_hours_v1.joblib
+bld100_actual_hours,v1,24,225.77488529186607,0.7258117561512747,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\bld100_actual_hours_v1.joblib
+shp150_actual_hours,v1,22,34.10700008197315,-0.3595960686172939,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\shp150_actual_hours_v1.joblib
+inst160_actual_hours,v1,22,75.83795104117911,0.5959548630031265,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\inst160_actual_hours_v1.joblib
+trv180_actual_hours,v1,21,57.12908370601735,0.39716639504621964,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\trv180_actual_hours_v1.joblib
+doc190_actual_hours,v1,22,40.42160817860402,0.050277364848703265,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\doc190_actual_hours_v1.joblib
+pm200_actual_hours,v1,23,98.66035877941944,-0.5942534280276495,C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo\demo_assets\models_real\pm200_actual_hours_v1.joblib

@@ -6,11 +6,11 @@ export function MachineLearningInsights() {
   return (
     <BusinessInsightsView
       records={data}
-      datasetLabel="ML · Synthetic training pool"
+      datasetLabel="Synthetic Data · Training projects"
       source="synthetic"
       isLoading={isLoading}
       error={error instanceof Error ? error : error ? new Error(String(error)) : null}
-      emptyMessage="No synthetic records found. Make sure synthetic-pool.json is present in demo assets."
+      emptyMessage="No training records found. Make sure the demo data bundle is loaded."
     />
   );
 }

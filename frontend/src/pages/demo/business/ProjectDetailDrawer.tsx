@@ -116,7 +116,7 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
                 <div>
                   <Field label="Stations" value={row.stations} />
                   <Field
-                    label="Total hours (p50)"
+                    label="Total hours"
                     value={row.total_hours.toLocaleString("en-US", {
                       maximumFractionDigits: 0,
                     })}

@@ -51,9 +51,9 @@ export function HoursBySalesBucket({
       <div className="flex items-center justify-between gap-3 mb-3">
         <div className="eyebrow text-[10px] text-muted">
           {metric === "total"
-            ? "Total p50 hours · by sales bucket"
+            ? "Total hours · by sales bucket"
             : metric === "avg"
-              ? "Avg p50 hours · by sales bucket"
+              ? "Avg hours · by sales bucket"
               : "Share of total hours · by sales bucket"}
         </div>
         <div

@@ -31,7 +31,7 @@ from core.features import prepare_quote_features  # noqa: E402
 
 REAL_CSV = REPO_ROOT / "demo_assets" / "data" / "real" / "projects_real.csv"
 SYNTHETIC_CSV = REPO_ROOT / "demo_assets" / "data" / "synthetic" / "projects_synthetic.csv"
-MODELS_SRC = REPO_ROOT / "demo_assets" / "models"
+DEMO_ROOT = REPO_ROOT / "demo_assets"
 OUT = REPO_ROOT / "frontend" / "public" / "demo-assets"
 
 SYNTHETIC_POOL_CAP = 500
@@ -135,37 +135,61 @@ def _feature_stats(df_real: pd.DataFrame, df_syn: pd.DataFrame) -> dict:
     return stats
 
 
-def _copy_models() -> int:
-    """Copy joblib bundles to the output dir.
+def _copy_model_bundle(src_name: str) -> int:
+    """Copy one joblib bundle dir to the output dir and emit a metrics JSON.
+
+    src_name must be one of "models_real" or "models_synthetic".
 
     If the source joblibs are LFS pointers (e.g. LFS not fetched in CI), warn
     and skip rather than failing the whole build — the ML tool will be broken
     in that deployment, but the demo's other pages still ship.
     """
-    if not MODELS_SRC.exists():
+    import csv as _csv
+
+    src = DEMO_ROOT / src_name
+    if not src.exists():
         print(
-            f"WARN: joblib bundles not found at {MODELS_SRC}. "
+            f"WARN: joblib bundles not found at {src}. "
             "ML tool will be non-functional in this build.",
             file=sys.stderr,
         )
         return 0
-    dst = OUT / "models"
+
+    dst = OUT / src_name
     dst.mkdir(parents=True, exist_ok=True)
     count = 0
     skipped_lfs = 0
-    for src in sorted(MODELS_SRC.glob("*.joblib")):
-        if src.stat().st_size < 1024:
+    for joblib_file in sorted(src.glob("*.joblib")):
+        if joblib_file.stat().st_size < 1024:
             skipped_lfs += 1
             continue
-        shutil.copy2(src, dst / src.name)
+        shutil.copy2(joblib_file, dst / joblib_file.name)
         count += 1
     if skipped_lfs:
         print(
-            f"WARN: {skipped_lfs} joblib(s) were LFS pointers and were skipped. "
+            f"WARN: {skipped_lfs} joblib(s) in {src_name} were LFS pointers and were skipped. "
             "Enable LFS in Vercel project settings (or run `git lfs pull` locally) "
             "to restore the ML tool.",
             file=sys.stderr,
         )
+
+    # Emit metrics JSON — pick only the columns the frontend cares about.
+    metrics_csv = src / "metrics_summary.csv"
+    rows: list[dict] = []
+    if metrics_csv.exists():
+        with metrics_csv.open(newline="", encoding="utf-8") as f:
+            for r in _csv.DictReader(f):
+                rows.append({
+                    "target": r["target"],
+                    "rows":   int(r["rows"]),
+                    "mae":    round(float(r["mae"]), 2),
+                    "r2":     round(float(r["r2"]), 3),
+                })
+    suffix = src_name.split("_", 1)[1]   # "real" or "synthetic"
+    (OUT / f"model_metrics_{suffix}.json").write_text(
+        json.dumps({"models": rows}, indent=2), encoding="utf-8"
+    )
+
     return count
 
 
@@ -296,8 +320,10 @@ def main() -> None:
     }
     (OUT / "manifest.json").write_text(json.dumps(manifest), encoding="utf-8")
 
-    n_models = _copy_models()
-    print(f"  models/: {n_models} joblib bundles")
+    for bundle_name in ("models_real", "models_synthetic"):
+        n_models = _copy_model_bundle(bundle_name)
+        suffix = bundle_name.split("_", 1)[1]
+        print(f"  {bundle_name}/: {n_models} joblib bundles  (model_metrics_{suffix}.json emitted)")
 
     _copy_py_shim()
     print("  py/: config.py, features.py, models.py, predict.py")

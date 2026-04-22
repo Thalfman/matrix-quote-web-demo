@@ -108,12 +108,12 @@ export function TopProjectsTable({
     <div
       className="card overflow-hidden"
       role="table"
-      aria-label="Ranked projects by total p50 hours"
+      aria-label="Ranked projects by total hours"
     >
       {/* Table header strip */}
       <div className="flex items-center justify-between gap-3 px-5 py-3 bg-paper/60 border-b hairline flex-wrap gap-y-2">
         <div className="flex items-baseline gap-3 flex-wrap">
-          <div className="eyebrow text-[10px] text-muted">Ranked by total p50 hours</div>
+          <div className="eyebrow text-[10px] text-muted">Ranked by total hours</div>
           <div className="text-[11px] text-muted mono tnum">
             {sorted.length === rows.length
               ? `${rows.length} projects`

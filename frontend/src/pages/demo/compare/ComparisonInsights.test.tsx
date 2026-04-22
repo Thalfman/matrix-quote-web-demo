@@ -59,10 +59,12 @@ const FAKE_RECORDS: ProjectRecord[] = [
 const { ComparisonInsights } = await import("./ComparisonInsights");
 
 describe("ComparisonInsights — happy path", () => {
-  it("renders the dataset label 'Comparison · Real projects'", () => {
+  it("renders the dataset label 'Real Data · Historical projects'", () => {
     mockHookReturn = { data: FAKE_RECORDS, isLoading: false, error: null };
     renderWithProviders(<ComparisonInsights />);
-    expect(screen.getByText(/comparison · real projects/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/real data · historical projects/i),
+    ).toBeInTheDocument();
   });
 
   it("renders all six section headings when data is loaded", () => {
