@@ -14,9 +14,16 @@ export const CHART_COLORS = {
 };
 
 export const AXIS_TICK = {
-  fontSize: 11,
+  fontSize: 12,
   fill: CHART_COLORS.muted,
   fontFamily: "JetBrains Mono",
+};
+
+export const DATA_LABEL = {
+  fontSize: 11,
+  fill: CHART_COLORS.ink,
+  fontFamily: "JetBrains Mono",
+  fontWeight: 600,
 };
 
 export const AXIS_LINE = {
@@ -32,7 +39,7 @@ export const TOOLTIP_STYLE = {
   backgroundColor: "#FFFFFF",
   border: `1px solid ${CHART_COLORS.line}`,
   borderRadius: 2,
-  fontSize: 12,
+  fontSize: 13,
   fontFamily: "Inter",
   color: CHART_COLORS.ink,
   padding: "8px 10px",

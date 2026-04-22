@@ -39,10 +39,10 @@ describe("PortfolioKpis", () => {
     expect(screen.getByText(/\$5,000/)).toBeInTheDocument();
   });
 
-  it("renders em-dash when avgMaterialsCost is null", () => {
+  it("renders N/A when avgMaterialsCost is null", () => {
     const kpis: PortfolioKpisType = { ...BASE_KPIS, avgMaterialsCost: null };
     renderWithProviders(<PortfolioKpis kpis={kpis} />);
-    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getByText("N/A")).toBeInTheDocument();
   });
 
   it("renders medianHours in the meta line below avgHours card", () => {

@@ -5,6 +5,45 @@ import {
 import { AXIS_TICK, CHART_COLORS, TOOLTIP_STYLE } from "@/pages/insights/chartTheme";
 import { CategoryRow } from "./portfolioStats";
 
+type PieSliceLabelProps = {
+  cx: number;
+  cy: number;
+  midAngle: number;
+  outerRadius: number;
+  percent: number;
+  name: string;
+  value: number;
+};
+
+function renderSliceLabel(props: unknown) {
+  const p = props as Partial<PieSliceLabelProps>;
+  if (
+    p.cx == null || p.cy == null || p.midAngle == null ||
+    p.outerRadius == null || p.percent == null ||
+    p.name == null || p.value == null
+  ) {
+    return null;
+  }
+  if (p.percent < 0.05) return null;
+  const RAD = Math.PI / 180;
+  const r = p.outerRadius + 14;
+  const x = p.cx + r * Math.cos(-p.midAngle * RAD);
+  const y = p.cy + r * Math.sin(-p.midAngle * RAD);
+  return (
+    <text
+      x={x}
+      y={y}
+      fill={CHART_COLORS.ink}
+      fontSize={11}
+      fontFamily={AXIS_TICK.fontFamily}
+      textAnchor={x > p.cx ? "start" : "end"}
+      dominantBaseline="central"
+    >
+      {p.name}: {p.value}
+    </text>
+  );
+}
+
 const SLICE_COLORS = [
   CHART_COLORS.ink,
   CHART_COLORS.amber,
@@ -55,11 +94,11 @@ export function SystemCategoryMix({ data, selectedCategories, onCategoryClick }:
   return (
     <div className="card p-5 h-80 flex flex-col">
       <div className="flex items-baseline justify-between gap-3 mb-3">
-        <div className="eyebrow text-[10px] text-muted">
+        <div className="eyebrow text-xs text-muted">
           Share of projects · by system type
         </div>
         {onCategoryClick && (
-          <div className="text-[10px] eyebrow text-muted">
+          <div className="text-xs eyebrow text-muted">
             Click slice to filter
           </div>
         )}
@@ -76,9 +115,11 @@ export function SystemCategoryMix({ data, selectedCategories, onCategoryClick }:
                 nameKey="category"
                 cx="40%"
                 cy="50%"
-                innerRadius={60}
-                outerRadius={90}
+                innerRadius={50}
+                outerRadius={80}
                 paddingAngle={2}
+                label={renderSliceLabel}
+                labelLine={false}
                 onClick={
                   onCategoryClick
                     ? (entry: { category?: string }) => {

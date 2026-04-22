@@ -164,7 +164,7 @@ export function MachineLearningQuoteTool() {
       <PageHeader
         eyebrow="Synthetic Data · Quote"
         title="Machine Learning Quote Tool"
-        description="Estimate hours with a likely range and what's driving each number — runs in your browser."
+        description="Estimate hours with a likely range and the drivers behind each number. Runs in the browser."
         chips={chips}
       />
       <DataProvenanceNote variant="synthetic" />

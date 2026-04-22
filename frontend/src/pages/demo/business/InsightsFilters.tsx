@@ -7,10 +7,11 @@ import { DEFAULT_FILTER, isDefaultFilter } from "./insightsFilterDefaults";
 export type InsightsFilterState = {
   industries: Set<string>;
   categories: Set<string>;
-  complexityMin: number;
-  complexityMax: number;
+  complexities: Set<number>;
   search: string;
 };
+
+const COMPLEXITY_LEVELS = [1, 2, 3, 4, 5] as const;
 
 type Props = {
   filter: InsightsFilterState;
@@ -36,7 +37,7 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "inline-flex items-center px-2 py-1 rounded-sm text-[10px] eyebrow",
+        "inline-flex items-center px-2 py-1 rounded-sm text-xs eyebrow",
         "transition-colors duration-150 ease-out",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-1 focus-visible:ring-offset-paper",
         active
@@ -79,6 +80,13 @@ export function InsightsFilters({
     onChange({ ...filter, categories: next });
   };
 
+  const toggleComplexity = (level: number) => {
+    const next = new Set(filter.complexities);
+    if (next.has(level)) next.delete(level);
+    else next.add(level);
+    onChange({ ...filter, complexities: next });
+  };
+
   const handleSearch = (value: string) => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => {
@@ -101,7 +109,7 @@ export function InsightsFilters({
       )}
     >
       <div className="flex items-center justify-between gap-x-4 gap-y-1.5 flex-wrap">
-        <div className="eyebrow text-[10px] text-muted">
+        <div className="eyebrow text-xs text-muted">
           Filters
           <span className="ml-2 mono tnum normal-case tracking-normal text-muted">
             Showing{" "}
@@ -116,7 +124,7 @@ export function InsightsFilters({
             type="button"
             onClick={handleReset}
             className={cn(
-              "inline-flex items-center gap-1 text-[11px] text-muted hover:text-danger",
+              "inline-flex items-center gap-1 text-sm text-muted hover:text-danger",
               "transition-colors duration-150 ease-out rounded-sm px-1 -mx-1",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
             )}
@@ -153,7 +161,7 @@ export function InsightsFilters({
       {/* Industry chips */}
       {availableIndustries.length > 0 && (
         <div>
-          <div className="eyebrow text-[10px] text-muted mb-2">Industry</div>
+          <div className="eyebrow text-xs text-muted mb-2">Industry</div>
           <div className="flex flex-wrap gap-1.5">
             {availableIndustries.map((ind) => (
               <Chip
@@ -170,7 +178,7 @@ export function InsightsFilters({
       {/* Category chips */}
       {availableCategories.length > 0 && (
         <div>
-          <div className="eyebrow text-[10px] text-muted mb-2">System category</div>
+          <div className="eyebrow text-xs text-muted mb-2">System category</div>
           <div className="flex flex-wrap gap-1.5">
             {availableCategories.map((cat) => (
               <Chip
@@ -184,51 +192,25 @@ export function InsightsFilters({
         </div>
       )}
 
-      {/* Complexity range */}
+      {/* Complexity levels */}
       <div>
         <div className="flex items-baseline justify-between mb-2 gap-2">
-          <div className="eyebrow text-[10px] text-muted">Complexity range</div>
-          <div className="text-[11px] text-ink mono tnum">
-            {filter.complexityMin}–{filter.complexityMax}
+          <div className="eyebrow text-xs text-muted">Complexity</div>
+          <div className="text-xs text-muted">
+            {filter.complexities.size === 0
+              ? "All levels"
+              : `${filter.complexities.size} of 5 selected`}
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] text-muted mono tnum w-2 text-center">1</span>
-          <input
-            type="range"
-            min={1}
-            max={5}
-            step={1}
-            value={filter.complexityMin}
-            onChange={(e) => {
-              const val = Number(e.target.value);
-              onChange({
-                ...filter,
-                complexityMin: val,
-                complexityMax: Math.max(val, filter.complexityMax),
-              });
-            }}
-            className="flex-1 accent-teal cursor-pointer"
-            aria-label="Minimum complexity"
-          />
-          <input
-            type="range"
-            min={1}
-            max={5}
-            step={1}
-            value={filter.complexityMax}
-            onChange={(e) => {
-              const val = Number(e.target.value);
-              onChange({
-                ...filter,
-                complexityMax: val,
-                complexityMin: Math.min(val, filter.complexityMin),
-              });
-            }}
-            className="flex-1 accent-teal cursor-pointer"
-            aria-label="Maximum complexity"
-          />
-          <span className="text-[10px] text-muted mono tnum w-2 text-center">5</span>
+        <div className="flex flex-wrap gap-1.5">
+          {COMPLEXITY_LEVELS.map((level) => (
+            <Chip
+              key={level}
+              label={`Level ${level}`}
+              active={filter.complexities.has(level)}
+              onClick={() => toggleComplexity(level)}
+            />
+          ))}
         </div>
       </div>
     </div>

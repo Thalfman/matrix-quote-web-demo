@@ -1,30 +1,43 @@
-import { useState } from "react";
 import {
-  CartesianGrid, ResponsiveContainer, Scatter, ScatterChart, Tooltip, XAxis, YAxis,
+  Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 
-import { cn } from "@/lib/utils";
 import {
-  AXIS_LINE, AXIS_TICK, CHART_COLORS, GRID_STYLE, TOOLTIP_STYLE,
+  AXIS_LINE, AXIS_TICK, CHART_COLORS, DATA_LABEL, GRID_STYLE, TOOLTIP_CURSOR, TOOLTIP_STYLE,
 } from "@/pages/insights/chartTheme";
 import { ScatterPoint } from "./portfolioStats";
 
-const DOT_PALETTE = [
-  CHART_COLORS.teal,
-  CHART_COLORS.amber,
-  CHART_COLORS.ink,
-  CHART_COLORS.tealDark,
-  CHART_COLORS.muted,
-  CHART_COLORS.ink2,
-];
-
 const fmtHours = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
-type XAxis2 = "complexity" | "stations";
-
-type TooltipPayloadEntry = {
-  payload?: ScatterPoint;
+type LevelRow = {
+  level: number;
+  count: number;
+  avg: number;
+  min: number;
+  max: number;
 };
+
+function bucketByComplexity(points: ScatterPoint[]): LevelRow[] {
+  const by: Record<number, number[]> = { 1: [], 2: [], 3: [], 4: [], 5: [] };
+  for (const p of points) {
+    const level = Math.round(p.complexity);
+    if (level >= 1 && level <= 5) by[level].push(p.hours);
+  }
+  return [1, 2, 3, 4, 5].map((level) => {
+    const xs = by[level];
+    if (xs.length === 0) return { level, count: 0, avg: 0, min: 0, max: 0 };
+    const sum = xs.reduce((a, b) => a + b, 0);
+    return {
+      level,
+      count: xs.length,
+      avg: sum / xs.length,
+      min: Math.min(...xs),
+      max: Math.max(...xs),
+    };
+  });
+}
+
+type TooltipPayloadEntry = { payload?: LevelRow };
 
 function CustomTooltip({
   active,
@@ -34,170 +47,112 @@ function CustomTooltip({
   payload?: TooltipPayloadEntry[];
 }) {
   if (!active || !payload?.length) return null;
-  const pt = payload[0]?.payload;
-  if (!pt) return null;
+  const row = payload[0]?.payload;
+  if (!row) return null;
   const rowStyle = { display: "flex", justifyContent: "space-between", gap: 16 };
   const labelStyle = { color: CHART_COLORS.muted };
   return (
     <div style={TOOLTIP_STYLE}>
-      <div style={{ fontWeight: 600, marginBottom: 4 }}>{pt.name}</div>
+      <div style={{ fontWeight: 600, marginBottom: 4 }}>Complexity {row.level}</div>
       <div style={rowStyle}>
-        <span style={labelStyle}>Industry</span>
-        <span>{pt.industry}</span>
+        <span style={labelStyle}>Projects</span>
+        <span className="tnum">{row.count}</span>
       </div>
       <div style={rowStyle}>
-        <span style={labelStyle}>Complexity</span>
-        <span className="tnum">{pt.complexity.toFixed(1)}</span>
+        <span style={labelStyle}>Avg hours</span>
+        <span className="tnum">{fmtHours.format(row.avg)}</span>
       </div>
-      <div style={rowStyle}>
-        <span style={labelStyle}>Stations</span>
-        <span className="tnum">{pt.stations}</span>
-      </div>
-      <div style={rowStyle}>
-        <span style={labelStyle}>Hours</span>
-        <span className="tnum">{fmtHours.format(pt.hours)}</span>
-      </div>
+      {row.count > 0 && (
+        <div style={rowStyle}>
+          <span style={labelStyle}>Range</span>
+          <span className="tnum">
+            {fmtHours.format(row.min)}–{fmtHours.format(row.max)}
+          </span>
+        </div>
+      )}
     </div>
   );
 }
 
 type Props = {
   data: ScatterPoint[];
-  onPointClick?: (point: ScatterPoint) => void;
 };
 
-export function ComplexityVsHours({ data, onPointClick }: Props) {
-  const [xAxis, setXAxis] = useState<XAxis2>("complexity");
-
-  // Build a color map keyed by unique industries
-  const uniqueIndustries = Array.from(new Set(data.map((d) => d.industry)));
-  const colorMap: Record<string, string> = {};
-  uniqueIndustries.forEach((ind, i) => {
-    colorMap[ind] = DOT_PALETTE[i % DOT_PALETTE.length];
-  });
-
-  // Group data by industry for separate Scatter series (to get per-industry colors)
-  const byIndustry: Record<string, ScatterPoint[]> = {};
-  for (const pt of data) {
-    if (!byIndustry[pt.industry]) byIndustry[pt.industry] = [];
-    byIndustry[pt.industry].push(pt);
-  }
+export function ComplexityVsHours({ data }: Props) {
+  const rows = bucketByComplexity(data);
+  const hasAny = rows.some((r) => r.count > 0);
 
   return (
     <div className="card p-5 h-80 flex flex-col">
       <div className="flex items-baseline justify-between gap-3 mb-2">
-        <div className="eyebrow text-[10px] text-muted">
-          One dot per project · color = industry
+        <div className="eyebrow text-xs text-muted">
+          Average hours per complexity level
         </div>
-        <div className="flex items-center gap-2">
-          <div className="text-[11px] text-muted mono tnum">{data.length} projects</div>
-          <div
-            className="inline-flex rounded-sm border hairline bg-surface p-0.5 gap-0.5"
-            role="group"
-            aria-label="X-axis"
-          >
-            {(["complexity", "stations"] as XAxis2[]).map((ax) => (
-              <button
-                key={ax}
-                type="button"
-                onClick={() => setXAxis(ax)}
-                className={cn(
-                  "text-[10px] eyebrow px-2 py-1 rounded-sm transition-colors duration-150 ease-out",
-                  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal",
-                  xAxis === ax
-                    ? "bg-ink text-white"
-                    : "text-muted hover:text-ink",
-                )}
-                aria-pressed={xAxis === ax}
-              >
-                {ax === "complexity" ? "Complexity" : "Stations"}
-              </button>
-            ))}
-          </div>
-        </div>
+        <div className="text-xs text-muted mono tnum">{data.length} projects</div>
       </div>
-      {data.length === 0 ? (
+      {!hasAny ? (
         <div className="text-sm text-muted">No data available.</div>
       ) : (
-        <>
-          {/* Custom compact legend so the chart keeps its full plot area */}
-          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mb-2">
-            {uniqueIndustries.map((industry) => (
-              <span
-                key={industry}
-                className="inline-flex items-center gap-1.5 text-[10px] text-muted"
-                style={{ fontFamily: AXIS_TICK.fontFamily }}
-              >
-                <span
-                  aria-hidden="true"
-                  className="inline-block rounded-full"
+        <div className="flex-1 min-h-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={rows} margin={{ top: 16, right: 16, left: -4, bottom: 28 }}>
+              <CartesianGrid {...GRID_STYLE} vertical={false} />
+              <XAxis
+                dataKey="level"
+                tick={AXIS_TICK}
+                axisLine={AXIS_LINE}
+                tickLine={false}
+                label={{
+                  value: "Complexity (1–5)",
+                  position: "insideBottom",
+                  offset: -4,
+                  style: {
+                    fontSize: 11,
+                    fill: CHART_COLORS.muted,
+                    fontFamily: AXIS_TICK.fontFamily,
+                  },
+                }}
+              />
+              <YAxis
+                tick={AXIS_TICK}
+                axisLine={AXIS_LINE}
+                tickLine={false}
+                tickFormatter={(v: number) => fmtHours.format(v)}
+                label={{
+                  value: "Avg hours",
+                  angle: -90,
+                  position: "insideLeft",
+                  offset: 12,
+                  style: {
+                    fontSize: 11,
+                    fill: CHART_COLORS.muted,
+                    fontFamily: AXIS_TICK.fontFamily,
+                  },
+                }}
+              />
+              <Tooltip content={<CustomTooltip />} cursor={TOOLTIP_CURSOR} />
+              <Bar dataKey="avg" fill={CHART_COLORS.teal} radius={[1, 1, 0, 0]}>
+                <LabelList
+                  dataKey="avg"
+                  position="top"
+                  formatter={(v: number) => (v > 0 ? fmtHours.format(v) : "")}
+                  style={DATA_LABEL}
+                />
+                <LabelList
+                  dataKey="count"
+                  position="insideBottom"
+                  formatter={(v: number) => (v > 0 ? `n=${v}` : "")}
                   style={{
-                    width: 7,
-                    height: 7,
-                    backgroundColor: colorMap[industry],
+                    fontSize: 10,
+                    fill: "#FFFFFF",
+                    fontFamily: AXIS_TICK.fontFamily,
                   }}
+                  offset={6}
                 />
-                {industry}
-              </span>
-            ))}
-            {onPointClick && (
-              <span className="ml-auto text-[10px] eyebrow text-muted">
-                Click a dot for detail
-              </span>
-            )}
-          </div>
-          <div className="flex-1 min-h-0">
-            <ResponsiveContainer width="100%" height="100%">
-              <ScatterChart margin={{ top: 4, right: 8, left: -8, bottom: 16 }}>
-                <CartesianGrid {...GRID_STYLE} />
-                <XAxis
-                  dataKey={xAxis}
-                  type="number"
-                  name={xAxis === "complexity" ? "Complexity" : "Stations"}
-                  domain={xAxis === "complexity" ? [0, 5.5] : undefined}
-                  tick={AXIS_TICK}
-                  axisLine={AXIS_LINE}
-                  tickLine={false}
-                  label={{
-                    value: xAxis === "complexity" ? "Complexity (1–5)" : "Stations",
-                    position: "insideBottom",
-                    offset: -4,
-                    style: {
-                      fontSize: 10,
-                      fill: CHART_COLORS.muted,
-                      fontFamily: AXIS_TICK.fontFamily,
-                    },
-                  }}
-                />
-                <YAxis
-                  dataKey="hours"
-                  type="number"
-                  name="Hours"
-                  tick={AXIS_TICK}
-                  axisLine={AXIS_LINE}
-                  tickLine={false}
-                  tickFormatter={(v: number) => fmtHours.format(v)}
-                />
-                <Tooltip content={<CustomTooltip />} />
-                {Object.entries(byIndustry).map(([industry, pts]) => (
-                  <Scatter
-                    key={industry}
-                    name={industry}
-                    data={pts}
-                    fill={colorMap[industry]}
-                    opacity={0.85}
-                    onClick={
-                      onPointClick
-                        ? (point: ScatterPoint) => onPointClick(point)
-                        : undefined
-                    }
-                    style={onPointClick ? { cursor: "pointer" } : undefined}
-                  />
-                ))}
-              </ScatterChart>
-            </ResponsiveContainer>
-          </div>
-        </>
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       )}
     </div>
   );

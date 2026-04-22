@@ -1,11 +1,11 @@
 import { useState } from "react";
 import {
-  Bar, BarChart, CartesianGrid, Cell, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 
 import { cn } from "@/lib/utils";
 import {
-  AXIS_LINE, AXIS_TICK, CHART_COLORS, GRID_STYLE, TOOLTIP_CURSOR, TOOLTIP_STYLE,
+  AXIS_LINE, AXIS_TICK, CHART_COLORS, DATA_LABEL, GRID_STYLE, TOOLTIP_CURSOR, TOOLTIP_STYLE,
 } from "@/pages/insights/chartTheme";
 import { IndustryRow } from "./portfolioStats";
 
@@ -76,7 +76,7 @@ export function HoursByIndustry({
   return (
     <div className="card p-5 h-80 flex flex-col">
       <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="eyebrow text-[10px] text-muted">
+        <div className="eyebrow text-xs text-muted">
           {metric === "avg"
             ? "Average hours per project · by industry"
             : "Total hours · by industry"}
@@ -92,7 +92,7 @@ export function HoursByIndustry({
               type="button"
               onClick={() => setMetric(m)}
               className={cn(
-                "text-[10px] eyebrow px-2 py-1 rounded-sm transition-colors duration-150 ease-out",
+                "text-xs eyebrow px-2 py-1 rounded-sm transition-colors duration-150 ease-out",
                 "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal",
                 metric === m
                   ? "bg-ink text-white"
@@ -106,7 +106,7 @@ export function HoursByIndustry({
         </div>
       </div>
       {onIndustryClick && (
-        <div className="text-[10px] eyebrow text-muted mb-1">
+        <div className="text-xs eyebrow text-muted mb-1">
           {hasSelection
             ? "Selected shown in teal · click to toggle"
             : "Click a bar to filter"}
@@ -171,6 +171,12 @@ export function HoursByIndustry({
                     fill={getBarColor(entry.industry)}
                   />
                 ))}
+                <LabelList
+                  dataKey="value"
+                  position="top"
+                  formatter={(v: number) => fmtHours.format(v)}
+                  style={DATA_LABEL}
+                />
               </Bar>
             </BarChart>
           </ResponsiveContainer>

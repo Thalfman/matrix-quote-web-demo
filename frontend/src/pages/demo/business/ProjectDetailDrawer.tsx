@@ -21,7 +21,7 @@ function Field({
   if (value == null || value === "" || value === 0) return null;
   return (
     <div className="flex items-baseline justify-between gap-4 py-2 border-b hairline last:border-b-0">
-      <span className="text-[10px] eyebrow text-muted shrink-0">{label}</span>
+      <span className="text-xs eyebrow text-muted shrink-0">{label}</span>
       <span
         className={cn(
           "text-sm text-ink text-right break-words min-w-0",
@@ -77,7 +77,7 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
             {/* Header */}
             <div className="flex items-start justify-between gap-3 p-5 border-b hairline sticky top-0 bg-paper z-10">
               <div className="min-w-0">
-                <div className="eyebrow text-[10px] text-muted mb-1">Project detail</div>
+                <div className="eyebrow text-xs text-muted mb-1">Project detail</div>
                 <div className="display-hero text-lg leading-tight text-ink break-words">
                   {row.project_name}
                 </div>
@@ -101,7 +101,7 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
             <div className="flex-1 p-5 space-y-6">
               {/* Identity */}
               <section>
-                <div className="eyebrow text-[10px] text-muted mb-3">Identity</div>
+                <div className="eyebrow text-xs text-muted mb-3">Identity</div>
                 <div>
                   <Field label="Project ID" value={row.project_id} mono={false} />
                   <Field label="Industry" value={row.industry} mono={false} />
@@ -112,7 +112,7 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
 
               {/* Metrics */}
               <section>
-                <div className="eyebrow text-[10px] text-muted mb-3">Metrics</div>
+                <div className="eyebrow text-xs text-muted mb-3">Metrics</div>
                 <div>
                   <Field label="Stations" value={row.stations} />
                   <Field
@@ -126,7 +126,7 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
             </div>
 
             {/* Footer hint */}
-            <div className="px-5 py-3 border-t hairline text-[10px] eyebrow text-muted bg-paper/60">
+            <div className="px-5 py-3 border-t hairline text-xs eyebrow text-muted bg-paper/60">
               Press{" "}
               <kbd className="inline-flex items-center px-1.5 py-0.5 rounded-sm bg-line text-ink text-[9px] mono tracking-normal normal-case">
                 Esc

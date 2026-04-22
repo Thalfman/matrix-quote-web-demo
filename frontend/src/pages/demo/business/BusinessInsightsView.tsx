@@ -6,7 +6,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { ProjectRecord } from "@/demo/realProjects";
 
 import { buildPortfolio } from "./portfolioStats";
-import type { RankedRow, ScatterPoint } from "./portfolioStats";
+import type { RankedRow } from "./portfolioStats";
 import { PortfolioKpis } from "./PortfolioKpis";
 import { HoursBySalesBucket } from "./HoursBySalesBucket";
 import { HoursByIndustry } from "./HoursByIndustry";
@@ -34,7 +34,7 @@ type Props = {
  */
 function SectionHeader({ step, title }: { step: string; title: string }) {
   return (
-    <div className="eyebrow text-[11px] text-muted mb-3">
+    <div className="eyebrow text-sm text-muted mb-3">
       {step} · {title}
     </div>
   );
@@ -105,12 +105,12 @@ function applyFilter(records: ProjectRecord[], filter: InsightsFilterState): Pro
   return records.filter((r) => {
     const industry = String(r.industry_segment ?? "Unknown");
     const category = String(r.system_category ?? "Unknown");
-    const complexity = Number(r.complexity_score_1_5 ?? 0);
+    const complexity = Math.round(Number(r.complexity_score_1_5 ?? 0));
     const name = String(r.project_name ?? r.project_id ?? "").toLowerCase();
 
     if (filter.industries.size > 0 && !filter.industries.has(industry)) return false;
     if (filter.categories.size > 0 && !filter.categories.has(category)) return false;
-    if (complexity < filter.complexityMin || complexity > filter.complexityMax) return false;
+    if (filter.complexities.size > 0 && !filter.complexities.has(complexity)) return false;
     if (filter.search && !name.includes(filter.search.toLowerCase())) return false;
     return true;
   });
@@ -182,13 +182,6 @@ export function BusinessInsightsView({
     });
   }, []);
 
-  const handlePointClick = useCallback((point: ScatterPoint) => {
-    // Find the matching ranked row by name and open the drawer
-    if (!portfolio) return;
-    const row = portfolio.ranked.find((r) => r.project_name === point.name);
-    if (row) setDrawerRow(row);
-  }, [portfolio]);
-
   const handleRowClick = useCallback((row: RankedRow) => {
     setDrawerRow(row);
   }, []);
@@ -202,7 +195,7 @@ export function BusinessInsightsView({
       <PageHeader
         eyebrow={`Insights · ${datasetLabel}`}
         title="Business Insights"
-        description="Portfolio-level view — where hours go, which industries we serve, how complexity drives scope, and which projects dominate the book."
+        description="Portfolio view of hours, industries, complexity, and the projects that drive the book."
         chips={
           records && records.length > 0
             ? [{ label: `${records.length} projects`, tone: "accent" }]
@@ -302,30 +295,44 @@ export function BusinessInsightsView({
                   <h2 className="sr-only" id="insights-05-heading">Complexity vs hours</h2>
                   <SectionHeader step="05" title="Complexity vs hours" />
                   {portfolio.scatter.length > 0 ? (
-                    <ComplexityVsHours
-                      data={portfolio.scatter}
-                      onPointClick={handlePointClick}
-                    />
+                    <ComplexityVsHours data={portfolio.scatter} />
                   ) : (
                     <SectionEmptyCard message="Not available for this dataset." />
                   )}
                 </section>
               </div>
 
-              {/* Ranked project table */}
+              {/* Ranked project table (collapsed by default) */}
               <section aria-labelledby="insights-06-heading">
                 <h2 className="sr-only" id="insights-06-heading">All projects</h2>
-                <SectionHeader step="06" title="All projects" />
-                {portfolio.ranked.length > 0 ? (
-                  <TopProjectsTable
-                    rows={portfolio.ranked}
-                    search={filter.search}
-                    onSearchChange={(s) => setFilter((prev) => ({ ...prev, search: s }))}
-                    onRowClick={handleRowClick}
-                  />
-                ) : (
-                  <SectionEmptyCard message="Not available for this dataset." />
-                )}
+                <details className="group">
+                  <summary
+                    className="list-none cursor-pointer select-none flex items-center gap-2 mb-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal rounded-sm"
+                  >
+                    <div className="eyebrow text-sm text-muted">
+                      06 · All projects
+                    </div>
+                    <span className="text-sm text-muted mono tnum">
+                      ({portfolio.ranked.length})
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="ml-auto text-sm text-muted transition-transform duration-150 ease-out group-open:rotate-180"
+                    >
+                      ▾
+                    </span>
+                  </summary>
+                  {portfolio.ranked.length > 0 ? (
+                    <TopProjectsTable
+                      rows={portfolio.ranked}
+                      search={filter.search}
+                      onSearchChange={(s) => setFilter((prev) => ({ ...prev, search: s }))}
+                      onRowClick={handleRowClick}
+                    />
+                  ) : (
+                    <SectionEmptyCard message="Not available for this dataset." />
+                  )}
+                </details>
               </section>
             </>
           ) : (

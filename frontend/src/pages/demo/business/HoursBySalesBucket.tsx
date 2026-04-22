@@ -1,11 +1,11 @@
 import { useState } from "react";
 import {
-  Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis,
 } from "recharts";
 
 import { cn } from "@/lib/utils";
 import {
-  AXIS_LINE, AXIS_TICK, CHART_COLORS, GRID_STYLE, TOOLTIP_CURSOR, TOOLTIP_STYLE,
+  AXIS_LINE, AXIS_TICK, CHART_COLORS, DATA_LABEL, GRID_STYLE, TOOLTIP_CURSOR, TOOLTIP_STYLE,
 } from "@/pages/insights/chartTheme";
 import { BucketRow } from "./portfolioStats";
 
@@ -49,7 +49,7 @@ export function HoursBySalesBucket({
   return (
     <div className="card p-5 h-80 flex flex-col">
       <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="eyebrow text-[10px] text-muted">
+        <div className="eyebrow text-xs text-muted">
           {metric === "total"
             ? "Total hours · by sales bucket"
             : metric === "avg"
@@ -67,7 +67,7 @@ export function HoursBySalesBucket({
               type="button"
               onClick={() => setMetric(m)}
               className={cn(
-                "text-[10px] eyebrow px-2 py-1 rounded-sm transition-colors duration-150 ease-out",
+                "text-xs eyebrow px-2 py-1 rounded-sm transition-colors duration-150 ease-out",
                 "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-teal",
                 metric === m
                   ? "bg-ink text-white"
@@ -111,7 +111,14 @@ export function HoursBySalesBucket({
                 cursor={TOOLTIP_CURSOR}
                 formatter={(v: number) => [tooltipFormatter(v), METRIC_LABELS[metric]]}
               />
-              <Bar dataKey="value" fill={CHART_COLORS.teal} radius={[0, 1, 1, 0]} />
+              <Bar dataKey="value" fill={CHART_COLORS.teal} radius={[0, 1, 1, 0]}>
+                <LabelList
+                  dataKey="value"
+                  position="right"
+                  formatter={tickFormatter}
+                  style={DATA_LABEL}
+                />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>

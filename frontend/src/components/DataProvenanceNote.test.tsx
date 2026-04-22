@@ -14,14 +14,14 @@ describe("DataProvenanceNote — real variant", () => {
   it("renders the real-variant body copy about twenty-four projects", () => {
     renderWithProviders(<DataProvenanceNote variant="real" />);
     expect(
-      screen.getByText(/twenty-four of your real, completed projects/i),
+      screen.getByText(/twenty-four of your completed projects/i),
     ).toBeInTheDocument();
   });
 
-  it("mentions lower confidence for less-common projects in the real variant", () => {
+  it("mentions lower confidence for outliers in the real variant", () => {
     renderWithProviders(<DataProvenanceNote variant="real" />);
     expect(
-      screen.getByText(/expect lower confidence ratings/i),
+      screen.getByText(/expect lower confidence on outliers/i),
     ).toBeInTheDocument();
   });
 
@@ -46,17 +46,17 @@ describe("DataProvenanceNote — synthetic variant", () => {
     ).toBeInTheDocument();
   });
 
-  it("mentions wider coverage and tighter likely ranges in the synthetic variant", () => {
+  it("mentions wider coverage and tighter ranges in the synthetic variant", () => {
     renderWithProviders(<DataProvenanceNote variant="synthetic" />);
     expect(
-      screen.getByText(/wider coverage, tighter likely ranges/i),
+      screen.getByText(/wider coverage, tighter ranges/i),
     ).toBeInTheDocument();
   });
 
   it("does NOT render real-variant copy in the synthetic variant", () => {
     renderWithProviders(<DataProvenanceNote variant="synthetic" />);
     expect(
-      screen.queryByText(/twenty-four of your real, completed projects/i),
+      screen.queryByText(/twenty-four of your completed projects/i),
     ).not.toBeInTheDocument();
   });
 });

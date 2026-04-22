@@ -22,7 +22,7 @@ function CountChip({
     tone === "teal" ? "bg-tealSoft text-tealDark" : "bg-amberSoft text-ink";
   return (
     <span
-      className={`text-[10px] eyebrow px-2 py-1 rounded-sm ${toneClass} tnum`}
+      className={`text-xs eyebrow px-2 py-1 rounded-sm ${toneClass} tnum`}
     >
       {value != null ? `${value} ${unit}` : "…"}
     </span>
@@ -58,7 +58,7 @@ function SectionCard({
   return (
     <div className="card p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
-        <span className={`eyebrow text-[11px] ${eyebrowClass}`}>{eyebrow}</span>
+        <span className={`eyebrow text-sm ${eyebrowClass}`}>{eyebrow}</span>
         {chip}
       </div>
       <h2 className="display-hero text-2xl leading-tight text-ink">{title}</h2>
@@ -97,7 +97,7 @@ export function DemoHome() {
       <PageHeader
         eyebrow="Matrix · Demo"
         title="Pick a tool"
-        description="Two lenses on the quoting engine. Real Data is trained on your historical projects today. Synthetic Data shows what the same engine could do once you've collected more real projects — same quote experience, same outputs."
+        description="Two views of the quoting engine. Real Data is trained on your historical projects. Synthetic Data shows the same engine after more data is collected."
       />
 
       <div className="mt-6 grid gap-6 sm:grid-cols-1 md:grid-cols-2">
@@ -105,7 +105,7 @@ export function DemoHome() {
           eyebrow="Real Data"
           eyebrowTone="teal"
           title="Today's book"
-          description="Twenty-four of your real, billed projects. Quote a new project and the engine estimates hours from your history — with a likely range and the factors driving the estimate."
+          description="Twenty-four billed projects. Generate an estimate, see a likely range, and review the drivers behind it."
           chip={
             <CountChip tone="teal" value={manifest?.real_count} unit="projects" />
           }
@@ -120,7 +120,7 @@ export function DemoHome() {
           eyebrow="Synthetic Data"
           eyebrowTone="amber"
           title="At scale"
-          description="Five hundred generated training projects — what the engine could do once you've collected more data. Same quote experience, same outputs."
+          description="Five hundred generated training projects. Same quote experience at larger scale."
           chip={
             <CountChip
               tone="amber"
