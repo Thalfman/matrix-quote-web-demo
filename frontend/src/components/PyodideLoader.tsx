@@ -4,11 +4,12 @@ import { PyodideStatus, subscribe } from "@/demo/pyodideClient";
 import { cn } from "@/lib/utils";
 
 const STAGE_ORDER: { stage: PyodideStatus["stage"]; label: string }[] = [
-  { stage: "script", label: "Runtime" },
+  { stage: "script", label: "Warming up" },
   { stage: "runtime", label: "Python" },
-  { stage: "packages", label: "Packages" },
+  { stage: "packages", label: "Libraries" },
   { stage: "python", label: "Shim" },
-  { stage: "models", label: "Models" },
+  { stage: "models_real", label: "Real data" },
+  { stage: "models_synthetic", label: "Synthetic" },
   { stage: "ready", label: "Ready" },
 ];
 
@@ -58,7 +59,7 @@ export function PyodideLoader() {
         />
       </div>
 
-      <div className="mt-4 grid grid-cols-6 gap-2">
+      <div className="mt-4 grid grid-cols-7 gap-2">
         {STAGE_ORDER.map((s, i) => (
           <div
             key={s.stage}
