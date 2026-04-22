@@ -190,3 +190,23 @@ describe("DemoHome — the old three-card layout is gone", () => {
     ).not.toBeInTheDocument();
   });
 });
+
+describe("DemoHome — no ML jargon in rendered output (cross-cutting jargon guard)", () => {
+  it("does not render the word 'Pyodide' anywhere on the page", () => {
+    renderWithProviders(<DemoHome />);
+    expect(screen.queryByText(/pyodide/i)).not.toBeInTheDocument();
+  });
+
+  it("does not render 'P50' anywhere on the page", () => {
+    renderWithProviders(<DemoHome />);
+    // queryByText matches full text nodes; use a regex to catch inline occurrences too.
+    const body = document.body.textContent ?? "";
+    expect(body).not.toMatch(/\bP50\b/);
+  });
+
+  it("does not render 'R²' anywhere on the page", () => {
+    renderWithProviders(<DemoHome />);
+    const body = document.body.textContent ?? "";
+    expect(body).not.toContain("R²");
+  });
+});
