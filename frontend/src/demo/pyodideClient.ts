@@ -2,7 +2,7 @@
 import { QuoteInput, QuotePrediction } from "@/api/types";
 import { DEMO_ASSETS } from "@/lib/demoMode";
 
-const PYODIDE_VERSION = "0.26.1";
+const PYODIDE_VERSION = "0.27.7";
 const PYODIDE_INDEX_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
 const PYODIDE_SCRIPT = `${PYODIDE_INDEX_URL}pyodide.js`;
 
@@ -275,9 +275,6 @@ async function bootstrap(): Promise<PyodideInterface> {
 
   // Install the inline multi-dataset Python runtime.
   await pyodide.runPythonAsync(PYODIDE_RUNTIME);
-
-  // Also keep the legacy predict_one resident for backward compat with existing pages.
-  pyodide.runPython("from predict import predict_one");
 
   // Emit a neutral "python-ready" state. Actual model load stages fire from
   // ensureModelsReady() so the UI shows progress per dataset.

@@ -186,12 +186,22 @@ export function MachineLearningQuoteTool() {
             className="shrink-0 mt-0.5"
             aria-hidden="true"
           />
-          <div>
+          <div className="min-w-0 flex-1">
             <div className="font-medium">Couldn&apos;t warm up the in-browser runtime.</div>
             <div className="text-muted mt-1">
               Refresh the page to try again. Trained models and the Python runtime load
               once; subsequent visits use the browser&apos;s cache.
             </div>
+            <pre className="mt-3 text-[11px] text-muted mono whitespace-pre-wrap break-all">
+              {error}
+            </pre>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-3 text-[11px] eyebrow px-3 py-1.5 rounded-sm bg-tealSoft text-tealDark hover:bg-teal hover:text-white transition-colors"
+            >
+              Refresh and retry
+            </button>
           </div>
         </div>
       )}
