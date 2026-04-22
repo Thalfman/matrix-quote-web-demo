@@ -1,14 +1,12 @@
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
 import { ArrowRight } from "lucide-react";
 
-import { DEMO_ASSETS } from "@/lib/demoMode";
 import { PageHeader } from "@/components/PageHeader";
+import { useDemoManifest } from "@/demo/realProjects";
 
-type Manifest = {
-  built_at: string;
-  real_count: number;
-  synthetic_count: number;
+type TabChip = {
+  to: string;
+  label: string;
 };
 
 function CountChip({
@@ -21,9 +19,7 @@ function CountChip({
   unit: string;
 }) {
   const toneClass =
-    tone === "teal"
-      ? "bg-tealSoft text-tealDark"
-      : "bg-amberSoft text-ink";
+    tone === "teal" ? "bg-tealSoft text-tealDark" : "bg-amberSoft text-ink";
   return (
     <span
       className={`text-[10px] eyebrow px-2 py-1 rounded-sm ${toneClass} tnum`}
@@ -33,103 +29,110 @@ function CountChip({
   );
 }
 
-function ToolCard({
-  to,
+/**
+ * SectionCard — one of two top-level entry points on the demo home.
+ * Each card surfaces the Real-Data or Synthetic-Data story: eyebrow +
+ * count chip, a headline + description, and a 3-chip strip of sub-tabs
+ * (Quote / Compare / Business Insights) that route into that side.
+ */
+function SectionCard({
   eyebrow,
   eyebrowTone,
   title,
   description,
   chip,
-  ctaTone,
+  tabs,
 }: {
-  to: string;
   eyebrow: string;
   eyebrowTone: "teal" | "amber";
   title: string;
   description: string;
   chip: React.ReactNode;
-  ctaTone: "teal" | "amber";
+  tabs: TabChip[];
 }) {
-  const eyebrowClass =
-    eyebrowTone === "teal" ? "text-teal" : "text-amber";
-  const ctaClass =
-    ctaTone === "teal"
-      ? "text-teal group-hover:text-tealDark"
-      : "text-amber group-hover:text-amber";
+  const eyebrowClass = eyebrowTone === "teal" ? "text-teal" : "text-amber";
+  const chipClass =
+    eyebrowTone === "teal"
+      ? "border-teal/30 bg-tealSoft/40 text-tealDark hover:bg-tealSoft"
+      : "border-amber/40 bg-amberSoft/40 text-ink hover:bg-amberSoft";
   return (
-    <Link
-      to={to}
-      className={
-        "group card p-6 flex flex-col gap-4 transition-colors duration-150 ease-out" +
-        " hover:border-teal focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal"
-      }
-    >
+    <div className="card p-6 flex flex-col gap-4">
       <div className="flex items-center justify-between gap-3">
         <span className={`eyebrow text-[11px] ${eyebrowClass}`}>{eyebrow}</span>
         {chip}
       </div>
       <h2 className="display-hero text-2xl leading-tight text-ink">{title}</h2>
       <p className="text-sm text-muted leading-relaxed">{description}</p>
-      <div className={`mt-auto text-xs font-medium inline-flex items-center gap-1.5 ${ctaClass}`}>
-        Open
-        <ArrowRight
-          size={14}
-          strokeWidth={1.75}
-          className="transition-transform duration-150 ease-out group-hover:translate-x-0.5"
-          aria-hidden="true"
-        />
+      <div className="mt-2 flex flex-wrap gap-2">
+        {tabs.map((t) => (
+          <Link
+            key={t.to}
+            to={t.to}
+            className={
+              "group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-sm border text-xs font-medium" +
+              " transition-colors duration-150 ease-out" +
+              " focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal" +
+              ` ${chipClass}`
+            }
+          >
+            {t.label}
+            <ArrowRight
+              size={12}
+              strokeWidth={1.75}
+              className="transition-transform duration-150 ease-out group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </Link>
+        ))}
       </div>
-    </Link>
+    </div>
   );
 }
 
 export function DemoHome() {
-  const { data: manifest } = useQuery<Manifest>({
-    queryKey: ["demo", "manifest"],
-    queryFn: async () => {
-      const res = await fetch(`${DEMO_ASSETS}/manifest.json`);
-      if (!res.ok) throw new Error(`manifest.json ${res.status}`);
-      return res.json();
-    },
-  });
+  const { data: manifest } = useDemoManifest();
 
   return (
     <>
       <PageHeader
         eyebrow="Matrix · Demo"
         title="Pick a tool"
-        description="Two lenses on the quoting engine. Real Data surfaces patterns from today's historical book. Synthetic Data shows what the models can do at scale — trained on generated data, running live in your browser."
+        description="Two lenses on the quoting engine. Real Data is trained on your historical projects today. Synthetic Data shows what the same engine could do once you've collected more real projects — same quote experience, same outputs."
       />
 
-      <div className="mt-6 grid gap-6 md:grid-cols-3">
-        <ToolCard
-          to="/compare/quote"
-          eyebrow="Real Data · Quote"
+      <div className="mt-6 grid gap-6 sm:grid-cols-1 md:grid-cols-2">
+        <SectionCard
+          eyebrow="Real Data"
           eyebrowTone="teal"
-          title="Real Data Quote Tool"
-          description="Enter project parameters to surface the three closest historical matches by weighted distance. Today's book, exactly as billed."
-          ctaTone="teal"
-          chip={<CountChip tone="teal" value={manifest?.real_count} unit="projects" />}
+          title="Today's book"
+          description="Twenty-four of your real, billed projects. Quote a new project and the engine estimates hours from your history — with a likely range and the factors driving the estimate."
+          chip={
+            <CountChip tone="teal" value={manifest?.real_count} unit="projects" />
+          }
+          tabs={[
+            { to: "/compare/quote", label: "Quote" },
+            { to: "/compare/compare", label: "Compare" },
+            { to: "/compare/insights", label: "Business Insights" },
+          ]}
         />
 
-        <ToolCard
-          to="/ml/quote"
-          eyebrow="Synthetic Data · Quote"
+        <SectionCard
+          eyebrow="Synthetic Data"
           eyebrowTone="amber"
-          title="Synthetic Data Quote Tool"
-          description="Fill in project parameters. Twelve Gradient Boosting models run locally and return P10–P90 confidence intervals. Trained on a generated pool at scale."
-          ctaTone="amber"
-          chip={<CountChip tone="amber" value={manifest?.synthetic_count} unit="training rows" />}
-        />
-
-        <ToolCard
-          to="/compare/insights"
-          eyebrow="Real Data · Insights"
-          eyebrowTone="teal"
-          title="Business Insights"
-          description="Portfolio-level view — hours by discipline, industry mix, complexity drivers, and ranked projects across the real historical book."
-          ctaTone="teal"
-          chip={<CountChip tone="teal" value={manifest?.real_count} unit="projects" />}
+          title="At scale"
+          description="Five hundred generated training projects — what the engine could do once you've collected more data. Same quote experience, same outputs."
+          chip={
+            <CountChip
+              tone="amber"
+              value={manifest?.synthetic_count}
+              unit="training rows"
+            />
+          }
+          tabs={[
+            { to: "/ml/quote", label: "Quote" },
+            { to: "/ml/compare", label: "Compare" },
+            { to: "/ml/insights", label: "Business Insights" },
+          ]}
         />
       </div>
     </>

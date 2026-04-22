@@ -45,7 +45,7 @@ export function PortfolioKpis({
   const costDisplay =
     kpis.avgMaterialsCost != null ? fmtCurrency.format(kpis.avgMaterialsCost) : "—";
 
-  const projectsMeta = source === "synthetic" ? "synthetic pool" : "real historical";
+  const projectsMeta = source === "synthetic" ? "training projects" : "billed projects";
 
   return (
     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

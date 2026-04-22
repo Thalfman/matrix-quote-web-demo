@@ -1,5 +1,6 @@
 import { AlertTriangle } from "lucide-react";
 
+import { DataProvenanceNote } from "@/components/DataProvenanceNote";
 import { PageHeader } from "@/components/PageHeader";
 import { useRealProjects } from "@/demo/realProjects";
 import { CompareBrowseTab } from "@/pages/demo/CompareBrowseTab";
@@ -36,6 +37,7 @@ export function ComparisonCompare() {
         description="Browse the real historical pool and select two or three projects to compare side-by-side across buckets, inputs, and actuals."
         chips={data ? [{ label: `${data.length} projects`, tone: "accent" }] : []}
       />
+      <DataProvenanceNote variant="real" />
 
       {error ? (
         <div className="card p-5 mt-6 flex items-start gap-3 text-sm text-danger" role="alert">

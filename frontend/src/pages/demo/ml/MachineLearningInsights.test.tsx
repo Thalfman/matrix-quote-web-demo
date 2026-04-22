@@ -58,10 +58,12 @@ const FAKE_RECORDS: ProjectRecord[] = [
 const { MachineLearningInsights } = await import("./MachineLearningInsights");
 
 describe("MachineLearningInsights — happy path", () => {
-  it("renders the dataset label 'ML · Synthetic training pool'", () => {
+  it("renders the dataset label 'Synthetic Data · Training projects'", () => {
     mockHookReturn = { data: FAKE_RECORDS, isLoading: false, error: null };
     renderWithProviders(<MachineLearningInsights />);
-    expect(screen.getByText(/ml · synthetic training pool/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/synthetic data · training projects/i),
+    ).toBeInTheDocument();
   });
 
   it("renders all six section headings when data is loaded", () => {

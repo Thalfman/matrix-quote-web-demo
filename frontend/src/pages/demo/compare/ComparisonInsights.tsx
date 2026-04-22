@@ -6,10 +6,11 @@ export function ComparisonInsights() {
   return (
     <BusinessInsightsView
       records={data}
-      datasetLabel="Comparison · Real projects"
+      datasetLabel="Real Data · Historical projects"
+      source="real"
       isLoading={isLoading}
       error={error instanceof Error ? error : error ? new Error(String(error)) : null}
-      emptyMessage="No real projects found. Make sure real-projects.json is present in demo assets."
+      emptyMessage="No historical projects found. Make sure the demo data bundle is loaded."
     />
   );
 }

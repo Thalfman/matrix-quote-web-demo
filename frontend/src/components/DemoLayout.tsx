@@ -109,9 +109,9 @@ export function DemoLayout() {
   const mlActive = pathname.startsWith("/ml");
 
   const datasetLabel = mlActive
-    ? "Synthetic pool"
+    ? "Training projects"
     : compareActive
-      ? "Real projects"
+      ? "Historical projects"
       : "Select a tool";
 
   return (

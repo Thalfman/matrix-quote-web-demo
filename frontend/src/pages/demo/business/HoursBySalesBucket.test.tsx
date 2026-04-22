@@ -25,7 +25,9 @@ const BUCKET_DATA: BucketRow[] = [
 describe("HoursBySalesBucket", () => {
   it("renders the section heading with 'total' metric by default", () => {
     renderWithProviders(<HoursBySalesBucket data={BUCKET_DATA} />);
-    expect(screen.getByText(/total p50 hours · by sales bucket/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/total hours · by sales bucket/i),
+    ).toBeInTheDocument();
   });
 
   it("renders empty-state text when data is empty", () => {
@@ -38,11 +40,13 @@ describe("HoursBySalesBucket", () => {
     expect(screen.queryByText(/no data available/i)).not.toBeInTheDocument();
   });
 
-  it("clicking the Avg button changes the heading to avg p50 hours", () => {
+  it("clicking the Avg button changes the heading to avg hours", () => {
     renderWithProviders(<HoursBySalesBucket data={BUCKET_DATA} />);
     const avgBtn = screen.getByRole("button", { name: /^avg$/i });
     fireEvent.click(avgBtn);
-    expect(screen.getByText(/avg p50 hours · by sales bucket/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/avg hours · by sales bucket/i),
+    ).toBeInTheDocument();
   });
 
   it("clicking the Share % button changes the heading to share of total hours", () => {
@@ -56,7 +60,9 @@ describe("HoursBySalesBucket", () => {
     renderWithProviders(<HoursBySalesBucket data={BUCKET_DATA} />);
     fireEvent.click(screen.getByRole("button", { name: /^avg$/i }));
     fireEvent.click(screen.getByRole("button", { name: /^total$/i }));
-    expect(screen.getByText(/total p50 hours · by sales bucket/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/total hours · by sales bucket/i),
+    ).toBeInTheDocument();
   });
 
   it("Total button has aria-pressed=true by default", () => {

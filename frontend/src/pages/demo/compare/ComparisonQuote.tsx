@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 
+import { DataProvenanceNote } from "@/components/DataProvenanceNote";
 import { PageHeader } from "@/components/PageHeader";
 import { PyodideLoader } from "@/components/PyodideLoader";
 import {
@@ -162,6 +163,7 @@ export function ComparisonQuote() {
         description="Estimate hours for a new project using your twenty-four real historical projects. Runs in your browser — no servers."
         chips={chips}
       />
+      <DataProvenanceNote variant="real" />
 
       {!ready && !error && (
         <div className="mt-6 fade-in">

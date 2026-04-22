@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 
+import { DataProvenanceNote } from "@/components/DataProvenanceNote";
 import { PageHeader } from "@/components/PageHeader";
 import { PyodideLoader } from "@/components/PyodideLoader";
 import {
@@ -153,7 +154,7 @@ export function MachineLearningQuoteTool() {
   };
 
   const chips = error
-    ? [{ label: "Pyodide failed to load", tone: "warning" as const }]
+    ? [{ label: "Runtime failed to load", tone: "warning" as const }]
     : ready
       ? [{ label: "Runtime ready", tone: "success" as const }]
       : [{ label: "Warming up", tone: "accent" as const }];
@@ -166,6 +167,7 @@ export function MachineLearningQuoteTool() {
         description="Estimate hours with a likely range and what's driving each number — runs in your browser."
         chips={chips}
       />
+      <DataProvenanceNote variant="synthetic" />
 
       {!ready && !error && (
         <div className="mt-6 fade-in">
