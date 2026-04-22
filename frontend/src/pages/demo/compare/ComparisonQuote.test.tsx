@@ -107,16 +107,16 @@ describe("ComparisonQuote — page header copy", () => {
     expect(screen.getByRole("heading", { name: /real data quote/i })).toBeInTheDocument();
   });
 
-  it("renders the description mentioning 'twenty-four real historical projects'", () => {
+  it("renders the description mentioning 'twenty-four historical projects'", () => {
     renderWithProviders(<ComparisonQuote />);
     expect(
-      screen.getByText(/twenty-four real historical projects/i),
+      screen.getByText(/twenty-four historical projects/i),
     ).toBeInTheDocument();
   });
 
-  it("mentions 'no servers' in description", () => {
+  it("mentions running in the browser in the description", () => {
     renderWithProviders(<ComparisonQuote />);
-    expect(screen.getByText(/no servers/i)).toBeInTheDocument();
+    expect(screen.getByText(/runs entirely in the browser/i)).toBeInTheDocument();
   });
 });
 

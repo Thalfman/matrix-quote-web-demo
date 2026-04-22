@@ -194,8 +194,26 @@ describe("InsightsFilters — category chip toggle", () => {
   });
 });
 
-describe("InsightsFilters — complexity slider", () => {
-  it("changing the min slider emits onChange with updated complexityMin", () => {
+describe("InsightsFilters — complexity chips", () => {
+  it("renders all five complexity level chips", () => {
+    renderWithProviders(
+      <InsightsFilters
+        filter={makeFilter()}
+        onChange={vi.fn()}
+        availableIndustries={[]}
+        availableCategories={[]}
+        totalCount={10}
+        filteredCount={10}
+      />,
+    );
+    for (const level of [1, 2, 3, 4, 5]) {
+      expect(
+        screen.getByRole("button", { name: `Level ${level}` }),
+      ).toBeInTheDocument();
+    }
+  });
+
+  it("clicking an inactive complexity chip adds it to the filter", () => {
     const onChange = vi.fn();
     renderWithProviders(
       <InsightsFilters
@@ -207,49 +225,41 @@ describe("InsightsFilters — complexity slider", () => {
         filteredCount={10}
       />,
     );
-    const minSlider = screen.getByRole("slider", { name: /minimum complexity/i });
-    fireEvent.change(minSlider, { target: { value: "3" } });
+    fireEvent.click(screen.getByRole("button", { name: "Level 3" }));
     expect(onChange).toHaveBeenCalledOnce();
     const nextFilter: InsightsFilterState = onChange.mock.calls[0][0];
-    expect(nextFilter.complexityMin).toBe(3);
+    expect(nextFilter.complexities.has(3)).toBe(true);
   });
 
-  it("changing the max slider emits onChange with updated complexityMax", () => {
+  it("clicking an active complexity chip removes it", () => {
     const onChange = vi.fn();
+    renderWithProviders(
+      <InsightsFilters
+        filter={makeFilter({ complexities: new Set([3]) })}
+        onChange={onChange}
+        availableIndustries={[]}
+        availableCategories={[]}
+        totalCount={10}
+        filteredCount={10}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Level 3" }));
+    const nextFilter: InsightsFilterState = onChange.mock.calls[0][0];
+    expect(nextFilter.complexities.has(3)).toBe(false);
+  });
+
+  it("defaults to an empty set meaning 'All levels'", () => {
     renderWithProviders(
       <InsightsFilters
         filter={makeFilter()}
-        onChange={onChange}
+        onChange={vi.fn()}
         availableIndustries={[]}
         availableCategories={[]}
         totalCount={10}
         filteredCount={10}
       />,
     );
-    const maxSlider = screen.getByRole("slider", { name: /maximum complexity/i });
-    fireEvent.change(maxSlider, { target: { value: "4" } });
-    expect(onChange).toHaveBeenCalledOnce();
-    const nextFilter: InsightsFilterState = onChange.mock.calls[0][0];
-    expect(nextFilter.complexityMax).toBe(4);
-  });
-
-  it("setting min above current max clamps max up to match", () => {
-    const onChange = vi.fn();
-    renderWithProviders(
-      <InsightsFilters
-        filter={makeFilter({ complexityMin: 1, complexityMax: 2 })}
-        onChange={onChange}
-        availableIndustries={[]}
-        availableCategories={[]}
-        totalCount={10}
-        filteredCount={10}
-      />,
-    );
-    const minSlider = screen.getByRole("slider", { name: /minimum complexity/i });
-    fireEvent.change(minSlider, { target: { value: "5" } });
-    const nextFilter: InsightsFilterState = onChange.mock.calls[0][0];
-    expect(nextFilter.complexityMin).toBe(5);
-    expect(nextFilter.complexityMax).toBe(5);
+    expect(screen.getByText(/all levels/i)).toBeInTheDocument();
   });
 });
 
@@ -372,8 +382,7 @@ describe("InsightsFilters — reset", () => {
     const nextFilter: InsightsFilterState = onChange.mock.calls[0][0];
     expect(nextFilter.industries.size).toBe(0);
     expect(nextFilter.categories.size).toBe(0);
-    expect(nextFilter.complexityMin).toBe(1);
-    expect(nextFilter.complexityMax).toBe(5);
+    expect(nextFilter.complexities.size).toBe(0);
     expect(nextFilter.search).toBe("");
   });
 });

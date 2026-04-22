@@ -25,12 +25,12 @@ function KpiCard({
       {accent && (
         <span aria-hidden="true" className="absolute top-0 left-0 right-0 h-1 bg-amber" />
       )}
-      <div className="eyebrow text-[10px] text-muted">{label}</div>
+      <div className="eyebrow text-xs text-muted">{label}</div>
       <div className="mt-3 flex items-baseline gap-1">
         <span className="display-hero text-3xl tnum leading-none text-ink">{value}</span>
         {suffix && <span className="text-muted text-sm">{suffix}</span>}
       </div>
-      {meta && <div className="text-[11px] text-muted mt-2 mono">{meta}</div>}
+      {meta && <div className="text-sm text-muted mt-2 mono">{meta}</div>}
     </div>
   );
 }
@@ -43,7 +43,7 @@ export function PortfolioKpis({
   source?: "real" | "synthetic";
 }) {
   const costDisplay =
-    kpis.avgMaterialsCost != null ? fmtCurrency.format(kpis.avgMaterialsCost) : "—";
+    kpis.avgMaterialsCost != null ? fmtCurrency.format(kpis.avgMaterialsCost) : "N/A";
 
   const projectsMeta = source === "synthetic" ? "training projects" : "billed projects";
 

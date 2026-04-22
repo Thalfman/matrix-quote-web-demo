@@ -60,7 +60,7 @@ describe("DemoHome — two-card layout", () => {
   it("renders the Real Data description mentioning 'billed projects'", () => {
     renderWithProviders(<DemoHome />);
     expect(
-      screen.getByText(/twenty-four of your real, billed projects/i),
+      screen.getByText(/twenty-four billed projects/i),
     ).toBeInTheDocument();
   });
 

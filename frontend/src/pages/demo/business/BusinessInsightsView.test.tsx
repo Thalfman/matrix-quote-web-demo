@@ -203,9 +203,15 @@ describe("BusinessInsightsView — filter chip interaction", () => {
   });
 });
 
+function openAllProjectsDetails() {
+  const details = document.querySelector("details");
+  if (details) details.open = true;
+}
+
 describe("BusinessInsightsView — table row click opens drawer", () => {
   it("clicking a table row opens the project detail drawer with the row's project name", async () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    openAllProjectsDetails();
 
     // The drawer starts hidden (no project name visible as the dialog label)
     const dialog = document.querySelector("[role='dialog']");
@@ -230,6 +236,7 @@ describe("BusinessInsightsView — table row click opens drawer", () => {
 
   it("drawer closes when the X button is clicked", async () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    openAllProjectsDetails();
 
     // Open the drawer
     const alphaCell = screen.getByText("Alpha Project");
@@ -252,6 +259,7 @@ describe("BusinessInsightsView — table row click opens drawer", () => {
 
   it("drawer closes on Escape key after being opened", async () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    openAllProjectsDetails();
 
     const alphaCell = screen.getByText("Alpha Project");
     const rowEl = alphaCell.closest("[role='button']");

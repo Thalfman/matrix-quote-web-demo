@@ -9,16 +9,12 @@ const COPY: Record<Variant, { eyebrow: string; body: string }> = {
   real: {
     eyebrow: "What this is trained on",
     body:
-      "Twenty-four of your real, completed projects. The prediction engine learned from these specific examples. " +
-      "With this much data the engine is most reliable when your new project looks like past ones; " +
-      "for less-common projects, expect lower confidence ratings — that's the engine being honest about its limits.",
+      "Twenty-four of your completed projects. The engine is most reliable when a new project resembles past ones; expect lower confidence on outliers.",
   },
   synthetic: {
     eyebrow: "What this is trained on",
     body:
-      "Five hundred generated training projects, designed to give the engine wide coverage. " +
-      "This is what the engine would look like once you've collected enough real projects of your own — " +
-      "wider coverage, tighter likely ranges, more consistent confidence ratings across work categories.",
+      "Five hundred generated training projects for wide coverage. Reflects what the engine looks like after you collect enough real projects: wider coverage, tighter ranges, steadier confidence.",
   },
 };
 
@@ -51,18 +47,18 @@ export function DataProvenanceNote({ variant }: { variant: Variant }) {
           className="shrink-0 text-teal"
           aria-hidden="true"
         />
-        <span className="eyebrow text-[10px] text-ink">{copy.eyebrow}</span>
+        <span className="eyebrow text-xs text-ink">{copy.eyebrow}</span>
         <span
           aria-hidden="true"
           className={cn(
-            "ml-auto text-[10px] text-muted transition-transform duration-150 ease-out",
+            "ml-auto text-xs text-muted transition-transform duration-150 ease-out",
             "group-open:rotate-180",
           )}
         >
           ▾
         </span>
       </summary>
-      <p className="px-3 pb-3 pt-0 text-[13px] leading-relaxed text-muted max-w-3xl">
+      <p className="px-3 pb-3 pt-0 text-sm leading-relaxed text-muted max-w-3xl">
         {copy.body}
       </p>
     </details>

@@ -88,18 +88,18 @@ export function CompareBrowseTab({ records }: Props) {
         </div>
 
         <div>
-          <div className="eyebrow text-[11px] text-muted mb-3">Per-bucket hours (actuals)</div>
+          <div className="eyebrow text-sm text-muted mb-3">Per-bucket hours (actuals)</div>
           <CompareBucketsChart quotes={selectedQuotes} />
         </div>
 
         <div>
-          <div className="eyebrow text-[11px] text-muted mb-3">Input differences</div>
+          <div className="eyebrow text-sm text-muted mb-3">Input differences</div>
           <CompareInputDiff quotes={selectedQuotes} />
         </div>
 
         <div className="card p-5 text-xs text-muted leading-relaxed">
-          Hours shown are each project's actual recorded total. The ±15% range is a
-          visual confidence band — real historical data doesn't carry a learned interval.
+          Hours shown are each project's recorded actuals. The ±15% band is a visual
+          reference; historical data does not carry a learned interval.
         </div>
       </div>
     );

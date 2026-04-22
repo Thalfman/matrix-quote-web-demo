@@ -52,9 +52,9 @@ export function QuoteResultPanel({ result }: { result: UnifiedQuoteResult }) {
       {/* Hero estimate */}
       <div className="card p-6">
         <div className="flex items-baseline justify-between">
-          <span className="eyebrow text-[10px] text-muted">Estimated hours</span>
+          <span className="eyebrow text-xs text-muted">Estimated hours</span>
           <span
-            className={`text-[10px] eyebrow px-2 py-0.5 rounded-sm ${CONFIDENCE_TONE[result.overallConfidence]}`}
+            className={`text-xs eyebrow px-2 py-0.5 rounded-sm ${CONFIDENCE_TONE[result.overallConfidence]}`}
           >
             {CONFIDENCE_LABEL[result.overallConfidence]}
           </span>
@@ -69,7 +69,7 @@ export function QuoteResultPanel({ result }: { result: UnifiedQuoteResult }) {
 
       {/* Top drivers */}
       <div className="card p-5">
-        <div className="eyebrow text-[10px] text-muted mb-3">What drives this estimate</div>
+        <div className="eyebrow text-xs text-muted mb-3">What drives this estimate</div>
         <ul className="space-y-2">
           {result.topDrivers.map((d, i) => (
             <li key={i} className="flex items-center justify-between gap-3 text-sm">
@@ -81,14 +81,14 @@ export function QuoteResultPanel({ result }: { result: UnifiedQuoteResult }) {
                 )}
                 {d.label}
               </span>
-              <span className="text-[11px] eyebrow text-muted shrink-0">
+              <span className="text-sm eyebrow text-muted shrink-0">
                 {MAGNITUDE_LABEL[d.magnitude]}
               </span>
             </li>
           ))}
           {result.topDrivers.length === 0 && (
             <li className="text-sm text-muted">
-              No clear drivers — inputs are similar to typical projects.
+              No clear drivers. Inputs are similar to typical projects.
             </li>
           )}
         </ul>
@@ -96,7 +96,7 @@ export function QuoteResultPanel({ result }: { result: UnifiedQuoteResult }) {
 
       {/* Per-category breakdown */}
       <div className="card p-5">
-        <div className="eyebrow text-[10px] text-muted mb-3">Hours by work category</div>
+        <div className="eyebrow text-xs text-muted mb-3">Hours by work category</div>
         <div className="space-y-1.5">
           {result.perCategory.map((c) => (
             <div
@@ -107,11 +107,11 @@ export function QuoteResultPanel({ result }: { result: UnifiedQuoteResult }) {
               <span className="col-span-2 text-ink tnum text-right">
                 {fmtHrs(c.estimateHours)} hrs
               </span>
-              <span className="col-span-3 text-[11px] text-muted tnum text-right">
+              <span className="col-span-3 text-sm text-muted tnum text-right">
                 {fmtHrs(c.rangeLow)}–{fmtHrs(c.rangeHigh)}
               </span>
               <span
-                className={`col-span-1 text-[10px] eyebrow text-center rounded-sm ${CONFIDENCE_TONE[c.confidence]}`}
+                className={`col-span-1 text-xs eyebrow text-center rounded-sm ${CONFIDENCE_TONE[c.confidence]}`}
                 title={CONFIDENCE_LABEL[c.confidence]}
               >
                 {CONFIDENCE_SHORT[c.confidence]}
@@ -123,7 +123,7 @@ export function QuoteResultPanel({ result }: { result: UnifiedQuoteResult }) {
 
       {/* Supporting matches */}
       <div className="card p-5">
-        <div className="eyebrow text-[10px] text-muted mb-3">
+        <div className="eyebrow text-xs text-muted mb-3">
           {result.supportingMatches.label}
         </div>
         <div className="space-y-2">
@@ -133,7 +133,7 @@ export function QuoteResultPanel({ result }: { result: UnifiedQuoteResult }) {
               className="flex items-baseline justify-between gap-3 text-sm"
             >
               <span className="min-w-0 truncate text-ink">{m.projectName}</span>
-              <span className="text-[11px] text-muted mono shrink-0">
+              <span className="text-sm text-muted mono shrink-0">
                 {fmtHrs(m.actualHours)} hrs · {(m.similarity * 100).toFixed(0)}% match
               </span>
             </div>

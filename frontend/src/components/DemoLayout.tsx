@@ -48,7 +48,7 @@ function MobileToolSwitch({
   mlActive: boolean;
 }) {
   const segmentBase =
-    "inline-flex items-center justify-center px-3 py-1.5 text-[11px] eyebrow rounded-sm" +
+    "inline-flex items-center justify-center px-3 py-1.5 text-sm eyebrow rounded-sm" +
     " transition-colors duration-150 ease-out focus-visible:outline-none" +
     " focus-visible:ring-2 focus-visible:ring-teal";
   return (
@@ -87,7 +87,7 @@ function MobileToolSwitch({
           to={compareActive ? "/compare/insights" : "/ml/insights"}
           className={({ isActive }) =>
             cn(
-              "text-[11px] eyebrow px-2 py-1.5 rounded-sm transition-colors duration-150 ease-out",
+              "text-sm eyebrow px-2 py-1.5 rounded-sm transition-colors duration-150 ease-out",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
               isActive
                 ? "text-teal"
@@ -120,7 +120,7 @@ export function DemoLayout() {
         {/* Brand header */}
         <div className="mb-8">
           <div className="display-hero text-2xl tracking-tight leading-none">Matrix</div>
-          <div className="eyebrow text-[10px] text-white/55 mt-1">Quote Estimation · Demo</div>
+          <div className="eyebrow text-xs text-white/55 mt-1">Quote Estimation · Demo</div>
         </div>
 
         <nav aria-label="Primary" className="contents">
@@ -137,7 +137,7 @@ export function DemoLayout() {
           <div className="flex flex-col gap-1 mb-6">
             <div
               className={cn(
-                "eyebrow text-[10px] mb-1 px-3 transition-colors duration-150 ease-out",
+                "eyebrow text-xs mb-1 px-3 transition-colors duration-150 ease-out",
                 compareActive ? "text-white/70" : "text-white/40",
               )}
             >
@@ -156,7 +156,7 @@ export function DemoLayout() {
           <div className="flex flex-col gap-1">
             <div
               className={cn(
-                "eyebrow text-[10px] mb-1 px-3 transition-colors duration-150 ease-out",
+                "eyebrow text-xs mb-1 px-3 transition-colors duration-150 ease-out",
                 mlActive ? "text-white/70" : "text-white/40",
               )}
             >
@@ -183,12 +183,12 @@ export function DemoLayout() {
                 className="text-amber shrink-0"
                 aria-hidden="true"
               />
-              <span className="text-[11px] font-semibold text-amber">Demo mode</span>
+              <span className="text-sm font-semibold text-amber">Demo mode</span>
             </div>
-            <p className="text-[11px] text-white/60 leading-snug">
+            <p className="text-sm text-white/60 leading-snug">
               Runs entirely in your browser. No backend, no sign-in.
             </p>
-            <p className="text-[11px] text-white/50 leading-snug">
+            <p className="text-sm text-white/50 leading-snug">
               Dataset:{" "}
               <span className="text-white/75">{datasetLabel}</span>
             </p>
@@ -210,7 +210,7 @@ export function DemoLayout() {
         <div className="hidden lg:block border-b hairline bg-white/60 backdrop-blur">
           <div className="max-w-content mx-auto px-8 h-12 flex items-center justify-between text-xs">
             <div className="text-muted">Demo</div>
-            <span className="text-[10px] eyebrow px-2 py-1 rounded-sm bg-amber/20 text-amber">
+            <span className="text-xs eyebrow px-2 py-1 rounded-sm bg-amber/20 text-amber">
               Static · client-side only
             </span>
           </div>

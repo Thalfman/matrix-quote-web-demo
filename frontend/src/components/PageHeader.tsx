@@ -25,7 +25,7 @@ export function PageHeader({
   return (
     <header className="flex items-end justify-between gap-6 pb-6 mb-8 border-b hairline flex-wrap">
       <div>
-        {eyebrow && <div className="eyebrow text-[11px] text-teal">{eyebrow}</div>}
+        {eyebrow && <div className="eyebrow text-sm text-teal">{eyebrow}</div>}
         <h1 className="display-hero text-4xl leading-none mt-2 text-ink">{title}</h1>
         {description && (
           <p className="text-sm text-muted mt-3 max-w-xl">{description}</p>

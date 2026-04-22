@@ -113,8 +113,8 @@ export function TopProjectsTable({
       {/* Table header strip */}
       <div className="flex items-center justify-between gap-3 px-5 py-3 bg-paper/60 border-b hairline flex-wrap gap-y-2">
         <div className="flex items-baseline gap-3 flex-wrap">
-          <div className="eyebrow text-[10px] text-muted">Ranked by total hours</div>
-          <div className="text-[11px] text-muted mono tnum">
+          <div className="eyebrow text-xs text-muted">Ranked by total hours</div>
+          <div className="text-sm text-muted mono tnum">
             {sorted.length === rows.length
               ? `${rows.length} projects`
               : `${sorted.length} of ${rows.length} projects`}
@@ -146,7 +146,7 @@ export function TopProjectsTable({
             type="button"
             onClick={handleExportCsv}
             className={cn(
-              "inline-flex items-center gap-1.5 text-[11px] eyebrow px-2.5 py-1.5 rounded-sm",
+              "inline-flex items-center gap-1.5 text-sm eyebrow px-2.5 py-1.5 rounded-sm",
               "border hairline bg-surface text-muted hover:text-ink hover:bg-paper",
               "transition-colors duration-150 ease-out",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
@@ -173,7 +173,7 @@ export function TopProjectsTable({
               key={col.label}
               role="columnheader"
               className={cn(
-                "eyebrow text-[10px] select-none",
+                "eyebrow text-xs select-none",
                 col.align === "right" ? "text-right" : "",
                 isActive ? "text-ink" : "text-muted",
                 isSortable
@@ -277,7 +277,7 @@ export function TopProjectsTable({
             </div>
             <div
               role="cell"
-              className="text-[10px] eyebrow text-muted truncate"
+              className="text-xs eyebrow text-muted truncate"
               title={r.primary_bucket}
             >
               {r.primary_bucket}

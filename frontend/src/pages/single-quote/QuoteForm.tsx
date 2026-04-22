@@ -277,7 +277,7 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
           />
         </div>
         <details className="mt-2">
-          <summary className="cursor-pointer muted text-xs tracking-widest">ADVANCED — derived indices</summary>
+          <summary className="cursor-pointer muted text-xs tracking-widest">ADVANCED · derived indices</summary>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
             <Field
               label="Stations/robot idx"
@@ -307,7 +307,7 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
         </details>
       </Section>
 
-      <Section step="06" title="Cost" description="Materials estimate — log-transformed before prediction">
+      <Section step="06" title="Cost" description="Materials estimate (log-transformed before prediction)">
         <Field label="Estimated materials cost ($)">
           <Input type="number" min={0} step={100} {...register("estimated_materials_cost")} />
         </Field>
