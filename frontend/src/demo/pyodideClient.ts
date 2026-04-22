@@ -2,7 +2,7 @@
 import { QuoteInput, QuotePrediction } from "@/api/types";
 import { DEMO_ASSETS } from "@/lib/demoMode";
 
-const PYODIDE_VERSION = "0.27.7";
+const PYODIDE_VERSION = "0.27.1";
 const PYODIDE_INDEX_URL = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
 const PYODIDE_SCRIPT = `${PYODIDE_INDEX_URL}pyodide.js`;
 
