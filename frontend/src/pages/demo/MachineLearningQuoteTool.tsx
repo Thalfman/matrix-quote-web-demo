@@ -4,14 +4,22 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 
-import { DropdownOptions, ExplainedQuoteResponse } from "@/api/types";
 import { PageHeader } from "@/components/PageHeader";
 import { PyodideLoader } from "@/components/PyodideLoader";
-import { ensurePyodideReady, predictQuote, subscribe } from "@/demo/pyodideClient";
+import {
+  ensurePyodideReady,
+  ensureModelsReady,
+  predictQuote,
+  getFeatureImportances,
+  subscribe,
+} from "@/demo/pyodideClient";
 import { useSyntheticPool } from "@/demo/realProjects";
+import { useModelMetrics } from "@/demo/modelMetrics";
 import { useHotkey } from "@/lib/useHotkey";
 import { QuoteForm } from "@/pages/single-quote/QuoteForm";
-import { ResultPanel } from "@/pages/single-quote/ResultPanel";
+import { QuoteResultPanel } from "@/components/quote/QuoteResultPanel";
+import { toUnifiedResult } from "@/demo/quoteAdapter";
+import type { UnifiedQuoteResult } from "@/demo/quoteResult";
 import {
   QuoteFormValues,
   SalesBucket,
@@ -29,7 +37,7 @@ function uniqueStrings(pool: Record<string, unknown>[], field: string): string[]
   return Array.from(set).sort();
 }
 
-function buildDropdowns(pool: Record<string, unknown>[]): DropdownOptions {
+function buildDropdowns(pool: Record<string, unknown>[]) {
   return {
     industry_segment: uniqueStrings(pool, "industry_segment"),
     system_category: uniqueStrings(pool, "system_category"),
@@ -42,9 +50,19 @@ function buildDropdowns(pool: Record<string, unknown>[]): DropdownOptions {
 
 export function MachineLearningQuoteTool() {
   const { data: pool } = useSyntheticPool();
+  const { data: metricsData } = useModelMetrics("synthetic");
+
+  const metricsByTarget = useMemo(
+    () =>
+      Object.fromEntries(
+        (metricsData?.models ?? []).map((m) => [m.target, m]),
+      ),
+    [metricsData],
+  );
+
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<ExplainedQuoteResponse | null>(null);
+  const [result, setResult] = useState<UnifiedQuoteResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -74,12 +92,14 @@ export function MachineLearningQuoteTool() {
 
   useEffect(() => {
     const unsub = subscribe((s) => {
-      if (s.stage === "ready") setReady(true);
       if (s.stage === "error") setError(s.message);
     });
-    ensurePyodideReady().catch(() => {
-      /* error captured via subscribe */
-    });
+    ensurePyodideReady()
+      .then(() => ensureModelsReady("synthetic"))
+      .then(() => setReady(true))
+      .catch(() => {
+        /* error captured via subscribe */
+      });
     return unsub;
   }, []);
 
@@ -92,11 +112,36 @@ export function MachineLearningQuoteTool() {
     const input = transformToQuoteInput(values);
     setSubmitting(true);
     try {
-      const prediction = await predictQuote(input);
-      setResult({ prediction, drivers: null, neighbors: null });
+      const [prediction, importances] = await Promise.all([
+        predictQuote(input, "synthetic"),
+        getFeatureImportances("synthetic"),
+      ]);
+
+      // Map ops-keyed prediction back to target-keyed for the adapter.
+      const predByTarget: Record<string, { p10: number; p50: number; p90: number }> = {};
+      for (const [opKey, opPred] of Object.entries(prediction.ops)) {
+        const target = `${opKey}_actual_hours`;
+        predByTarget[target] = {
+          p10: opPred.p10,
+          p50: opPred.p50,
+          p90: opPred.p90,
+        };
+      }
+
+      setResult(
+        toUnifiedResult({
+          input,
+          prediction: predByTarget,
+          importances,
+          metrics: metricsByTarget,
+          supportingPool: pool ?? [],
+          supportingLabel: "Most similar training rows",
+        }),
+      );
       requestAnimationFrame(() => {
         document.getElementById("quote-results")?.scrollIntoView({
-          behavior: "smooth", block: "start",
+          behavior: "smooth",
+          block: "start",
         });
       });
     } catch (err) {
@@ -116,9 +161,9 @@ export function MachineLearningQuoteTool() {
   return (
     <>
       <PageHeader
-        eyebrow="Machine Learning · Client-side"
+        eyebrow="Synthetic Data · Quote"
         title="Machine Learning Quote Tool"
-        description="Twelve Gradient Boosting models run directly in your browser. The first visit warms up the runtime and caches ~30 MB of packages; every estimate after that is instant."
+        description="Estimate hours with a likely range and what's driving each number — runs in your browser."
         chips={chips}
       />
 
@@ -140,10 +185,10 @@ export function MachineLearningQuoteTool() {
             aria-hidden="true"
           />
           <div>
-            <div className="font-medium">Couldn't warm up the in-browser runtime.</div>
+            <div className="font-medium">Couldn&apos;t warm up the in-browser runtime.</div>
             <div className="text-muted mt-1">
               Refresh the page to try again. Trained models and the Python runtime load
-              once; subsequent visits use the browser's cache.
+              once; subsequent visits use the browser&apos;s cache.
             </div>
           </div>
         </div>
@@ -163,24 +208,7 @@ export function MachineLearningQuoteTool() {
             />
           </div>
           <aside className="lg:sticky lg:top-6 self-start">
-            <ResultPanel
-              result={result}
-              isLoading={submitting}
-              scenarios={[]}
-              onSaveScenario={() => {
-                /* no-op in demo */
-              }}
-              onExportPdf={() => {
-                /* no-op in demo */
-              }}
-              onRemoveScenario={() => {
-                /* no-op in demo */
-              }}
-              onCompare={() => {
-                /* no-op in demo */
-              }}
-              hideSaveExport
-            />
+            {result && <QuoteResultPanel result={result} />}
           </aside>
         </div>
       )}
