@@ -119,7 +119,7 @@ describe("DemoLayout sidebar structure", () => {
   });
 });
 
-describe("DemoLayout mobile header", () => {
+describe("DemoLayout mobile back button", () => {
   it("hides the Back to demo home link on the home route", () => {
     renderLayout("/");
     const header = screen.getByTestId("mobile-header");
@@ -135,55 +135,86 @@ describe("DemoLayout mobile header", () => {
     expect(back).toBeInTheDocument();
     expect((back as HTMLAnchorElement).getAttribute("href")).toBe("/");
   });
-
-  it("shows the dataset + sub-view label strip on non-home routes", () => {
-    renderLayout("/compare/insights");
-    const header = screen.getByTestId("mobile-header");
-    expect(within(header).getByText("Real Data")).toBeInTheDocument();
-    expect(within(header).getByText("Business Insights")).toBeInTheDocument();
-  });
-
-  it("uses 'Synthetic Data · Quote' on /ml/quote", () => {
-    renderLayout("/ml/quote");
-    const header = screen.getByTestId("mobile-header");
-    expect(within(header).getByText("Synthetic Data")).toBeInTheDocument();
-    expect(within(header).getByText("Quote")).toBeInTheDocument();
-  });
-
-  it("does not render the label strip on the home route", () => {
-    renderLayout("/");
-    const header = screen.getByTestId("mobile-header");
-    expect(within(header).queryByText(/^quote$/i)).not.toBeInTheDocument();
-    expect(within(header).queryByText(/^business insights$/i)).not.toBeInTheDocument();
-  });
 });
 
-describe("DemoLayout mobile tool-segment active state", () => {
-  it("highlights Compare segment on /compare/quote", () => {
-    renderLayout("/compare/quote");
+describe("DemoLayout mobile tool switch", () => {
+  function toolNav(route: string) {
+    renderLayout(route);
     const header = screen.getByTestId("mobile-header");
-    const compareSegment = within(header).getByRole("link", { name: "Compare" });
+    return within(header).getByRole("navigation", { name: /switch tool/i });
+  }
+
+  it("highlights Compare segment on /compare/*", () => {
+    const nav = toolNav("/compare/insights");
+    const compareSegment = within(nav).getByRole("link", { name: "Compare" });
     expect(compareSegment.className).toContain("bg-ink");
     expect(compareSegment.getAttribute("aria-current")).toBe("page");
   });
 
-  it("does NOT highlight Compare segment on /compare/insights (Insights pill owns the active state)", () => {
-    renderLayout("/compare/insights");
-    const header = screen.getByTestId("mobile-header");
-    const compareSegment = within(header).getByRole("link", { name: "Compare" });
-    expect(compareSegment.className).not.toContain("bg-ink");
-    expect(compareSegment.getAttribute("aria-current")).not.toBe("page");
-    const insightsLink = within(header).getByRole("link", { name: "Insights" });
-    expect(insightsLink.className).toContain("bg-teal");
+  it("highlights ML segment on /ml/*", () => {
+    const nav = toolNav("/ml/quote");
+    const mlSegment = within(nav).getByRole("link", { name: "ML" });
+    expect(mlSegment.className).toContain("bg-ink");
   });
 
-  it("does NOT highlight ML segment on /ml/insights", () => {
+  it("Compare segment preserves the current sub-view (insights → /compare/insights)", () => {
+    const nav = toolNav("/ml/insights");
+    const compareSegment = within(nav).getByRole("link", { name: "Compare" });
+    expect(
+      (compareSegment as HTMLAnchorElement).getAttribute("href"),
+    ).toBe("/compare/insights");
+  });
+
+  it("ML segment preserves the current sub-view (compare → /ml/compare)", () => {
+    const nav = toolNav("/compare/compare");
+    const mlSegment = within(nav).getByRole("link", { name: "ML" });
+    expect((mlSegment as HTMLAnchorElement).getAttribute("href")).toBe("/ml/compare");
+  });
+
+  it("tool segments default to /<tool>/quote on the home route", () => {
+    const nav = toolNav("/");
+    const compareSegment = within(nav).getByRole("link", { name: "Compare" });
+    const mlSegment = within(nav).getByRole("link", { name: "ML" });
+    expect((compareSegment as HTMLAnchorElement).getAttribute("href")).toBe("/compare/quote");
+    expect((mlSegment as HTMLAnchorElement).getAttribute("href")).toBe("/ml/quote");
+  });
+});
+
+describe("DemoLayout mobile sub-view tabs", () => {
+  it("does not render sub-view tabs on the home route", () => {
+    renderLayout("/");
+    const header = screen.getByTestId("mobile-header");
+    expect(within(header).queryByRole("navigation", { name: /sub-view/i })).toBeNull();
+  });
+
+  it("renders Quote / Compare / Insights tabs on /compare/*", () => {
+    renderLayout("/compare/quote");
+    const header = screen.getByTestId("mobile-header");
+    const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
+    const labels = within(subNav).getAllByRole("link").map((l) => l.textContent);
+    expect(labels).toEqual(["Quote", "Compare", "Insights"]);
+  });
+
+  it("points every tab at the current tool prefix (/ml on /ml/insights)", () => {
     renderLayout("/ml/insights");
     const header = screen.getByTestId("mobile-header");
-    const mlSegment = within(header).getByRole("link", { name: "ML" });
-    expect(mlSegment.className).not.toContain("bg-ink");
-    const insightsLink = within(header).getByRole("link", { name: "Insights" });
-    expect(insightsLink.className).toContain("bg-teal");
+    const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
+    const links = within(subNav).getAllByRole("link") as HTMLAnchorElement[];
+    const hrefs = links.map((l) => l.getAttribute("href"));
+    expect(hrefs).toEqual(["/ml/quote", "/ml/compare", "/ml/insights"]);
+  });
+
+  it("highlights only the current sub-view tab", () => {
+    renderLayout("/compare/insights");
+    const header = screen.getByTestId("mobile-header");
+    const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
+    const quote = within(subNav).getByRole("link", { name: "Quote" });
+    const compare = within(subNav).getByRole("link", { name: "Compare" });
+    const insights = within(subNav).getByRole("link", { name: "Insights" });
+    expect(insights.className).toContain("bg-teal");
+    expect(insights.getAttribute("aria-current")).toBe("page");
+    expect(quote.className).not.toContain("bg-teal");
+    expect(compare.className).not.toContain("bg-teal");
   });
 });
 

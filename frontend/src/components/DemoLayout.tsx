@@ -6,19 +6,18 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 const ICON_STROKE = 1.75;
 
-/** Short dataset label for the active tool ("Real Data" / "Synthetic Data"). */
-function toolLabel(pathname: string): string | null {
-  if (pathname.startsWith("/compare")) return "Real Data";
-  if (pathname.startsWith("/ml")) return "Synthetic Data";
-  return null;
-}
+type SubView = "quote" | "compare" | "insights";
 
-/** Sub-view label within a tool (Quote / Compare / Business Insights). */
-function pageLabel(pathname: string): string | null {
-  if (pathname.endsWith("/quote")) return "Quote";
-  if (pathname.endsWith("/compare")) return "Compare";
-  if (pathname.endsWith("/insights")) return "Business Insights";
-  return null;
+const SUB_VIEWS: { key: SubView; label: string }[] = [
+  { key: "quote", label: "Quote" },
+  { key: "compare", label: "Compare" },
+  { key: "insights", label: "Insights" },
+];
+
+/** Current sub-view within the active tool, or null on /, /other. */
+function subView(pathname: string): SubView | null {
+  const m = pathname.match(/^\/(?:compare|ml)\/(quote|compare|insights)\b/);
+  return m ? (m[1] as SubView) : null;
 }
 
 function SidebarLink({
@@ -51,25 +50,21 @@ function SidebarLink({
 }
 
 /**
- * MobileToolSwitch — lightweight two-segment tool selector + insights link
- * shown in the mobile/tablet top bar. Keeps the two-tool demo navigable
- * below the `lg` breakpoint where the sidebar is hidden.
+ * MobileToolSwitch — two-segment tool (dataset) selector shown in the
+ * mobile/tablet top bar. Each segment preserves the user's current
+ * sub-view when switching tools so e.g. /compare/insights → ML keeps
+ * the user on /ml/insights instead of resetting to Quote.
  */
 function MobileToolSwitch({
   compareActive,
   mlActive,
-  onInsights,
+  currentSub,
 }: {
   compareActive: boolean;
   mlActive: boolean;
-  onInsights: boolean;
+  currentSub: SubView | null;
 }) {
-  // Tool-segment pills (Compare / ML) light up for the tool Quote/Compare
-  // sub-views only. On the Insights sub-view we clear the tool pill so the
-  // Insights pill stands alone as the current-view indicator — otherwise
-  // both the Compare segment and the Insights pill would appear selected.
-  const compareSegmentActive = compareActive && !onInsights;
-  const mlSegmentActive = mlActive && !onInsights;
+  const sub = currentSub ?? "quote";
   const segmentBase =
     "inline-flex items-center justify-center px-3 py-2 md:py-1.5 text-sm eyebrow rounded-sm" +
     " transition-colors duration-150 ease-out focus-visible:outline-none" +
@@ -85,47 +80,71 @@ function MobileToolSwitch({
         aria-label="Tool"
       >
         <NavLink
-          to="/compare/quote"
+          to={`/compare/${sub}`}
           className={cn(
             segmentBase,
-            compareSegmentActive
+            compareActive
               ? "bg-ink text-white font-semibold shadow-sm"
               : "text-muted hover:text-ink",
           )}
-          aria-current={compareSegmentActive ? "page" : undefined}
+          aria-current={compareActive ? "page" : undefined}
         >
           Compare
         </NavLink>
         <NavLink
-          to="/ml/quote"
+          to={`/ml/${sub}`}
           className={cn(
             segmentBase,
-            mlSegmentActive
+            mlActive
               ? "bg-ink text-white font-semibold shadow-sm"
               : "text-muted hover:text-ink",
           )}
-          aria-current={mlSegmentActive ? "page" : undefined}
+          aria-current={mlActive ? "page" : undefined}
         >
           ML
         </NavLink>
       </div>
-      {(compareActive || mlActive) && (
-        <NavLink
-          to={compareActive ? "/compare/insights" : "/ml/insights"}
-          className={({ isActive }) =>
-            cn(
-              "inline-flex items-center justify-center text-sm eyebrow rounded-sm",
-              "px-3 py-2 md:py-1.5 transition-colors duration-150 ease-out",
+    </nav>
+  );
+}
+
+/**
+ * MobileSubViewTabs — Quote / Compare / Insights tabs for the active tool.
+ * Rendered on every mobile route where a tool is selected.
+ */
+function MobileSubViewTabs({
+  toolPrefix,
+  currentSub,
+}: {
+  toolPrefix: "/compare" | "/ml";
+  currentSub: SubView | null;
+}) {
+  return (
+    <nav
+      aria-label="Sub-view"
+      className="flex items-center gap-1.5 overflow-x-auto"
+    >
+      {SUB_VIEWS.map(({ key, label }) => {
+        const isActive = currentSub === key;
+        return (
+          <NavLink
+            key={key}
+            to={`${toolPrefix}/${key}`}
+            className={cn(
+              "inline-flex items-center justify-center shrink-0 rounded-sm",
+              "px-3 py-2 md:py-1.5 text-sm eyebrow",
+              "transition-colors duration-150 ease-out",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
               isActive
                 ? "bg-teal text-white font-semibold shadow-sm"
-                : "text-muted hover:text-ink",
-            )
-          }
-        >
-          Insights
-        </NavLink>
-      )}
+                : "text-muted hover:text-ink hover:bg-black/5",
+            )}
+            aria-current={isActive ? "page" : undefined}
+          >
+            {label}
+          </NavLink>
+        );
+      })}
     </nav>
   );
 }
@@ -135,10 +154,13 @@ export function DemoLayout() {
 
   const compareActive = pathname.startsWith("/compare");
   const mlActive = pathname.startsWith("/ml");
-  const onInsights = pathname.endsWith("/insights");
   const isHome = pathname === "/";
-  const tool = toolLabel(pathname);
-  const page = pageLabel(pathname);
+  const currentSub = subView(pathname);
+  const toolPrefix: "/compare" | "/ml" | null = compareActive
+    ? "/compare"
+    : mlActive
+      ? "/ml"
+      : null;
 
   const datasetLabel = mlActive
     ? "Training projects"
@@ -256,20 +278,12 @@ export function DemoLayout() {
             <MobileToolSwitch
               compareActive={compareActive}
               mlActive={mlActive}
-              onInsights={onInsights}
+              currentSub={currentSub}
             />
           </div>
-          {(tool || page) && !isHome && (
-            <div className="pb-2 -mt-0.5 flex items-center gap-2 text-xs">
-              {tool && (
-                <span className="eyebrow text-muted">{tool}</span>
-              )}
-              {tool && page && (
-                <span aria-hidden="true" className="text-muted/50">·</span>
-              )}
-              {page && (
-                <span className="font-semibold text-ink">{page}</span>
-              )}
+          {toolPrefix && (
+            <div className="pb-2">
+              <MobileSubViewTabs toolPrefix={toolPrefix} currentSub={currentSub} />
             </div>
           )}
         </div>
