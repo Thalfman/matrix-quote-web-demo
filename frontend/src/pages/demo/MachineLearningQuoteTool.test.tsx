@@ -109,11 +109,11 @@ describe("MachineLearningQuoteTool - page header copy", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders the updated description mentioning 'likely range'", () => {
+  it("renders the updated narrative description", () => {
     renderWithProviders(<MachineLearningQuoteTool />);
-    // "likely range" appears in both the page description and the
-    // DataProvenanceNote ("tighter likely ranges"). Assert at least one match.
-    expect(screen.getAllByText(/likely range/i).length).toBeGreaterThanOrEqual(1);
+    expect(
+      screen.getByText(/hour estimates for a new project/i),
+    ).toBeInTheDocument();
   });
 
   it("does NOT render the old ML jargon description about Gradient Boosting", () => {

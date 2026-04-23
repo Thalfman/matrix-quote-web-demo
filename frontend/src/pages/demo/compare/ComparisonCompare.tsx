@@ -34,7 +34,7 @@ export function ComparisonCompare() {
       <PageHeader
         eyebrow="Real Data · Compare"
         title="Compare Projects"
-        description="Browse the real historical pool and select two or three projects to compare side-by-side across buckets, inputs, and actuals."
+        description="Side-by-side comparisons of two or three real historical projects across buckets, inputs, and actuals."
         chips={data ? [{ label: `${data.length} projects`, tone: "accent" }] : []}
       />
       <DataProvenanceNote variant="real" />

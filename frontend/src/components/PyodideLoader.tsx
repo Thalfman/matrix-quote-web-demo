@@ -38,7 +38,7 @@ export function PyodideLoader() {
           ? "Runtime failed to load"
           : isReady
             ? "Runtime ready"
-            : "Loading the Python runtime in your browser"}
+            : "Loading the Python runtime"}
       </h2>
       <p className="text-sm text-muted mt-2">{status.message}</p>
 
@@ -78,7 +78,7 @@ export function PyodideLoader() {
       </div>
 
       <p className="text-[11px] text-muted mt-4 mono">
-        ~30 MB one-time download. Cached by the browser for subsequent loads.
+        ~30 MB one-time download. Cached for subsequent loads.
       </p>
     </div>
   );

@@ -110,7 +110,7 @@ describe("ComparisonQuote - page header copy", () => {
   it("mentions that models are trained on the twenty-four completed projects", () => {
     renderWithProviders(<ComparisonQuote />);
     expect(
-      screen.getByText(/models trained on twenty-four of your completed projects/i),
+      screen.getByText(/models trained on twenty-four completed historical projects/i),
     ).toBeInTheDocument();
   });
 });

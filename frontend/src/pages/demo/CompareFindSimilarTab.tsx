@@ -114,7 +114,7 @@ export function CompareFindSimilarTab({ records }: Props) {
       {quotes.length > 0 && (
         <div id="find-similar-results" className="space-y-6 pt-6 border-t hairline fade-in">
           <div className="eyebrow text-sm text-muted">
-            Nearest {matches?.length ?? 0} projects · anchor = your inputs
+            Nearest {matches?.length ?? 0} projects · anchor = entered profile
           </div>
 
           <div className="card p-5">

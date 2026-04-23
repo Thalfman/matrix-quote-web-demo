@@ -9,12 +9,12 @@ const COPY: Record<Variant, { eyebrow: string; body: string }> = {
   real: {
     eyebrow: "What this is trained on",
     body:
-      "With a dataset this small the engine can overfit. It tends to echo patterns from past projects rather than learn general rules, so expect lower confidence on work that doesn't closely resemble the training set.",
+      "With a training set this small the engine can overfit. It tends to echo patterns from past projects rather than learn general rules, so confidence drops on projects that don't closely resemble the training data.",
   },
   synthetic: {
     eyebrow: "What this is trained on",
     body:
-      "Five hundred generated training projects for wide coverage. Reflects what the engine looks like after you collect enough real projects: wider coverage, tighter ranges, steadier confidence.",
+      "Five hundred generated training projects provide wide coverage. Illustrates how the engine sharpens at scale: wider coverage, tighter ranges, steadier confidence.",
   },
 };
 

@@ -34,7 +34,7 @@ export function MachineLearningCompare() {
       <PageHeader
         eyebrow="Synthetic Data · Compare"
         title="Compare Training Projects"
-        description="Browse the generated training projects and compare two or three side by side. These rows represent what the engine has learned at scale."
+        description="Side-by-side comparisons of the generated training projects that back the engine at scale."
         chips={data ? [{ label: `${data.length} training rows`, tone: "accent" }] : []}
       />
       <DataProvenanceNote variant="synthetic" />
