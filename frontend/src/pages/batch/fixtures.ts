@@ -44,7 +44,7 @@ export const SAMPLE_RECENT_BATCHES: RecentBatch[] = [
 
 export type SchemaRow = { field: string; type: string; required: boolean };
 
-// The schema here mirrors `frontend/src/pages/single-quote/schema.ts` — field-only.
+// The schema here mirrors `frontend/src/pages/single-quote/schema.ts` - field-only.
 export const BATCH_SCHEMA: SchemaRow[] = [
   { field: "project_name",            type: "string",  required: true  },
   { field: "industry_segment",        type: "enum",    required: true  },

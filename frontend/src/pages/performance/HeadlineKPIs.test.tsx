@@ -8,7 +8,7 @@ import { HeadlineKPIs } from "./HeadlineKPIs";
 describe("HeadlineKPIs", () => {
   it("renders em-dashes when data is undefined (loading state)", () => {
     renderWithProviders(<HeadlineKPIs head={undefined} />);
-    const dashes = screen.getAllByText("—");
+    const dashes = screen.getAllByText("-");
     expect(dashes).toHaveLength(3);
   });
 
@@ -18,7 +18,7 @@ describe("HeadlineKPIs", () => {
         head={{ overall_mape: null, within_10_pct: null, within_20_pct: null, last_trained_at: null, rows_at_train: null }}
       />,
     );
-    const dashes = screen.getAllByText("—");
+    const dashes = screen.getAllByText("-");
     expect(dashes).toHaveLength(3);
   });
 

@@ -103,13 +103,13 @@ describe("Quotes", () => {
 
     const checkboxes = screen.getAllByRole("checkbox");
 
-    // Select first row — bar appears, but Compare → still disabled (need 2).
+    // Select first row - bar appears, but Compare → still disabled (need 2).
     fireEvent.click(checkboxes[0]);
     expect(screen.getByText("1 selected")).toBeInTheDocument();
     const compareBtn = screen.getByRole("button", { name: /Pick 2 or 3 to compare/i });
     expect(compareBtn).toBeDisabled();
 
-    // Select second row — Compare → becomes enabled.
+    // Select second row - Compare → becomes enabled.
     fireEvent.click(checkboxes[1]);
     expect(screen.getByText("2 selected")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Compare →/i })).not.toBeDisabled();

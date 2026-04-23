@@ -22,7 +22,7 @@ const FULL_ROW: RankedRow = {
   outlierDirection: null,
 };
 
-describe("ProjectDetailDrawer — renders visible fields", () => {
+describe("ProjectDetailDrawer - renders visible fields", () => {
   it("renders the project_name in the drawer header", () => {
     renderWithProviders(<ProjectDetailDrawer row={FULL_ROW} onClose={vi.fn()} />);
     expect(screen.getByText("Omega Assembly Line")).toBeInTheDocument();
@@ -65,7 +65,7 @@ describe("ProjectDetailDrawer — renders visible fields", () => {
   });
 });
 
-describe("ProjectDetailDrawer — peer benchmark (R7)", () => {
+describe("ProjectDetailDrawer - peer benchmark (R7)", () => {
   it("does not render the Peer benchmark section when peer fields are null", () => {
     renderWithProviders(<ProjectDetailDrawer row={FULL_ROW} onClose={vi.fn()} />);
     expect(screen.queryByText(/peer benchmark/i)).not.toBeInTheDocument();
@@ -92,7 +92,7 @@ describe("ProjectDetailDrawer — peer benchmark (R7)", () => {
   });
 });
 
-describe("ProjectDetailDrawer — null/undefined fields are omitted", () => {
+describe("ProjectDetailDrawer - null/undefined fields are omitted", () => {
   it("does not render a field row when stations is 0 (treated as falsy)", () => {
     const row: RankedRow = { ...FULL_ROW, stations: 0 };
     renderWithProviders(<ProjectDetailDrawer row={row} onClose={vi.fn()} />);
@@ -108,7 +108,7 @@ describe("ProjectDetailDrawer — null/undefined fields are omitted", () => {
   });
 });
 
-describe("ProjectDetailDrawer — close interactions", () => {
+describe("ProjectDetailDrawer - close interactions", () => {
   it("calls onClose when the X button is clicked", () => {
     const onClose = vi.fn();
     renderWithProviders(<ProjectDetailDrawer row={FULL_ROW} onClose={onClose} />);
@@ -135,7 +135,7 @@ describe("ProjectDetailDrawer — close interactions", () => {
   });
 });
 
-describe("ProjectDetailDrawer — when open={false} (row=null)", () => {
+describe("ProjectDetailDrawer - when open={false} (row=null)", () => {
   it("does not show the project name when row is null", () => {
     renderWithProviders(<ProjectDetailDrawer row={null} onClose={vi.fn()} />);
     expect(screen.queryByText("Omega Assembly Line")).not.toBeInTheDocument();
@@ -144,7 +144,7 @@ describe("ProjectDetailDrawer — when open={false} (row=null)", () => {
   it("does not call onClose spuriously when row is null", () => {
     const onClose = vi.fn();
     renderWithProviders(<ProjectDetailDrawer row={null} onClose={onClose} />);
-    // No interactions — onClose should not have been called
+    // No interactions - onClose should not have been called
     expect(onClose).not.toHaveBeenCalled();
   });
 

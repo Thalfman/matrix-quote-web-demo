@@ -50,7 +50,7 @@ function SidebarLink({
 }
 
 /**
- * MobileToolSwitch — two-segment tool (dataset) selector shown in the
+ * MobileToolSwitch - two-segment tool (dataset) selector shown in the
  * mobile/tablet top bar. Each segment preserves the user's current
  * sub-view when switching tools so e.g. /compare/insights → ML keeps
  * the user on /ml/insights instead of resetting to Quote.
@@ -109,7 +109,7 @@ function MobileToolSwitch({
 }
 
 /**
- * MobileSubViewTabs — Quote / Compare / Insights tabs for the active tool.
+ * MobileSubViewTabs - Quote / Compare / Insights tabs for the active tool.
  * Rendered on every mobile route where a tool is selected.
  */
 function MobileSubViewTabs({
@@ -248,7 +248,7 @@ export function DemoLayout() {
             </p>
           </div>
 
-          {/* Theme toggle — inline variant, last element */}
+          {/* Theme toggle - inline variant, last element */}
           <ThemeToggle variant="inline" />
         </div>
       </aside>

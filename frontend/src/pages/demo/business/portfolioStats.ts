@@ -216,7 +216,7 @@ function percentile(sorted: number[], p: number): number {
 }
 
 // Pearson correlation. Returns 0 when n < 3 or when either series has zero
-// variance (constant column) — neither case carries meaningful signal.
+// variance (constant column) - neither case carries meaningful signal.
 function pearson(xs: number[], ys: number[]): number {
   const n = xs.length;
   if (n !== ys.length || n < 3) return 0;
@@ -503,7 +503,7 @@ export function buildPortfolio(records: ProjectRecord[]): PortfolioStats {
       mean,
       std,
       // Helper: percentile band over peers, i.e. the tier sorted with one
-      // instance of this project's hours removed (approx — treats ties naively).
+      // instance of this project's hours removed (approx - treats ties naively).
       sortedExcl: (h: number) => {
         const idx = sorted.indexOf(h);
         if (idx < 0) return sorted;

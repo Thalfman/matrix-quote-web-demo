@@ -113,7 +113,7 @@ export function Layout() {
       </aside>
 
       <main className="flex-1 min-w-0">
-        {/* Mobile top bar — below lg breakpoint */}
+        {/* Mobile top bar - below lg breakpoint */}
         <div className="lg:hidden flex items-center justify-between px-4 py-3 border-b hairline bg-surface">
           <div className="display-hero text-lg leading-none">Matrix</div>
           <div className="flex items-center gap-2">
@@ -122,7 +122,7 @@ export function Layout() {
           </div>
         </div>
 
-        {/* Desktop top strip — breadcrumb + demo + user */}
+        {/* Desktop top strip - breadcrumb + demo + user */}
         <div className="hidden lg:block border-b hairline bg-white/60 backdrop-blur">
           <div className="max-w-content mx-auto px-8 h-12 flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 text-muted">

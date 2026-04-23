@@ -20,7 +20,7 @@ export function CompareDriversStrip({ quotes }: { quotes: SavedQuote[] }) {
               <div className="text-sm font-medium text-ink truncate mt-1">{q.name}</div>
             </div>
             <div className="text-sm text-muted">
-              Driver attribution snapshots from quote time are not re-computed here — open the
+              Driver attribution snapshots from quote time are not re-computed here; open the
               cockpit to see live drivers.
             </div>
           </div>

@@ -174,7 +174,7 @@ export function MaterialVsLabor({ data }: { data: MaterialLaborPoint[] }) {
           </ScatterChart>
         </ResponsiveContainer>
       </div>
-      {/* Custom compact legend — one swatch per industry, mono-spaced, wrap */}
+      {/* Custom compact legend - one swatch per industry, mono-spaced, wrap */}
       <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2 text-[11px] mono text-muted">
         {Object.keys(byIndustry).map((industry) => (
           <div key={industry} className="inline-flex items-center gap-1.5">

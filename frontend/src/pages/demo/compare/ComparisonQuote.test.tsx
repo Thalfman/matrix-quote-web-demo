@@ -6,7 +6,7 @@ import type { ProjectRecord } from "@/demo/realProjects";
 import type { PyodideStatus } from "@/demo/pyodideClient";
 
 // ---------------------------------------------------------------------------
-// Mock pyodideClient — all exported functions become controlled stubs.
+// Mock pyodideClient - all exported functions become controlled stubs.
 // ---------------------------------------------------------------------------
 
 type StatusListener = (status: PyodideStatus) => void;
@@ -42,7 +42,7 @@ vi.mock("@/demo/pyodideClient", () => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Mock realProjects — useRealProjects returns a small pool.
+// Mock realProjects - useRealProjects returns a small pool.
 // ---------------------------------------------------------------------------
 
 const FAKE_POOL: ProjectRecord[] = [
@@ -72,7 +72,7 @@ vi.mock("@/demo/realProjects", async () => {
 });
 
 // ---------------------------------------------------------------------------
-// Mock modelMetrics — useModelMetrics returns fake metrics.
+// Mock modelMetrics - useModelMetrics returns fake metrics.
 // ---------------------------------------------------------------------------
 
 vi.mock("@/demo/modelMetrics", () => ({
@@ -96,7 +96,7 @@ const { ComparisonQuote } = await import("./ComparisonQuote");
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("ComparisonQuote — page header copy", () => {
+describe("ComparisonQuote - page header copy", () => {
   it("renders the correct eyebrow text", () => {
     renderWithProviders(<ComparisonQuote />);
     expect(screen.getByText("Real Data · Quote")).toBeInTheDocument();
@@ -115,7 +115,7 @@ describe("ComparisonQuote — page header copy", () => {
   });
 });
 
-describe("ComparisonQuote — model loading", () => {
+describe("ComparisonQuote - model loading", () => {
   it("calls ensurePyodideReady on mount", () => {
     renderWithProviders(<ComparisonQuote />);
     expect(mockEnsurePyodideReady).toHaveBeenCalled();
@@ -127,7 +127,7 @@ describe("ComparisonQuote — model loading", () => {
   });
 });
 
-describe("ComparisonQuote — form submit calls predictQuote('real')", () => {
+describe("ComparisonQuote - form submit calls predictQuote('real')", () => {
   beforeEach(() => {
     mockPredictQuote.mockClear();
     mockGetFeatureImportances.mockClear();
@@ -200,7 +200,7 @@ describe("ComparisonQuote — form submit calls predictQuote('real')", () => {
   });
 });
 
-describe("ComparisonQuote — loading state", () => {
+describe("ComparisonQuote - loading state", () => {
   it("does not render the result panel before form submit", async () => {
     renderWithProviders(<ComparisonQuote />);
     await waitFor(() =>

@@ -58,7 +58,7 @@ const FAKE_RECORDS: ProjectRecord[] = [
 // Import after mocks are registered
 const { ComparisonInsights } = await import("./ComparisonInsights");
 
-describe("ComparisonInsights — happy path", () => {
+describe("ComparisonInsights - happy path", () => {
   it("renders the dataset label 'Real Data · Historical projects'", () => {
     mockHookReturn = { data: FAKE_RECORDS, isLoading: false, error: null };
     renderWithProviders(<ComparisonInsights />);
@@ -90,7 +90,7 @@ describe("ComparisonInsights — happy path", () => {
   });
 });
 
-describe("ComparisonInsights — loading state", () => {
+describe("ComparisonInsights - loading state", () => {
   it("renders a skeleton with aria-busy=true when isLoading is true", () => {
     mockHookReturn = { data: undefined, isLoading: true, error: null };
     renderWithProviders(<ComparisonInsights />);
@@ -106,7 +106,7 @@ describe("ComparisonInsights — loading state", () => {
   });
 });
 
-describe("ComparisonInsights — error state", () => {
+describe("ComparisonInsights - error state", () => {
   it("renders role=alert when useRealProjects returns an error", () => {
     mockHookReturn = { data: undefined, isLoading: false, error: new Error("fetch failed") };
     renderWithProviders(<ComparisonInsights />);

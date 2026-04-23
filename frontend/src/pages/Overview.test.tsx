@@ -43,7 +43,7 @@ describe("Overview", () => {
   it("shows '1,284' rows and '11.8%' MAPE for the first training run (r12)", () => {
     mockGet.mockResolvedValue({ data: { status: "ok", models_ready: true } });
     renderWithProviders(<Overview />);
-    // "11.8%" is unique; "1,284" appears in both KPI card and training run row — use getAllByText
+    // "11.8%" is unique; "1,284" appears in both KPI card and training run row - use getAllByText
     const instances = screen.getAllByText("1,284");
     expect(instances.length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("11.8%")).toBeInTheDocument();

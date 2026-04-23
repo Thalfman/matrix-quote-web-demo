@@ -16,7 +16,7 @@ export function BatchDropzone() {
         <UploadCloud size={22} strokeWidth={1.5} />
       </div>
       <div>
-        <div className="display-hero text-lg text-muted">Batch upload — coming soon</div>
+        <div className="display-hero text-lg text-muted">Batch upload: coming soon</div>
         <div className="text-xs text-muted mt-1 max-w-sm mx-auto">
           Batch CSV/XLSX inference is not yet available. Check back once the upload endpoint
           ships.

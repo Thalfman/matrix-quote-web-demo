@@ -51,10 +51,10 @@ function makeOkFetch() {
 }
 
 // ---------------------------------------------------------------------------
-// Idempotency tests — call ensureModelsReady twice and verify same reference.
+// Idempotency tests - call ensureModelsReady twice and verify same reference.
 // ---------------------------------------------------------------------------
 
-describe("pyodideClient — ensureModelsReady idempotency", () => {
+describe("pyodideClient - ensureModelsReady idempotency", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.restoreAllMocks();
@@ -69,7 +69,7 @@ describe("pyodideClient — ensureModelsReady idempotency", () => {
 
     const mod = await import("./pyodideClient");
 
-    // We call ensureModelsReady without awaiting it — we only need the returned
+    // We call ensureModelsReady without awaiting it - we only need the returned
     // promise reference. The internal async chain may not resolve in jsdom
     // (relative URLs fail in Node fetch), but that is not what we are testing.
     const p1 = mod.ensureModelsReady("real");
@@ -92,7 +92,7 @@ describe("pyodideClient — ensureModelsReady idempotency", () => {
     const pReal = mod.ensureModelsReady("real");
     const pSynth = mod.ensureModelsReady("synthetic");
 
-    // Must be distinct promise references — different dataset, different slot.
+    // Must be distinct promise references - different dataset, different slot.
     expect(pReal).not.toBe(pSynth);
 
     await Promise.allSettled([pReal, pSynth]);
@@ -103,7 +103,7 @@ describe("pyodideClient — ensureModelsReady idempotency", () => {
 // Guard: predictQuote rejects before ensureModelsReady has been called.
 // ---------------------------------------------------------------------------
 
-describe("pyodideClient — predictQuote guard before ensureModelsReady", () => {
+describe("pyodideClient - predictQuote guard before ensureModelsReady", () => {
   beforeEach(() => {
     vi.resetModules();
     vi.restoreAllMocks();

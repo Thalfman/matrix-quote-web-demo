@@ -43,7 +43,7 @@ function ScoreBar({ label, value, max, meta }: {
       <div className="flex items-baseline justify-between gap-2">
         <span className="text-[11px] text-muted">{label}</span>
         <span className="text-[11px] mono tnum text-ink">
-          {value == null ? "—" : (max === 1 ? fmtPct.format(value) : fmtScore.format(value))}
+          {value == null ? "-" : (max === 1 ? fmtPct.format(value) : fmtScore.format(value))}
         </span>
       </div>
       <div className="mt-1 h-1.5 rounded-sm bg-line overflow-hidden">
@@ -71,7 +71,7 @@ export function IndustryDeepDive({ detail }: { detail: IndustryDetail }) {
   }
 
   const overrunValue = detail.medianOverrunPct;
-  const overrunDisplay = overrunValue == null ? "—" : fmtPctSigned.format(overrunValue);
+  const overrunDisplay = overrunValue == null ? "-" : fmtPctSigned.format(overrunValue);
 
   const baseline = detail.portfolioMedianOverrunPct;
   let overrunMeta: string | undefined;
@@ -117,7 +117,7 @@ export function IndustryDeepDive({ detail }: { detail: IndustryDetail }) {
         />
         <Kpi
           label="$ / labor hour"
-          value={detail.costPerHour != null ? fmtCostPerHour.format(detail.costPerHour) : "—"}
+          value={detail.costPerHour != null ? fmtCostPerHour.format(detail.costPerHour) : "-"}
           meta={detail.costPerHour != null ? "material cost per hour" : undefined}
         />
       </div>

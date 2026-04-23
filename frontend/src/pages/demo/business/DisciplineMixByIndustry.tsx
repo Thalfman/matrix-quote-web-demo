@@ -15,7 +15,7 @@ const fmtPct = new Intl.NumberFormat("en-US", { style: "percent", maximumFractio
 
 type Metric = "hours" | "share";
 
-// Palette across the nine buckets — reuses tokens from chartTheme.
+// Palette across the nine buckets - reuses tokens from chartTheme.
 const BUCKET_COLORS: Record<string, string> = {
   ME: CHART_COLORS.ink,
   EE: CHART_COLORS.teal,

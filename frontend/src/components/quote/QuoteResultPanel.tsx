@@ -1,4 +1,4 @@
-/** Shared result panel used by both Real and Synthetic Quote tabs — renders estimate, likely range, top drivers, per-category H/M/L confidence, and closest matching records. */
+/** Shared result panel used by both Real and Synthetic Quote tabs - renders estimate, likely range, top drivers, per-category H/M/L confidence, and closest matching records. */
 import { Download, TrendingUp, TrendingDown } from "lucide-react";
 
 import type { UnifiedQuoteResult } from "@/demo/quoteResult";

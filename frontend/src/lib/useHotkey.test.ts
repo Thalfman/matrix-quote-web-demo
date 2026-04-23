@@ -20,7 +20,7 @@ describe("useHotkey", () => {
     const handler = vi.fn();
     renderHook(() => useHotkey({ key: "Enter", ctrl: true }, handler));
 
-    // No ctrlKey — should be ignored.
+    // No ctrlKey - should be ignored.
     fireKeydown({ key: "Enter", ctrlKey: false });
     expect(handler).not.toHaveBeenCalled();
   });

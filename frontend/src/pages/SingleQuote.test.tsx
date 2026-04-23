@@ -198,18 +198,18 @@ describe("SingleQuote", () => {
     // Wait for result panel (hero heading).
     await screen.findByText(/ESTIMATED HOURS/i);
 
-    // Estimate tab is active by default — tabpanel present.
+    // Estimate tab is active by default - tabpanel present.
     expect(screen.getByRole("tabpanel")).toBeInTheDocument();
 
-    // Switch to Drivers tab — driver feature name visible.
+    // Switch to Drivers tab - driver feature name visible.
     fireEvent.click(screen.getByRole("tab", { name: /^Drivers$/i }));
     await screen.findByText(/stations_count/i);
 
-    // Switch to Similar tab — neighbour project name visible.
+    // Switch to Similar tab - neighbour project name visible.
     fireEvent.click(screen.getByRole("tab", { name: /^Similar$/i }));
     await screen.findByText(/Alpha Project/i);
 
-    // Switch to Scenarios tab — empty-state message visible.
+    // Switch to Scenarios tab - empty-state message visible.
     fireEvent.click(screen.getByRole("tab", { name: /^Scenarios$/i }));
     await screen.findByText(/No scenarios saved/i);
   });

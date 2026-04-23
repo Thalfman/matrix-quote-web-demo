@@ -50,7 +50,7 @@ export function Compare() {
       <PageHeader
         eyebrow="Quotes · Compare"
         title={`Comparing ${ids.length} scenarios`}
-        description="Anchor scenario sets the baseline — deltas on other columns are measured against it."
+        description="Anchor scenario sets the baseline; deltas on other columns are measured against it."
       />
 
       {!loaded ? (

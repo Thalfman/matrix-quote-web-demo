@@ -16,7 +16,7 @@ const HIGH_CONFIDENCE_RESULT: UnifiedQuoteResult = {
   overallConfidence: "high",
   perCategory: [
     {
-      label: "Mechanical Engineering — primary",
+      label: "Mechanical Engineering - primary",
       estimateHours: 800,
       rangeLow: 640,
       rangeHigh: 960,
@@ -88,7 +88,7 @@ const LOWER_CONFIDENCE_RESULT: UnifiedQuoteResult = {
 // High-confidence fixture tests
 // ---------------------------------------------------------------------------
 
-describe("QuoteResultPanel — high confidence fixture", () => {
+describe("QuoteResultPanel - high confidence fixture", () => {
   it("renders hero estimate as formatted number", () => {
     renderWithProviders(<QuoteResultPanel result={HIGH_CONFIDENCE_RESULT} />);
     // 1,500 hrs formatted with toLocaleString + rounding
@@ -121,7 +121,7 @@ describe("QuoteResultPanel — high confidence fixture", () => {
 
   it("renders per-category labels", () => {
     renderWithProviders(<QuoteResultPanel result={HIGH_CONFIDENCE_RESULT} />);
-    expect(screen.getByText("Mechanical Engineering — primary")).toBeInTheDocument();
+    expect(screen.getByText("Mechanical Engineering - primary")).toBeInTheDocument();
     expect(screen.getByText("Electrical Engineering")).toBeInTheDocument();
     expect(screen.getByText("Build & assembly")).toBeInTheDocument();
   });
@@ -158,7 +158,7 @@ describe("QuoteResultPanel — high confidence fixture", () => {
 // Lower-confidence fixture tests
 // ---------------------------------------------------------------------------
 
-describe("QuoteResultPanel — lower confidence fixture", () => {
+describe("QuoteResultPanel - lower confidence fixture", () => {
   it("renders overall confidence chip as 'Lower confidence'", () => {
     renderWithProviders(<QuoteResultPanel result={LOWER_CONFIDENCE_RESULT} />);
     expect(screen.getByText("Lower confidence")).toBeInTheDocument();
@@ -190,7 +190,7 @@ describe("QuoteResultPanel — lower confidence fixture", () => {
 // Empty drivers
 // ---------------------------------------------------------------------------
 
-describe("QuoteResultPanel — empty drivers", () => {
+describe("QuoteResultPanel - empty drivers", () => {
   it("shows fallback text when no drivers", () => {
     const result: UnifiedQuoteResult = {
       ...HIGH_CONFIDENCE_RESULT,

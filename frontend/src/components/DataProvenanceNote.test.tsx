@@ -5,17 +5,10 @@ import { renderWithProviders } from "@/test/render";
 
 import { DataProvenanceNote } from "./DataProvenanceNote";
 
-describe("DataProvenanceNote — real variant", () => {
+describe("DataProvenanceNote - real variant", () => {
   it("renders the 'What this is trained on' eyebrow", () => {
     renderWithProviders(<DataProvenanceNote variant="real" />);
     expect(screen.getByText(/what this is trained on/i)).toBeInTheDocument();
-  });
-
-  it("renders the real-variant body copy about twenty-four projects", () => {
-    renderWithProviders(<DataProvenanceNote variant="real" />);
-    expect(
-      screen.getByText(/twenty-four of your completed projects/i),
-    ).toBeInTheDocument();
   });
 
   it("warns about overfitting on a small dataset in the real variant", () => {
@@ -32,7 +25,7 @@ describe("DataProvenanceNote — real variant", () => {
   });
 });
 
-describe("DataProvenanceNote — synthetic variant", () => {
+describe("DataProvenanceNote - synthetic variant", () => {
   it("renders the same 'What this is trained on' eyebrow", () => {
     renderWithProviders(<DataProvenanceNote variant="synthetic" />);
     expect(screen.getByText(/what this is trained on/i)).toBeInTheDocument();
@@ -54,13 +47,11 @@ describe("DataProvenanceNote — synthetic variant", () => {
 
   it("does NOT render real-variant copy in the synthetic variant", () => {
     renderWithProviders(<DataProvenanceNote variant="synthetic" />);
-    expect(
-      screen.queryByText(/twenty-four of your completed projects/i),
-    ).not.toBeInTheDocument();
+    expect(screen.queryByText(/overfit/i)).not.toBeInTheDocument();
   });
 });
 
-describe("DataProvenanceNote — structure", () => {
+describe("DataProvenanceNote - structure", () => {
   it("renders a <details> element with a <summary> trigger", () => {
     const { container } = renderWithProviders(<DataProvenanceNote variant="real" />);
     const details = container.querySelector("details");

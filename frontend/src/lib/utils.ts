@@ -10,6 +10,6 @@ const numberFmt = new Intl.NumberFormat("en-US", {
 });
 
 export function formatHours(value: number | null | undefined): string {
-  if (value == null || !Number.isFinite(value)) return "—";
+  if (value == null || !Number.isFinite(value)) return "-";
   return numberFmt.format(value);
 }

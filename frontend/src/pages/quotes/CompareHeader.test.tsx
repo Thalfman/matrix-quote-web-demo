@@ -59,8 +59,8 @@ describe("CompareHeader", () => {
 
     render(<CompareHeader quotes={quotes} />);
 
-    // Δ row: anchor shows "—", second shows "+200 (+20.0%)"
-    expect(screen.getByText("—")).toBeInTheDocument();
+    // Δ row: anchor shows "-", second shows "+200 (+20.0%)"
+    expect(screen.getByText("-")).toBeInTheDocument();
 
     // The delta cell should contain "+" and have text-amber
     const deltaDiv = screen.getByText(/\+200/);
@@ -77,7 +77,7 @@ describe("CompareHeader", () => {
 
     render(<CompareHeader quotes={quotes} />);
 
-    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getByText("-")).toBeInTheDocument();
 
     // The delta cell should have text-teal and no "+"
     const deltaDiv = screen.getByText(/-200/);

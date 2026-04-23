@@ -50,7 +50,7 @@ describe("DriversTab", () => {
 
     // panel_count belongs to ee20.
     expect(screen.getByText("panel_count")).toBeInTheDocument();
-    // stations_count belongs only to me10 — must not appear.
+    // stations_count belongs only to me10 - must not appear.
     expect(screen.queryByText("stations_count")).not.toBeInTheDocument();
   });
 

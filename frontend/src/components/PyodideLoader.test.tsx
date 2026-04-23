@@ -18,7 +18,7 @@ vi.mock("@/demo/pyodideClient", () => ({
 
 const { PyodideLoader } = await import("./PyodideLoader");
 
-describe("PyodideLoader — stage labels", () => {
+describe("PyodideLoader - stage labels", () => {
   it("renders the 'Warming up' stage label", () => {
     renderWithProviders(<PyodideLoader />);
     expect(screen.getByText("Warming up")).toBeInTheDocument();

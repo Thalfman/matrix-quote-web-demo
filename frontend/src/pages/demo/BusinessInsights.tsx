@@ -1,5 +1,5 @@
 /**
- * Compatibility shim — BusinessInsights is now split into tool-specific wrappers:
+ * Compatibility shim - BusinessInsights is now split into tool-specific wrappers:
  *   /compare/insights → ComparisonInsights  (real projects)
  *   /ml/insights      → MachineLearningInsights  (synthetic pool)
  *

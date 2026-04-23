@@ -51,20 +51,20 @@ export function DemoApp() {
           {/* Home */}
           <Route index element={<DemoHome />} />
 
-          {/* Comparison Tool — Real Data */}
+          {/* Comparison Tool - Real Data */}
           <Route path="compare" element={<Navigate to="/compare/quote" replace />} />
           <Route path="compare/quote" element={<ComparisonQuote />} />
           <Route path="compare/compare" element={<ComparisonCompare />} />
           <Route path="compare/browse" element={<Navigate to="/compare/compare" replace />} />
           <Route path="compare/insights" element={<ComparisonInsights />} />
 
-          {/* Machine Learning Tool — Synthetic Data */}
+          {/* Machine Learning Tool - Synthetic Data */}
           <Route path="ml" element={<Navigate to="/ml/quote" replace />} />
           <Route path="ml/quote" element={<MachineLearningQuote />} />
           <Route path="ml/compare" element={<MachineLearningCompare />} />
           <Route path="ml/insights" element={<MachineLearningInsights />} />
 
-          {/* Legacy redirects — preserve shareable links */}
+          {/* Legacy redirects - preserve shareable links */}
           <Route path="compare-tool" element={<Navigate to="/compare/quote" replace />} />
           <Route path="business" element={<Navigate to="/compare/insights" replace />} />
           <Route path="ml-tool" element={<Navigate to="/ml/quote" replace />} />
