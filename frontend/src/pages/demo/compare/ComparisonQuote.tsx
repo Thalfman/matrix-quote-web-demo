@@ -160,7 +160,7 @@ export function ComparisonQuote() {
       <PageHeader
         eyebrow="Real Data · Quote"
         title="Real Data Quote"
-        description="Estimates hours for a new project using models trained on twenty-four completed historical projects."
+        description="Hour estimates for a new project, produced by models trained on twenty-four completed historical projects."
         chips={chips}
       />
       <DataProvenanceNote variant="real" />

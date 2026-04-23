@@ -164,7 +164,7 @@ export function MachineLearningQuoteTool() {
       <PageHeader
         eyebrow="Synthetic Data · Quote"
         title="Machine Learning Quote Tool"
-        description="Estimates hours for a new project using models trained on five hundred synthetic projects, with a likely range and the drivers behind each number."
+        description="Hour estimates for a new project, produced by models trained on five hundred generated training projects."
         chips={chips}
       />
       <DataProvenanceNote variant="synthetic" />

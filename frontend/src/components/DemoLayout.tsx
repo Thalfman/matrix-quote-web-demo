@@ -166,7 +166,7 @@ export function DemoLayout() {
     ? "Training projects"
     : compareActive
       ? "Historical projects"
-      : "Select a tool";
+      : "None selected";
 
   return (
     <div className="min-h-screen flex bg-paper">

@@ -96,8 +96,8 @@ export function DemoHome() {
     <>
       <PageHeader
         eyebrow="Matrix · Demo"
-        title="Pick a tool"
-        description="Two views of the same quoting engine. Real Data uses twenty-four completed historical projects. Synthetic Data scales the training set to illustrate the engine at larger data volumes."
+        title="The quoting engine"
+        description="The same engine trained on two different sets of projects. Real Data draws from twenty-four completed historical projects. Synthetic Data extends the training set to five hundred generated projects to show how the engine behaves at larger scale."
       />
 
       <div className="mt-6 grid gap-6 sm:grid-cols-1 md:grid-cols-2">
@@ -105,7 +105,7 @@ export function DemoHome() {
           eyebrow="Real Data"
           eyebrowTone="teal"
           title="Today's book"
-          description="Twenty-four billed projects. Generate an estimate, see a likely range, and review the drivers behind it."
+          description="Twenty-four billed projects, each with hours, a likely range, and the drivers behind them."
           chip={
             <CountChip tone="teal" value={manifest?.real_count} unit="projects" />
           }
@@ -120,7 +120,7 @@ export function DemoHome() {
           eyebrow="Synthetic Data"
           eyebrowTone="amber"
           title="At scale"
-          description="Five hundred generated training projects. Same quote experience at larger scale."
+          description="Five hundred generated training projects. The same views and outputs, at a larger training scale."
           chip={
             <CountChip
               tone="amber"
