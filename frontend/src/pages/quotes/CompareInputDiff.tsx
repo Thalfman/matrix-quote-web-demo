@@ -1,4 +1,5 @@
 import { SavedQuote } from "@/api/types";
+import { useIsNarrow } from "@/lib/useMediaQuery";
 
 export function CompareInputDiff({ quotes }: { quotes: SavedQuote[] }) {
   const keys = new Set<string>();
@@ -10,10 +11,66 @@ export function CompareInputDiff({ quotes }: { quotes: SavedQuote[] }) {
     if (new Set(values).size > 1) diffRows.push({ field: k, values });
   }
 
+  const isNarrow = useIsNarrow();
+
   if (diffRows.length === 0) {
     return (
       <div className="card p-5 text-sm text-muted">
         These scenarios have identical inputs.
+      </div>
+    );
+  }
+
+  if (isNarrow) {
+    return (
+      <div className="card overflow-hidden">
+        {diffRows.map(({ field, values }, rowIdx) => {
+          const anchor = values[0];
+          return (
+            <div
+              key={field}
+              className={
+                "px-4 py-3 " +
+                (rowIdx < diffRows.length - 1 ? "border-b hairline" : "")
+              }
+            >
+              <div className="eyebrow text-[10px] text-muted mb-1.5 mono">{field}</div>
+              <dl className="space-y-1">
+                {quotes.map((q, i) => {
+                  const v = values[i];
+                  const changed = i > 0 && v !== anchor;
+                  return (
+                    <div
+                      key={q.id}
+                      className={
+                        "grid grid-cols-[minmax(0,1fr)_auto] gap-3 items-baseline " +
+                        (i === 0 ? "border-l-2 border-l-amber pl-2" : "pl-2")
+                      }
+                    >
+                      <dt className="text-[11px] text-muted truncate">{q.name}</dt>
+                      <dd
+                        className={
+                          "text-sm truncate tabular-nums " +
+                          (i === 0
+                            ? "text-ink font-medium"
+                            : changed
+                              ? "text-amber font-medium"
+                              : "text-ink")
+                        }
+                      >
+                        {v || "—"}
+                      </dd>
+                    </div>
+                  );
+                })}
+              </dl>
+            </div>
+          );
+        })}
+        <div className="px-4 py-2 bg-paper/40 text-[11px] text-muted border-t hairline">
+          {diffRows.length} of {keys.size} inputs differ · anchor values highlighted along the left
+          amber bar
+        </div>
       </div>
     );
   }
