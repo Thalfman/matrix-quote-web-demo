@@ -223,8 +223,8 @@ export function DemoLayout() {
 
       <main className="flex-1 min-w-0">
         {/* Mobile / tablet header (below lg) */}
-        <div data-testid="mobile-header" className="lg:hidden border-b hairline bg-surface">
-          <div className="flex items-center justify-between gap-3 px-4 py-3">
+        <div data-testid="mobile-header" className="lg:hidden border-b hairline bg-surface mobile-safe-top mobile-safe-x">
+          <div className="flex items-center justify-between gap-3 py-3">
             {isHome ? (
               <div className="display-hero text-lg leading-none">Matrix</div>
             ) : (
@@ -246,7 +246,7 @@ export function DemoLayout() {
             <MobileToolSwitch compareActive={compareActive} mlActive={mlActive} />
           </div>
           {(tool || page) && !isHome && (
-            <div className="px-4 pb-2 -mt-0.5 flex items-center gap-2 text-xs">
+            <div className="pb-2 -mt-0.5 flex items-center gap-2 text-xs">
               {tool && (
                 <span className="eyebrow text-muted">{tool}</span>
               )}
