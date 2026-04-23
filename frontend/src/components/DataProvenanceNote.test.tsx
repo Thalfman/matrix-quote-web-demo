@@ -18,11 +18,10 @@ describe("DataProvenanceNote — real variant", () => {
     ).toBeInTheDocument();
   });
 
-  it("mentions lower confidence for outliers in the real variant", () => {
+  it("warns about overfitting on a small dataset in the real variant", () => {
     renderWithProviders(<DataProvenanceNote variant="real" />);
-    expect(
-      screen.getByText(/expect lower confidence on outliers/i),
-    ).toBeInTheDocument();
+    expect(screen.getByText(/overfit/i)).toBeInTheDocument();
+    expect(screen.getByText(/lower confidence/i)).toBeInTheDocument();
   });
 
   it("does NOT render synthetic copy in the real variant", () => {

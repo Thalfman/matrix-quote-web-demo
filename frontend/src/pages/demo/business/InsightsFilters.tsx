@@ -234,11 +234,7 @@ export function InsightsFilters({
     </div>
   );
 
-  const wrapperClass = cn(
-    "card p-4 mb-6 md:sticky md:top-4 md:z-20",
-    "bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/80",
-    "shadow-[0_1px_0_rgba(13,27,42,0.04)]",
-  );
+  const wrapperClass = "card p-4 mb-6";
 
   if (isNarrow) {
     return (

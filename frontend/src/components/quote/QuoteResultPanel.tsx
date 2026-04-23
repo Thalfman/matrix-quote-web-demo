@@ -1,5 +1,5 @@
 /** Shared result panel used by both Real and Synthetic Quote tabs — renders estimate, likely range, top drivers, per-category H/M/L confidence, and closest matching records. */
-import { TrendingUp, TrendingDown } from "lucide-react";
+import { Download, TrendingUp, TrendingDown } from "lucide-react";
 
 import type { UnifiedQuoteResult } from "@/demo/quoteResult";
 
@@ -97,25 +97,24 @@ export function QuoteResultPanel({ result }: { result: UnifiedQuoteResult }) {
       {/* Per-category breakdown */}
       <div className="card p-5">
         <div className="eyebrow text-xs text-muted mb-3">Hours by work category</div>
-        <div className="space-y-1.5">
+        <div className="space-y-3">
           {result.perCategory.map((c) => (
-            <div
-              key={c.label}
-              className="grid grid-cols-12 gap-2 items-baseline text-sm"
-            >
-              <span className="col-span-6 text-ink truncate">{c.label}</span>
-              <span className="col-span-2 text-ink tnum text-right">
-                {fmtHrs(c.estimateHours)} hrs
-              </span>
-              <span className="col-span-3 text-sm text-muted tnum text-right">
-                {fmtHrs(c.rangeLow)}–{fmtHrs(c.rangeHigh)}
-              </span>
-              <span
-                className={`col-span-1 text-xs eyebrow text-center rounded-sm ${CONFIDENCE_TONE[c.confidence]}`}
-                title={CONFIDENCE_LABEL[c.confidence]}
-              >
-                {CONFIDENCE_SHORT[c.confidence]}
-              </span>
+            <div key={c.label} className="space-y-0.5 text-sm">
+              <div className="text-ink">{c.label}</div>
+              <div className="flex items-baseline gap-3 text-muted">
+                <span className="text-ink tnum">
+                  {fmtHrs(c.estimateHours)} hrs
+                </span>
+                <span className="tnum">
+                  {fmtHrs(c.rangeLow)}–{fmtHrs(c.rangeHigh)}
+                </span>
+                <span
+                  className={`ml-auto text-xs eyebrow px-1.5 rounded-sm ${CONFIDENCE_TONE[c.confidence]}`}
+                  title={CONFIDENCE_LABEL[c.confidence]}
+                >
+                  {CONFIDENCE_SHORT[c.confidence]}
+                </span>
+              </div>
             </div>
           ))}
         </div>
@@ -140,6 +139,16 @@ export function QuoteResultPanel({ result }: { result: UnifiedQuoteResult }) {
           ))}
         </div>
       </div>
+
+      {/* Export */}
+      <button
+        type="button"
+        onClick={() => window.print()}
+        className="no-print w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-teal text-white text-sm font-medium rounded-sm hover:bg-tealDark transition-colors"
+      >
+        <Download size={16} strokeWidth={1.75} aria-hidden="true" />
+        Export PDF
+      </button>
     </div>
   );
 }

@@ -68,7 +68,7 @@ export function PortfolioKpis({
       <KpiCard
         label="Avg materials cost"
         value={costDisplay}
-        meta="log-mean USD"
+        meta="typical project"
       />
     </div>
   );

@@ -109,3 +109,19 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* =======================================================
+   Print — "Export PDF" uses the browser's print dialog.
+   Hide everything except the quote result card so Save-as-PDF
+   produces a clean one-pager.
+======================================================= */
+@media print {
+  body * { visibility: hidden; }
+  #quote-results, #quote-results * { visibility: visible; }
+  #quote-results {
+    position: absolute;
+    inset: 0;
+    padding: 24px;
+  }
+  .no-print { display: none !important; }
+}

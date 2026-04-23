@@ -9,7 +9,7 @@ const COPY: Record<Variant, { eyebrow: string; body: string }> = {
   real: {
     eyebrow: "What this is trained on",
     body:
-      "Twenty-four of your completed projects. The engine is most reliable when a new project resembles past ones; expect lower confidence on outliers.",
+      "Twenty-four of your completed projects. With a dataset this small the engine can overfit — it tends to echo patterns from past projects rather than learn general rules, so expect lower confidence on work that doesn't closely resemble the training set.",
   },
   synthetic: {
     eyebrow: "What this is trained on",
