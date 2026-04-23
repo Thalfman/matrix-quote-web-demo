@@ -107,7 +107,7 @@ describe("BatchRecentList", () => {
     expect(relativePattern.test(text)).toBe(true);
 
     // More granular: each fixture row should produce a relative label
-    // The 3 batches are 2d, 5d, 9d ago — find these specifically
+    // The 3 batches are 2d, 5d, 9d ago - find these specifically
     expect(screen.getByText("2d ago")).toBeInTheDocument();
     expect(screen.getByText("5d ago")).toBeInTheDocument();
     expect(screen.getByText("9d ago")).toBeInTheDocument();

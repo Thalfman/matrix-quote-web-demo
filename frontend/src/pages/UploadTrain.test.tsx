@@ -31,7 +31,7 @@ describe("UploadTrain", () => {
   it("disables Load demo data button and shows warning when has_real_data is true", async () => {
     mockGet.mockResolvedValue({ data: { is_demo: false, enabled_env: true, has_real_data: true } });
     renderWithProviders(<UploadTrain />);
-    // Wait for the warning text to appear — that confirms the query has resolved
+    // Wait for the warning text to appear - that confirms the query has resolved
     expect(
       await screen.findByText(/real data is already present/i),
     ).toBeInTheDocument();

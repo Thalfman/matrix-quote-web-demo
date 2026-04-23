@@ -14,7 +14,7 @@ describe("KpiCards", () => {
     expect(screen.getAllByText("0").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("/ 12")).toBeInTheDocument();
     // Overall MAPE and calibration show em-dashes
-    const dashes = screen.getAllByText("—");
+    const dashes = screen.getAllByText("-");
     expect(dashes.length).toBeGreaterThanOrEqual(2);
   });
 

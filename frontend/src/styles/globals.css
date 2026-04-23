@@ -68,7 +68,7 @@
   .density-compact { --density-y: 0.625rem; --density-x: 0.875rem; }
   .density-comfy   { --density-y: 1rem;     --density-x: 1.25rem; }
 
-  /* Mount fade — for chart containers and lazy-rendered panels.
+  /* Mount fade - for chart containers and lazy-rendered panels.
      Keeps motion subtle; stops dead when prefers-reduced-motion is on. */
   .fade-in {
     animation: matrix-fade-in 180ms ease-out both;
@@ -108,4 +108,20 @@
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* =======================================================
+   Print - "Export PDF" uses the browser's print dialog.
+   Hide everything except the quote result card so Save-as-PDF
+   produces a clean one-pager.
+======================================================= */
+@media print {
+  body * { visibility: hidden; }
+  #quote-results, #quote-results * { visibility: visible; }
+  #quote-results {
+    position: absolute;
+    inset: 0;
+    padding: 24px;
+  }
+  .no-print { display: none !important; }
 }

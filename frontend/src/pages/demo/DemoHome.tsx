@@ -30,7 +30,7 @@ function CountChip({
 }
 
 /**
- * SectionCard — one of two top-level entry points on the demo home.
+ * SectionCard - one of two top-level entry points on the demo home.
  * Each card surfaces the Real-Data or Synthetic-Data story: eyebrow +
  * count chip, a headline + description, and a 3-chip strip of sub-tabs
  * (Quote / Compare / Business Insights) that route into that side.

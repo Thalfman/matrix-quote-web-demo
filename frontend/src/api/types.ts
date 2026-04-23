@@ -1,6 +1,6 @@
 // Temporary hand-written types mirroring backend/app/schemas_api.py and
 // core/schemas.py. Replace with `npm run gen:api` output once the backend is
-// running — see package.json scripts.
+// running - see package.json scripts.
 
 export type QuoteInput = {
   project_id?: string | null;
@@ -145,7 +145,7 @@ export type SavedQuoteCreateBody = {
   quoted_hours_by_bucket?: Record<string, number> | null;
 };
 
-// Response type — created_by filled server-side from the JWT claim.
+// Response type - created_by filled server-side from the JWT claim.
 export type SavedQuote = SavedQuoteCreateBody & {
   id: string;
   created_at: string;

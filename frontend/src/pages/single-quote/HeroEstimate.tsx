@@ -26,7 +26,7 @@ export function HeroEstimate({ result }: { result: ExplainedQuoteResponse }) {
   const animated = useCountUp(total);
   const dots = confidenceDots(rel);
 
-  // CI rail math — clamp marker position to [10%, 90%] of rail.
+  // CI rail math - clamp marker position to [10%, 90%] of rail.
   const range = Math.max(1, high - low);
   const leftPct  = Math.max(0, Math.min(100, ((low - low) / range) * 100));  // always 0
   const rightPct = Math.max(0, Math.min(100, 100 - ((high - low) / range) * 100));  // always 0

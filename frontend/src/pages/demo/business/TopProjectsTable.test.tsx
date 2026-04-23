@@ -158,7 +158,7 @@ describe("TopProjectsTable", () => {
   });
 });
 
-describe("TopProjectsTable — column sort", () => {
+describe("TopProjectsTable - column sort", () => {
   it("clicking a sortable column header changes the sort (rows reorder)", () => {
     // Default sort is total_hours desc: Delta System (400) first, Alpha Line (200) second
     renderWithProviders(<TopProjectsTable rows={ROWS} />);
@@ -214,7 +214,7 @@ describe("TopProjectsTable — column sort", () => {
   });
 });
 
-describe("TopProjectsTable — internal search filter", () => {
+describe("TopProjectsTable - internal search filter", () => {
   it("typing in the search input filters visible rows", () => {
     renderWithProviders(<TopProjectsTable rows={ROWS} />);
     const searchInput = screen.getByRole("searchbox", { name: /search projects/i });
@@ -255,9 +255,9 @@ describe("TopProjectsTable — internal search filter", () => {
   });
 });
 
-describe("TopProjectsTable — Export CSV button", () => {
+describe("TopProjectsTable - Export CSV button", () => {
   it("clicking Export CSV triggers URL.createObjectURL and an anchor click", () => {
-    // Render first — before any mocking that could interfere with React's DOM ops.
+    // Render first - before any mocking that could interfere with React's DOM ops.
     renderWithProviders(<TopProjectsTable rows={ROWS} />);
     const exportBtn = screen.getByRole("button", { name: /export csv/i });
 

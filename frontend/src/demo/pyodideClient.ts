@@ -79,7 +79,7 @@ let pyodidePromise: Promise<PyodideInterface> | null = null;
 const listeners = new Set<StatusListener>();
 let latestStatus: PyodideStatus = { stage: "script", message: "Not started" };
 
-// Per-dataset model loading promises — null means not yet started.
+// Per-dataset model loading promises - null means not yet started.
 const modelPromises: Record<Dataset, Promise<void> | null> = {
   real: null,
   synthetic: null,
@@ -128,7 +128,7 @@ declare global {
 }
 
 // ---------------------------------------------------------------------------
-// Inline Python runtime — injected once after packages are ready.
+// Inline Python runtime - injected once after packages are ready.
 // Pipeline step names from core/models.py:
 //   "preprocess" -> ColumnTransformer
 //   "model"      -> GradientBoostingRegressor (p50)
@@ -147,7 +147,7 @@ IMPORTANCES_CACHE = {}
 def load_bundle(dataset, urls):
     """Fetch and cache all joblib bundles for the given dataset."""
     if LOADED[dataset]:
-        return  # already loaded — no-op
+        return  # already loaded - no-op
     for tgt, url in urls.items():
         with urlopen(url) as resp:
             data = resp.read()
@@ -250,7 +250,7 @@ def collect_importances(dataset):
 `;
 
 // ---------------------------------------------------------------------------
-// Bootstrap — Pyodide runtime + packages + Python shim
+// Bootstrap - Pyodide runtime + packages + Python shim
 // ---------------------------------------------------------------------------
 
 async function bootstrap(): Promise<PyodideInterface> {
@@ -278,7 +278,7 @@ async function bootstrap(): Promise<PyodideInterface> {
 
   // Emit a neutral "python-ready" state. Actual model load stages fire from
   // ensureModelsReady() so the UI shows progress per dataset.
-  notify({ stage: "python", message: "Python runtime ready — awaiting model load", percent: 65 });
+  notify({ stage: "python", message: "Python runtime ready; awaiting model load", percent: 65 });
 
   return pyodide;
 }
@@ -355,7 +355,7 @@ export function ensureModelsReady(dataset: Dataset): Promise<void> {
     }
     void urlMapJson; // suppress unused warning
 
-    // Use Pyodide's FS-backed paths rather than HTTP — joblib reads from the
+    // Use Pyodide's FS-backed paths rather than HTTP - joblib reads from the
     // virtual FS we just populated.
     await pyodide.runPythonAsync(`
 import joblib, io
@@ -366,7 +366,7 @@ for _tgt, _fname in _files.items():
     LOADED[_ds][_tgt] = joblib.load(f"{_dir}/{_fname}")
 `);
 
-    notify({ stage, message: `${label} — done`, percent: basePercent + 16 });
+    notify({ stage, message: `${label}: done`, percent: basePercent + 16 });
     notify({ stage: "ready", message: "Ready", percent: 100 });
   })().catch((err: Error) => {
     modelPromises[dataset] = null;

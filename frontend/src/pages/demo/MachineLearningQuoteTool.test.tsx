@@ -42,7 +42,7 @@ vi.mock("@/demo/pyodideClient", () => ({
 }));
 
 // ---------------------------------------------------------------------------
-// Mock realProjects — useSyntheticPool returns a small pool.
+// Mock realProjects - useSyntheticPool returns a small pool.
 // ---------------------------------------------------------------------------
 
 const FAKE_POOL: ProjectRecord[] = [
@@ -96,7 +96,7 @@ const { MachineLearningQuoteTool } = await import("./MachineLearningQuoteTool");
 // Tests
 // ---------------------------------------------------------------------------
 
-describe("MachineLearningQuoteTool — page header copy", () => {
+describe("MachineLearningQuoteTool - page header copy", () => {
   it("renders the updated eyebrow 'Synthetic Data · Quote'", () => {
     renderWithProviders(<MachineLearningQuoteTool />);
     expect(screen.getByText("Synthetic Data · Quote")).toBeInTheDocument();
@@ -124,7 +124,7 @@ describe("MachineLearningQuoteTool — page header copy", () => {
   });
 });
 
-describe("MachineLearningQuoteTool — model loading", () => {
+describe("MachineLearningQuoteTool - model loading", () => {
   it("calls ensurePyodideReady on mount", () => {
     renderWithProviders(<MachineLearningQuoteTool />);
     expect(mockEnsurePyodideReady).toHaveBeenCalled();
@@ -138,7 +138,7 @@ describe("MachineLearningQuoteTool — model loading", () => {
   });
 });
 
-describe("MachineLearningQuoteTool — form submit calls predictQuote('synthetic')", () => {
+describe("MachineLearningQuoteTool - form submit calls predictQuote('synthetic')", () => {
   beforeEach(() => {
     mockPredictQuote.mockClear();
     mockGetFeatureImportances.mockClear();
@@ -235,7 +235,7 @@ describe("MachineLearningQuoteTool — form submit calls predictQuote('synthetic
   });
 });
 
-describe("MachineLearningQuoteTool — loading state", () => {
+describe("MachineLearningQuoteTool - loading state", () => {
   it("does not render the result panel before form submit", async () => {
     renderWithProviders(<MachineLearningQuoteTool />);
     await waitFor(() =>

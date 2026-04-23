@@ -147,14 +147,14 @@ describe("DemoApp direct routes", () => {
         screen.getByRole("heading", { name: /comparison quote tool/i }),
       ).toBeInTheDocument(),
     );
-    // ComparisonQuote renders CompareFindSimilarTab only — there is no Browse heading
+    // ComparisonQuote renders CompareFindSimilarTab only - there is no Browse heading
     expect(
       screen.queryByRole("heading", { name: /comparison compare browse/i }),
     ).not.toBeInTheDocument();
   });
 });
 
-describe("DemoApp — /compare/browse legacy redirect", () => {
+describe("DemoApp - /compare/browse legacy redirect", () => {
   it("/compare/browse redirects to /compare/compare", async () => {
     renderAt("/compare/browse");
     await waitFor(() =>

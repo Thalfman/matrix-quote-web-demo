@@ -17,7 +17,7 @@ vi.mock("recharts", async () => {
   };
 });
 
-// Minimal records — two projects each with one op (me10_actual_hours)
+// Minimal records - two projects each with one op (me10_actual_hours)
 const FAKE_RECORDS: ProjectRecord[] = [
   {
     project_id: "r1",

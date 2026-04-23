@@ -9,7 +9,7 @@ export function Drivers() {
       <PageHeader
         eyebrow="Admin · Drivers"
         title="Drivers & Similar Projects"
-        description="Per-operation feature importance + partial-dependence curves. Live wiring lands when the admin driver endpoint ships — placeholder values shown below."
+        description="Per-operation feature importance + partial-dependence curves. Live wiring lands when the admin driver endpoint ships; placeholder values shown below."
       />
 
       {/* Operation picker */}

@@ -11,7 +11,7 @@ function KPI({
   suffix?: string;
   accent?: boolean;
 }) {
-  const txt = value == null ? "—" : `${value.toFixed(1)}${suffix ?? ""}`;
+  const txt = value == null ? "-" : `${value.toFixed(1)}${suffix ?? ""}`;
   return (
     <div className="card p-4 relative overflow-hidden">
       {accent && (

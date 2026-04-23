@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
  * Subscribes to a media-query and returns whether it currently matches.
  *
  * In environments without `matchMedia` (older jsdom, some SSR contexts) or
- * when the hook hasn't yet mounted, returns `false` — callers should default
+ * when the hook hasn't yet mounted, returns `false` - callers should default
  * to the desktop/no-match layout and upgrade to the matched layout only
  * once the client has confirmed it.
  */

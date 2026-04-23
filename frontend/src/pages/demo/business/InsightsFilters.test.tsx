@@ -29,7 +29,7 @@ function makeFilter(overrides: Partial<InsightsFilterState> = {}): InsightsFilte
   return { ...DEFAULT_FILTER, ...overrides };
 }
 
-describe("InsightsFilters — chip rendering", () => {
+describe("InsightsFilters - chip rendering", () => {
   it("renders all industry chips in the provided order", () => {
     const onChange = vi.fn();
     renderWithProviders(
@@ -80,7 +80,7 @@ describe("InsightsFilters — chip rendering", () => {
   });
 });
 
-describe("InsightsFilters — industry chip toggle", () => {
+describe("InsightsFilters - industry chip toggle", () => {
   it("clicking an inactive industry chip calls onChange with that industry added", () => {
     const onChange = vi.fn();
     renderWithProviders(
@@ -149,7 +149,7 @@ describe("InsightsFilters — industry chip toggle", () => {
   });
 });
 
-describe("InsightsFilters — category chip toggle", () => {
+describe("InsightsFilters - category chip toggle", () => {
   it("clicking an inactive category chip calls onChange with category added", () => {
     const onChange = vi.fn();
     renderWithProviders(
@@ -210,7 +210,7 @@ describe("InsightsFilters — category chip toggle", () => {
   });
 });
 
-describe("InsightsFilters — complexity chips", () => {
+describe("InsightsFilters - complexity chips", () => {
   it("renders all five complexity level chips", () => {
     renderWithProviders(
       <InsightsFilters
@@ -279,7 +279,7 @@ describe("InsightsFilters — complexity chips", () => {
   });
 });
 
-describe("InsightsFilters — debounced search input", () => {
+describe("InsightsFilters - debounced search input", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });
@@ -352,7 +352,7 @@ describe("InsightsFilters — debounced search input", () => {
   });
 });
 
-describe("InsightsFilters — reset", () => {
+describe("InsightsFilters - reset", () => {
   it("does not render Reset filters button when filter is default", () => {
     renderWithProviders(
       <InsightsFilters
@@ -403,7 +403,7 @@ describe("InsightsFilters — reset", () => {
   });
 });
 
-describe("InsightsFilters — mobile collapse", () => {
+describe("InsightsFilters - mobile collapse", () => {
   afterEach(() => {
     // Reset back to the jsdom default so subsequent suites get desktop.
     // @ts-expect-error matchMedia is optional on Window in some type defs.
@@ -497,7 +497,7 @@ describe("InsightsFilters — mobile collapse", () => {
   });
 });
 
-describe("InsightsFilters — showing counter", () => {
+describe("InsightsFilters - showing counter", () => {
   it("displays filteredCount of totalCount projects", () => {
     renderWithProviders(
       <InsightsFilters

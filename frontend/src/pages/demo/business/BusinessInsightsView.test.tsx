@@ -51,7 +51,7 @@ const BASE_PROPS = {
   error: null,
 };
 
-describe("BusinessInsightsView — happy path", () => {
+describe("BusinessInsightsView - happy path", () => {
   it("renders the datasetLabel in the page eyebrow", () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
     // PageHeader renders: eyebrow="Insights · Test · Dataset"
@@ -134,7 +134,7 @@ describe("BusinessInsightsView — happy path", () => {
   });
 });
 
-describe("BusinessInsightsView — loading state", () => {
+describe("BusinessInsightsView - loading state", () => {
   it("renders a skeleton with aria-busy when isLoading is true", () => {
     renderWithProviders(
       <BusinessInsightsView
@@ -162,7 +162,7 @@ describe("BusinessInsightsView — loading state", () => {
   });
 });
 
-describe("BusinessInsightsView — error state", () => {
+describe("BusinessInsightsView - error state", () => {
   it("renders an element with role=alert when error is set", () => {
     renderWithProviders(
       <BusinessInsightsView
@@ -203,7 +203,7 @@ describe("BusinessInsightsView — error state", () => {
   });
 });
 
-describe("BusinessInsightsView — empty records", () => {
+describe("BusinessInsightsView - empty records", () => {
   it("renders the empty message when records is an empty array", () => {
     renderWithProviders(
       <BusinessInsightsView
@@ -226,12 +226,12 @@ describe("BusinessInsightsView — empty records", () => {
         error={null}
       />,
     );
-    // Section headings are sr-only h2s inside portfolio sections — none should appear
+    // Section headings are sr-only h2s inside portfolio sections - none should appear
     expect(screen.queryByRole("heading", { name: /portfolio kpis/i })).not.toBeInTheDocument();
   });
 });
 
-describe("BusinessInsightsView — filter chip interaction", () => {
+describe("BusinessInsightsView - filter chip interaction", () => {
   it("clicking an industry chip in the InsightsFilters panel reduces the filteredCount", async () => {
     // With two records from different industries (Automotive / Food & Bev),
     // clicking the Automotive chip should filter down to 1 of 2.
@@ -242,7 +242,7 @@ describe("BusinessInsightsView — filter chip interaction", () => {
 
     // The InsightsFilters panel renders industry chips as <button aria-pressed=...>
     // There can be multiple text nodes "Automotive" (chip label + chart legend).
-    // The chip is a <button> — get all buttons and find the one with exact text.
+    // The chip is a <button> - get all buttons and find the one with exact text.
     const chipButtons = screen.getAllByRole("button");
     const automotiveChip = chipButtons.find((b) => b.textContent === "Automotive");
     expect(automotiveChip).toBeDefined();
@@ -265,7 +265,7 @@ function openProjectsTab() {
   fireEvent.click(tab);
 }
 
-describe("BusinessInsightsView — table row click opens drawer", () => {
+describe("BusinessInsightsView - table row click opens drawer", () => {
   it("clicking a table row opens the project detail drawer with the row's project name", async () => {
     renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
     openProjectsTab();
@@ -276,7 +276,7 @@ describe("BusinessInsightsView — table row click opens drawer", () => {
     // Initially the drawer is slide-out (translate-x-full)
     expect(dialog!.className).toMatch(/translate-x-full/);
 
-    // Click a table row — rows have role=button when onRowClick is provided
+    // Click a table row - rows have role=button when onRowClick is provided
     // Project name "Alpha Project" appears in a table cell
     const alphaCell = screen.getByText("Alpha Project");
     const rowEl = alphaCell.closest("[role='button']");

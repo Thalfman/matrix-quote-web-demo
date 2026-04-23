@@ -64,7 +64,7 @@ export function Quotes() {
       <PageHeader
         eyebrow="Quotes · Library"
         title="Saved Quotes"
-        description="Every saved scenario — filter, compare, or export."
+        description="Every saved scenario. Filter, compare, or export."
       />
 
       <QuotesKpiStrip rows={rows} />

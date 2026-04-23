@@ -33,7 +33,7 @@ export function buildSummaryMarkdown(
   const a = portfolio.accuracy;
   const lines: string[] = [];
 
-  lines.push(`# Business Insights Pack — ${datasetLabel}`);
+  lines.push(`# Business Insights Pack - ${datasetLabel}`);
   lines.push("");
   lines.push(`Generated: ${generatedAt.toISOString()}`);
   lines.push("");
@@ -108,9 +108,9 @@ export function buildSummaryMarkdown(
       const range =
         r.peerP10 != null && r.peerP90 != null
           ? `${fmtInt.format(r.peerP10)}–${fmtInt.format(r.peerP90)}`
-          : "—";
+          : "-";
       lines.push(
-        `| ${r.project_name} | ${r.industry} | ${Math.round(r.complexity)} | ${fmtInt.format(r.total_hours)} | ${r.peerMedian != null ? fmtInt.format(r.peerMedian) : "—"} | ${range} | ${r.outlierZ != null ? fmtR.format(r.outlierZ) : "—"} | ${r.outlierDirection === "high" ? "HIGH" : "LOW"} |`,
+        `| ${r.project_name} | ${r.industry} | ${Math.round(r.complexity)} | ${fmtInt.format(r.total_hours)} | ${r.peerMedian != null ? fmtInt.format(r.peerMedian) : "-"} | ${range} | ${r.outlierZ != null ? fmtR.format(r.outlierZ) : "-"} | ${r.outlierDirection === "high" ? "HIGH" : "LOW"} |`,
       );
     }
     lines.push("");
@@ -138,7 +138,7 @@ export function buildInsightsPackZip(
 /**
  * Build a "Download insights pack" zip containing:
  *   - projects.csv   (the filtered ranked-table, same shape as the CSV export)
- *   - portfolio.json (the full PortfolioStats — KPIs + all aggregations)
+ *   - portfolio.json (the full PortfolioStats - KPIs + all aggregations)
  *   - summary.md     (a one-page human-readable summary)
  */
 export async function buildInsightsPack(

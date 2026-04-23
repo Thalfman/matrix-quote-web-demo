@@ -89,7 +89,7 @@ const BASE_ARGS: AdapterArgs = {
 // Hero estimate
 // ---------------------------------------------------------------------------
 
-describe("toUnifiedResult — hero estimate", () => {
+describe("toUnifiedResult - hero estimate", () => {
   it("sums per-category p50s for estimateHours", () => {
     const result = toUnifiedResult(BASE_ARGS);
     expect(result.estimateHours).toBeCloseTo(150, 5); // 100 + 50
@@ -123,7 +123,7 @@ describe("toUnifiedResult — hero estimate", () => {
 // Per-category shape
 // ---------------------------------------------------------------------------
 
-describe("toUnifiedResult — perCategory", () => {
+describe("toUnifiedResult - perCategory", () => {
   it("has one entry per prediction target", () => {
     const result = toUnifiedResult(BASE_ARGS);
     expect(result.perCategory).toHaveLength(2);
@@ -141,7 +141,7 @@ describe("toUnifiedResult — perCategory", () => {
 // Confidence buckets
 // ---------------------------------------------------------------------------
 
-describe("toUnifiedResult — r2ToConfidence thresholds", () => {
+describe("toUnifiedResult - r2ToConfidence thresholds", () => {
   it("r2 ≥ 0.70 → high", () => {
     const args: AdapterArgs = {
       ...BASE_ARGS,
@@ -202,7 +202,7 @@ describe("toUnifiedResult — r2ToConfidence thresholds", () => {
 // Overall confidence (rollUp)
 // ---------------------------------------------------------------------------
 
-describe("toUnifiedResult — overall confidence rollUp", () => {
+describe("toUnifiedResult - overall confidence rollUp", () => {
   it("all high categories → overall high", () => {
     const args: AdapterArgs = {
       ...BASE_ARGS,
@@ -261,7 +261,7 @@ describe("toUnifiedResult — overall confidence rollUp", () => {
 // Drivers rollup
 // ---------------------------------------------------------------------------
 
-describe("toUnifiedResult — topDrivers rollup", () => {
+describe("toUnifiedResult - topDrivers rollup", () => {
   it("returns at most 3 drivers", () => {
     const result = toUnifiedResult(BASE_ARGS);
     expect(result.topDrivers.length).toBeLessThanOrEqual(3);
@@ -271,7 +271,7 @@ describe("toUnifiedResult — topDrivers rollup", () => {
     // stations_count appears in both targets:
     // me10: 0.4 * (100/150) ≈ 0.267
     // ee20: 0.25 * (50/150) ≈ 0.083
-    // total ≈ 0.35 — should beat any single-target feature
+    // total ≈ 0.35 - should beat any single-target feature
     const result = toUnifiedResult(BASE_ARGS);
     expect(result.topDrivers[0].label).toContain("station");
   });
@@ -321,7 +321,7 @@ describe("toUnifiedResult — topDrivers rollup", () => {
 // Supporting matches
 // ---------------------------------------------------------------------------
 
-describe("toUnifiedResult — supportingMatches", () => {
+describe("toUnifiedResult - supportingMatches", () => {
   it("carries the supportingLabel through to the result", () => {
     const result = toUnifiedResult(BASE_ARGS);
     expect(result.supportingMatches.label).toBe("Most similar past projects");

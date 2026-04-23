@@ -1,7 +1,7 @@
 /* =======================================================
    Matrix Quote · Dark mode overlay
    Activated by [data-theme="dark"] on <html>.
-   Remaps the shared light-mode tokens — no Tailwind `dark:`
+   Remaps the shared light-mode tokens - no Tailwind `dark:`
    variants used anywhere else in the app.
 ======================================================= */
 
@@ -16,7 +16,7 @@
   color: #E8E6DF !important;
 }
 
-/* Sidebar — push slightly deeper than canvas */
+/* Sidebar - push slightly deeper than canvas */
 :root[data-theme="dark"] aside.bg-ink {
   background: #060D17 !important;
   border-right: 1px solid rgba(255,255,255,0.04);
@@ -82,7 +82,7 @@
 :root[data-theme="dark"] aside.bg-ink .text-white\/50 { color: rgba(255,255,255,0.50) !important; }
 :root[data-theme="dark"] aside.bg-ink .text-white\/40 { color: rgba(255,255,255,0.40) !important; }
 
-/* Primary buttons — ink-on-white → amber-on-ink in dark */
+/* Primary buttons - ink-on-white → amber-on-ink in dark */
 :root[data-theme="dark"] .bg-ink:not(aside):not(.bg-ink\/5):not(.bg-ink\/10) {
   background-color: #F2B61F !important;
   color: #0A1420 !important;
@@ -120,7 +120,7 @@
   background-color: rgba(10,20,32,0.70) !important;
 }
 
-/* Shadows — softer in dark */
+/* Shadows - softer in dark */
 :root[data-theme="dark"] .shadow,
 :root[data-theme="dark"] [class*="shadow-"] {
   box-shadow: 0 1px 0 rgba(0,0,0,0.4), 0 8px 24px -12px rgba(0,0,0,0.6) !important;
@@ -145,7 +145,7 @@
 .theme-toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: #F2B61F; }
 :root[data-theme="dark"] .theme-toggle .dot { background: #0A1420; }
 
-/* Inline variant — same visual style but no fixed positioning (used inside sidebars). */
+/* Inline variant - same visual style but no fixed positioning (used inside sidebars). */
 .theme-toggle-inline {
   position: static;
   display: inline-flex; align-items: center; gap: 8px;
@@ -170,9 +170,9 @@
 :root[data-theme="dark"] .theme-toggle-inline .dot { background: #0A1420; }
 
 /* =======================================================
-   Focus rings — brighter, accessible in dark mode
+   Focus rings - brighter, accessible in dark mode
    Shared focus-visible is teal (#1F8FA6). On the dark
-   sidebar (#060D17) this reads as 3.6:1 — acceptable
+   sidebar (#060D17) this reads as 3.6:1 - acceptable
    for decorative but risky for interactive focus on
    busy surfaces. Swap to a brighter cyan + halo in dark.
 ======================================================= */
@@ -182,7 +182,7 @@
 }
 
 /* =======================================================
-   Recharts — dark-mode adjustments
+   Recharts - dark-mode adjustments
    Axis ticks lift from muted to a lighter tone; gridlines
    soften; tooltip card flips to dark slate with light text.
    All scoped inside [data-theme="dark"] so the production
@@ -212,7 +212,7 @@
   color: #EDEBE4 !important;
 }
 
-/* Scatter/legend custom-tooltip container is an inline-styled div — lift via
+/* Scatter/legend custom-tooltip container is an inline-styled div - lift via
    a rule that matches the wrapper's inline-styled HTML children. */
 :root[data-theme="dark"] .recharts-tooltip-wrapper div {
   color: #EDEBE4 !important;

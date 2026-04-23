@@ -5,7 +5,7 @@ import { render } from "@testing-library/react";
 
 import { DemoLayout } from "./DemoLayout";
 
-// DemoLayout renders <Outlet />, which is empty in test context — that's fine.
+// DemoLayout renders <Outlet />, which is empty in test context - that's fine.
 // We're only testing the sidebar structure.
 
 function renderLayout(route = "/") {
@@ -19,7 +19,7 @@ function renderLayout(route = "/") {
 describe("DemoLayout sidebar structure", () => {
   it("renders REAL DATA label before SYNTHETIC DATA label in the DOM", () => {
     renderLayout();
-    // The section labels are plain <div>s with eyebrow text — use queryAllByText with regex.
+    // The section labels are plain <div>s with eyebrow text - use queryAllByText with regex.
     const realLabel = screen.getByText(/real data/i);
     const syntheticLabel = screen.getByText(/synthetic data/i);
     expect(realLabel).toBeInTheDocument();

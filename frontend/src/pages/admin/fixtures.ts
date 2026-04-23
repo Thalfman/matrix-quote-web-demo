@@ -39,7 +39,7 @@ export const SAMPLE_ALERTS: AdminAlert[] = [
     id: "a1",
     tone: "info",
     title: "Calibration is within target",
-    body: "91.2% of last-30-day quotes fell inside their 90% CI — above the 88% floor.",
+    body: "91.2% of last-30-day quotes fell inside their 90% CI, above the 88% floor.",
     at: new Date(now - 3 * 60 * 60 * 1000).toISOString(),
   },
   {

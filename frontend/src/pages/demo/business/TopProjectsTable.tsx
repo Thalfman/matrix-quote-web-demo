@@ -161,7 +161,7 @@ export function TopProjectsTable({
         </div>
       </div>
 
-      {/* Column headers — hidden on narrow screens where rows render as stacked cards */}
+      {/* Column headers - hidden on narrow screens where rows render as stacked cards */}
       {!isNarrow && (
       <div
         className="grid items-center gap-3 px-5 py-2.5 border-b hairline bg-paper/40"

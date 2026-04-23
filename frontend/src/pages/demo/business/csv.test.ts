@@ -24,7 +24,7 @@ function makeRow(overrides: Partial<RankedRow> = {}): RankedRow {
   };
 }
 
-describe("toCsv — empty input", () => {
+describe("toCsv - empty input", () => {
   it("returns only the header row when given an empty array", () => {
     const result = toCsv([]);
     expect(result).toBe(HEADER);
@@ -37,7 +37,7 @@ describe("toCsv — empty input", () => {
   });
 });
 
-describe("toCsv — happy path serialization", () => {
+describe("toCsv - happy path serialization", () => {
   it("produces header + one data line for a single row", () => {
     const result = toCsv([makeRow()]);
     const lines = result.split("\n");
@@ -84,7 +84,7 @@ describe("toCsv — happy path serialization", () => {
   });
 });
 
-describe("toCsv — RFC 4180 escaping", () => {
+describe("toCsv - RFC 4180 escaping", () => {
   it("wraps a field containing a comma in double quotes", () => {
     const row = makeRow({ project_name: "Alpha, Beta" });
     const result = toCsv([row]);
@@ -102,7 +102,7 @@ describe("toCsv — RFC 4180 escaping", () => {
   it("wraps a field containing a newline in double quotes", () => {
     const row = makeRow({ project_name: "Line1\nLine2" });
     const result = toCsv([row]);
-    // A newline inside a CSV field must be wrapped in quotes — the whole output
+    // A newline inside a CSV field must be wrapped in quotes - the whole output
     // contains the quoted field (we cannot split by \n since the field itself
     // contains a newline, but the field must appear quoted in the output).
     expect(result).toContain('"Line1\nLine2"');
@@ -117,7 +117,7 @@ describe("toCsv — RFC 4180 escaping", () => {
   });
 });
 
-describe("toCsv — multiple rows", () => {
+describe("toCsv - multiple rows", () => {
   it("outputs header + N data lines for N rows", () => {
     const rows = Array.from({ length: 5 }, (_, i) =>
       makeRow({ project_id: `p${i}`, project_name: `Project ${i}` }),

@@ -102,7 +102,7 @@ const FIXED_DATE = new Date("2026-04-22T10:00:00.000Z");
 describe("buildSummaryMarkdown", () => {
   it("includes the dataset label in the title and an ISO-formatted generated date", () => {
     const md = buildSummaryMarkdown(makePortfolio(), "Real · Data", FIXED_DATE);
-    expect(md).toContain("# Business Insights Pack — Real · Data");
+    expect(md).toContain("# Business Insights Pack - Real · Data");
     expect(md).toContain("Generated: 2026-04-22T10:00:00.000Z");
   });
 
@@ -170,7 +170,7 @@ describe("packFilename", () => {
   });
 
   it("collapses repeated separators and trims leading/trailing hyphens", () => {
-    expect(packFilename("  Synthetic — Pool  ", FIXED_DATE)).toBe(
+    expect(packFilename("  Synthetic - Pool  ", FIXED_DATE)).toBe(
       "business-insights-synthetic-pool-2026-04-22.zip",
     );
   });
@@ -199,7 +199,7 @@ describe("buildInsightsPackZip", () => {
     expect(parsed.riskCorrelations.length).toBeGreaterThan(0);
 
     const md = await zip.file("summary.md")!.async("string");
-    expect(md).toContain("# Business Insights Pack — Real");
+    expect(md).toContain("# Business Insights Pack - Real");
   });
 });
 

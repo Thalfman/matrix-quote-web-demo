@@ -58,7 +58,7 @@ export function CompareInputDiff({ quotes }: { quotes: SavedQuote[] }) {
                               : "text-ink")
                         }
                       >
-                        {v || "—"}
+                        {v || "-"}
                       </dd>
                     </div>
                   );
@@ -121,7 +121,7 @@ export function CompareInputDiff({ quotes }: { quotes: SavedQuote[] }) {
                         : "text-ink pl-3")
                   }
                 >
-                  {v || "—"}
+                  {v || "-"}
                 </div>
               );
             })}

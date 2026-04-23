@@ -57,7 +57,7 @@ const FAKE_RECORDS: ProjectRecord[] = [
 // Import after mocks are registered
 const { MachineLearningInsights } = await import("./MachineLearningInsights");
 
-describe("MachineLearningInsights — happy path", () => {
+describe("MachineLearningInsights - happy path", () => {
   it("renders the dataset label 'Synthetic Data · Training projects'", () => {
     mockHookReturn = { data: FAKE_RECORDS, isLoading: false, error: null };
     renderWithProviders(<MachineLearningInsights />);
@@ -87,7 +87,7 @@ describe("MachineLearningInsights — happy path", () => {
   });
 });
 
-describe("MachineLearningInsights — loading state", () => {
+describe("MachineLearningInsights - loading state", () => {
   it("renders a skeleton with aria-busy=true when isLoading is true", () => {
     mockHookReturn = { data: undefined, isLoading: true, error: null };
     renderWithProviders(<MachineLearningInsights />);
@@ -103,7 +103,7 @@ describe("MachineLearningInsights — loading state", () => {
   });
 });
 
-describe("MachineLearningInsights — error state", () => {
+describe("MachineLearningInsights - error state", () => {
   it("renders role=alert when useSyntheticPool returns an error", () => {
     mockHookReturn = { data: undefined, isLoading: false, error: new Error("network error") };
     renderWithProviders(<MachineLearningInsights />);

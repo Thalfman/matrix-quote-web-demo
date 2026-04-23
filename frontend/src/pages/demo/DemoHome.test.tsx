@@ -32,7 +32,7 @@ vi.mock("@/demo/realProjects", async () => {
 // Import after mocks are registered.
 const { DemoHome } = await import("./DemoHome");
 
-describe("DemoHome — two-card layout", () => {
+describe("DemoHome - two-card layout", () => {
   it("renders the 'Real Data' eyebrow", () => {
     renderWithProviders(<DemoHome />);
     expect(screen.getByText("Real Data")).toBeInTheDocument();
@@ -89,7 +89,7 @@ describe("DemoHome — two-card layout", () => {
   });
 });
 
-describe("DemoHome — three-chip sub-tab strip per card", () => {
+describe("DemoHome - three-chip sub-tab strip per card", () => {
   it("renders a '/compare/quote' link labelled 'Quote'", () => {
     renderWithProviders(<DemoHome />);
     const links = screen.getAllByRole("link");
@@ -175,7 +175,7 @@ describe("DemoHome — three-chip sub-tab strip per card", () => {
   });
 });
 
-describe("DemoHome — the old three-card layout is gone", () => {
+describe("DemoHome - the old three-card layout is gone", () => {
   it("does not render 'Real Data Quote Tool' (old card title)", () => {
     renderWithProviders(<DemoHome />);
     expect(
@@ -191,7 +191,7 @@ describe("DemoHome — the old three-card layout is gone", () => {
   });
 });
 
-describe("DemoHome — no ML jargon in rendered output (cross-cutting jargon guard)", () => {
+describe("DemoHome - no ML jargon in rendered output (cross-cutting jargon guard)", () => {
   it("does not render the word 'Pyodide' anywhere on the page", () => {
     renderWithProviders(<DemoHome />);
     expect(screen.queryByText(/pyodide/i)).not.toBeInTheDocument();

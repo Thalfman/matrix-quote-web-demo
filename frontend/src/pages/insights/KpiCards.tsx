@@ -44,7 +44,7 @@ export function KpiCards({ data }: { data: InsightsOverview | undefined }) {
       />
       <KpiCard
         label="Overall MAPE"
-        value={data?.overall_mape != null ? data.overall_mape.toFixed(1) : "—"}
+        value={data?.overall_mape != null ? data.overall_mape.toFixed(1) : "-"}
         suffix={data?.overall_mape != null ? "%" : ""}
         meta="lower is better"
       />
@@ -52,7 +52,7 @@ export function KpiCards({ data }: { data: InsightsOverview | undefined }) {
         label="Confidence calibration"
         value={data?.calibration_within_band_pct != null
           ? data.calibration_within_band_pct.toFixed(1)
-          : "—"}
+          : "-"}
         suffix={data?.calibration_within_band_pct != null ? "%" : ""}
         meta="inside 90% CI"
         accent

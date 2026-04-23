@@ -19,7 +19,7 @@ import { api } from "@/api/client";
 
 const mockGet = vi.mocked(api.get);
 
-describe("Layout — INSIGHTS nav group", () => {
+describe("Layout - INSIGHTS nav group", () => {
   afterEach(() => {
     mockGet.mockReset();
   });

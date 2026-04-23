@@ -51,7 +51,7 @@ export function CompareHeader({ quotes }: { quotes: SavedQuote[] }) {
                 </dd>
                 <dt className="eyebrow text-[10px] text-muted">Δ vs anchor</dt>
                 <dd className={"text-sm mono tnum " + color}>
-                  {i === 0 ? "—" : deltaString}
+                  {i === 0 ? "-" : deltaString}
                 </dd>
               </dl>
             </div>
@@ -121,7 +121,7 @@ export function CompareHeader({ quotes }: { quotes: SavedQuote[] }) {
               (i === 0 ? "border-l-2 border-l-amber pl-3" : "pl-3")
             }
           >
-            {i === 0 ? "—" : deltaString}
+            {i === 0 ? "-" : deltaString}
           </div>
         );
       })}

@@ -53,7 +53,7 @@ export function UploadTrain() {
           </div>
           {status?.has_real_data && (
             <div className="mt-1 text-xs text-danger">
-              Real data is already present — demo load is disabled to avoid clobbering it.
+              Real data is already present; demo load is disabled to avoid clobbering it.
             </div>
           )}
         </div>
@@ -115,10 +115,10 @@ export function UploadTrain() {
           </div>
           <div className="grid grid-cols-4 gap-0 border-t hairline">
             {[
-              { label: "Total", value: "—" },
-              { label: "New",   value: "—" },
-              { label: "Dupes", value: "—" },
-              { label: "Invalid", value: "—" },
+              { label: "Total", value: "-" },
+              { label: "New",   value: "-" },
+              { label: "Dupes", value: "-" },
+              { label: "Invalid", value: "-" },
             ].map((s, i) => (
               <div
                 key={s.label}

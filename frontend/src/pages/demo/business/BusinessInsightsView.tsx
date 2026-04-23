@@ -34,7 +34,7 @@ type Props = {
 };
 
 /**
- * SectionHeader — eyebrow row above each chart section.
+ * SectionHeader - eyebrow row above each chart section.
  */
 function SectionHeader({ title }: { title: string }) {
   return (
@@ -45,7 +45,7 @@ function SectionHeader({ title }: { title: string }) {
 }
 
 /**
- * SectionEmptyCard — renders an honest "Not available" card for chart sections
+ * SectionEmptyCard - renders an honest "Not available" card for chart sections
  * where the dataset does not carry enough overlap to compute the section.
  */
 function SectionEmptyCard({ message }: { message: string }) {
@@ -57,7 +57,7 @@ function SectionEmptyCard({ message }: { message: string }) {
 }
 
 /**
- * SkeletonBlock — a single rounded bg-line rectangle used in skeleton loaders.
+ * SkeletonBlock - a single rounded bg-line rectangle used in skeleton loaders.
  */
 function SkeletonBlock({ className }: { className?: string }) {
   return <div className={`bg-line rounded animate-pulse ${className ?? ""}`} />;
@@ -176,7 +176,7 @@ export function BusinessInsightsView({
     [filteredRecords],
   );
 
-  // Portfolio-wide (unfiltered) median overrun — baseline the deep-dive card
+  // Portfolio-wide (unfiltered) median overrun - baseline the deep-dive card
   // compares the selected industry against.
   const portfolioMedianOverrun = useMemo(() => {
     if (!records || records.length === 0) return null;
@@ -364,7 +364,7 @@ export function BusinessInsightsView({
               {activeTab === "overview" && (
                 <>
                   {/* Industry deep-dive sits at the top of Overview when a
-                      single industry is selected — it's the most context-rich
+                      single industry is selected - it's the most context-rich
                       snapshot for that slice. */}
                   {industryDetail && (
                     <section aria-labelledby="insights-deepdive-heading">
@@ -495,7 +495,7 @@ export function BusinessInsightsView({
         </div>
       ) : null}
 
-      {/* Project detail drawer — mounted at root, outside the content flow */}
+      {/* Project detail drawer - mounted at root, outside the content flow */}
       <ProjectDetailDrawer row={drawerRow} onClose={() => setDrawerRow(null)} />
     </>
   );

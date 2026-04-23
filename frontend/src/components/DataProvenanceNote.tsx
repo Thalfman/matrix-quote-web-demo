@@ -1,4 +1,4 @@
-/** "What this is trained on" disclosure popover — variant="real" describes 24 historical projects, variant="synthetic" describes the 500-row generated training pool. */
+/** "What this is trained on" disclosure popover - variant="real" describes 24 historical projects, variant="synthetic" describes the 500-row generated training pool. */
 import { Info } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -9,7 +9,7 @@ const COPY: Record<Variant, { eyebrow: string; body: string }> = {
   real: {
     eyebrow: "What this is trained on",
     body:
-      "Twenty-four of your completed projects. The engine is most reliable when a new project resembles past ones; expect lower confidence on outliers.",
+      "With a dataset this small the engine can overfit. It tends to echo patterns from past projects rather than learn general rules, so expect lower confidence on work that doesn't closely resemble the training set.",
   },
   synthetic: {
     eyebrow: "What this is trained on",
@@ -19,7 +19,7 @@ const COPY: Record<Variant, { eyebrow: string; body: string }> = {
 };
 
 /**
- * DataProvenanceNote — small native <details> disclosure that mounts one line
+ * DataProvenanceNote - small native <details> disclosure that mounts one line
  * below the <PageHeader> on each demo page. Its copy is variant-driven so the
  * Real-Data and Synthetic-Data pages each tell their own honest story about
  * what the engine was trained on, in business language.

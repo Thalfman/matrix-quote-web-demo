@@ -6,7 +6,7 @@ import { useCountUp } from "./useCountUp";
 describe("useCountUp", () => {
   // Each test starts with matchMedia undefined (the jsdom default).
   beforeEach(() => {
-    // @ts-expect-error — deliberately removing jsdom stub between tests
+    // @ts-expect-error - deliberately removing jsdom stub between tests
     delete window.matchMedia;
   });
 
@@ -58,7 +58,7 @@ describe("useCountUp", () => {
     expect(lastId).toBeGreaterThan(0);
     const scheduledId = lastId;
 
-    // Unmount without ever firing the callback — cleanup should cancel it.
+    // Unmount without ever firing the callback - cleanup should cancel it.
     act(() => { unmount(); });
 
     expect(cancelledIds).toContain(scheduledId);
