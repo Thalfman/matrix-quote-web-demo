@@ -42,7 +42,8 @@ function Chip({
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "inline-flex items-center px-2 py-1 rounded-sm text-xs eyebrow",
+        "inline-flex items-center rounded-sm text-xs eyebrow",
+        "px-3 py-2 md:px-2 md:py-1",
         "transition-colors duration-150 ease-out",
         "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal focus-visible:ring-offset-1 focus-visible:ring-offset-paper",
         active
