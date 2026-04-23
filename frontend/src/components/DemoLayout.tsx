@@ -1,10 +1,25 @@
-import { NavLink, Outlet, useLocation } from "react-router-dom";
-import { Sparkles } from "lucide-react";
+import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
+import { ArrowLeft, Sparkles } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 const ICON_STROKE = 1.75;
+
+/** Short dataset label for the active tool ("Real Data" / "Synthetic Data"). */
+function toolLabel(pathname: string): string | null {
+  if (pathname.startsWith("/compare")) return "Real Data";
+  if (pathname.startsWith("/ml")) return "Synthetic Data";
+  return null;
+}
+
+/** Sub-view label within a tool (Quote / Compare / Business Insights). */
+function pageLabel(pathname: string): string | null {
+  if (pathname.endsWith("/quote")) return "Quote";
+  if (pathname.endsWith("/compare")) return "Compare";
+  if (pathname.endsWith("/insights")) return "Business Insights";
+  return null;
+}
 
 function SidebarLink({
   to,
@@ -48,7 +63,7 @@ function MobileToolSwitch({
   mlActive: boolean;
 }) {
   const segmentBase =
-    "inline-flex items-center justify-center px-3 py-1.5 text-sm eyebrow rounded-sm" +
+    "inline-flex items-center justify-center px-3 py-2 md:py-1.5 text-sm eyebrow rounded-sm" +
     " transition-colors duration-150 ease-out focus-visible:outline-none" +
     " focus-visible:ring-2 focus-visible:ring-teal";
   return (
@@ -65,7 +80,9 @@ function MobileToolSwitch({
           to="/compare/quote"
           className={cn(
             segmentBase,
-            compareActive ? "bg-ink text-white" : "text-muted hover:text-ink",
+            compareActive
+              ? "bg-ink text-white font-semibold shadow-sm"
+              : "text-muted hover:text-ink",
           )}
           aria-current={compareActive ? "page" : undefined}
         >
@@ -75,7 +92,9 @@ function MobileToolSwitch({
           to="/ml/quote"
           className={cn(
             segmentBase,
-            mlActive ? "bg-ink text-white" : "text-muted hover:text-ink",
+            mlActive
+              ? "bg-ink text-white font-semibold shadow-sm"
+              : "text-muted hover:text-ink",
           )}
           aria-current={mlActive ? "page" : undefined}
         >
@@ -87,10 +106,10 @@ function MobileToolSwitch({
           to={compareActive ? "/compare/insights" : "/ml/insights"}
           className={({ isActive }) =>
             cn(
-              "text-sm eyebrow px-2 py-1.5 rounded-sm transition-colors duration-150 ease-out",
+              "text-sm eyebrow px-2 py-2 md:py-1.5 rounded-sm transition-colors duration-150 ease-out",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
               isActive
-                ? "text-teal"
+                ? "text-teal font-semibold"
                 : "text-muted hover:text-ink",
             )
           }
@@ -107,6 +126,9 @@ export function DemoLayout() {
 
   const compareActive = pathname.startsWith("/compare");
   const mlActive = pathname.startsWith("/ml");
+  const isHome = pathname === "/";
+  const tool = toolLabel(pathname);
+  const page = pageLabel(pathname);
 
   const datasetLabel = mlActive
     ? "Training projects"
@@ -201,9 +223,41 @@ export function DemoLayout() {
 
       <main className="flex-1 min-w-0">
         {/* Mobile / tablet header (below lg) */}
-        <div className="lg:hidden flex items-center justify-between gap-3 px-4 py-3 border-b hairline bg-surface">
-          <div className="display-hero text-lg leading-none">Matrix</div>
-          <MobileToolSwitch compareActive={compareActive} mlActive={mlActive} />
+        <div data-testid="mobile-header" className="lg:hidden border-b hairline bg-surface">
+          <div className="flex items-center justify-between gap-3 px-4 py-3">
+            {isHome ? (
+              <div className="display-hero text-lg leading-none">Matrix</div>
+            ) : (
+              <Link
+                to="/"
+                aria-label="Back to demo home"
+                className={cn(
+                  "inline-flex items-center gap-1.5 -ml-1 pl-1 pr-2 rounded-sm",
+                  "min-h-[44px] min-w-[44px]",
+                  "text-sm eyebrow text-muted hover:text-ink hover:bg-black/5",
+                  "transition-colors duration-150 ease-out",
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
+                )}
+              >
+                <ArrowLeft size={16} strokeWidth={ICON_STROKE} aria-hidden="true" />
+                <span>Home</span>
+              </Link>
+            )}
+            <MobileToolSwitch compareActive={compareActive} mlActive={mlActive} />
+          </div>
+          {(tool || page) && !isHome && (
+            <div className="px-4 pb-2 -mt-0.5 flex items-center gap-2 text-xs">
+              {tool && (
+                <span className="eyebrow text-muted">{tool}</span>
+              )}
+              {tool && page && (
+                <span aria-hidden="true" className="text-muted/50">·</span>
+              )}
+              {page && (
+                <span className="font-semibold text-ink">{page}</span>
+              )}
+            </div>
+          )}
         </div>
 
         {/* Desktop top bar */}

@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { render } from "@testing-library/react";
@@ -116,6 +116,45 @@ describe("DemoLayout sidebar structure", () => {
   it("has a Home link in the sidebar", () => {
     renderLayout();
     expect(screen.getByRole("link", { name: /^home$/i })).toBeInTheDocument();
+  });
+});
+
+describe("DemoLayout mobile header", () => {
+  it("hides the Back to demo home link on the home route", () => {
+    renderLayout("/");
+    const header = screen.getByTestId("mobile-header");
+    expect(
+      within(header).queryByRole("link", { name: /back to demo home/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders the Back to demo home link on non-home routes and points at /", () => {
+    renderLayout("/compare/insights");
+    const header = screen.getByTestId("mobile-header");
+    const back = within(header).getByRole("link", { name: /back to demo home/i });
+    expect(back).toBeInTheDocument();
+    expect((back as HTMLAnchorElement).getAttribute("href")).toBe("/");
+  });
+
+  it("shows the dataset + sub-view label strip on non-home routes", () => {
+    renderLayout("/compare/insights");
+    const header = screen.getByTestId("mobile-header");
+    expect(within(header).getByText("Real Data")).toBeInTheDocument();
+    expect(within(header).getByText("Business Insights")).toBeInTheDocument();
+  });
+
+  it("uses 'Synthetic Data · Quote' on /ml/quote", () => {
+    renderLayout("/ml/quote");
+    const header = screen.getByTestId("mobile-header");
+    expect(within(header).getByText("Synthetic Data")).toBeInTheDocument();
+    expect(within(header).getByText("Quote")).toBeInTheDocument();
+  });
+
+  it("does not render the label strip on the home route", () => {
+    renderLayout("/");
+    const header = screen.getByTestId("mobile-header");
+    expect(within(header).queryByText(/^quote$/i)).not.toBeInTheDocument();
+    expect(within(header).queryByText(/^business insights$/i)).not.toBeInTheDocument();
   });
 });
 
