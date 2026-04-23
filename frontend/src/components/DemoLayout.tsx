@@ -106,10 +106,11 @@ function MobileToolSwitch({
           to={compareActive ? "/compare/insights" : "/ml/insights"}
           className={({ isActive }) =>
             cn(
-              "text-sm eyebrow px-2 py-2 md:py-1.5 rounded-sm transition-colors duration-150 ease-out",
+              "inline-flex items-center justify-center text-sm eyebrow rounded-sm",
+              "px-3 py-2 md:py-1.5 transition-colors duration-150 ease-out",
               "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
               isActive
-                ? "text-teal font-semibold"
+                ? "bg-teal text-white font-semibold shadow-sm"
                 : "text-muted hover:text-ink",
             )
           }
