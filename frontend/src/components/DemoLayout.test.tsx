@@ -158,6 +158,35 @@ describe("DemoLayout mobile header", () => {
   });
 });
 
+describe("DemoLayout mobile tool-segment active state", () => {
+  it("highlights Compare segment on /compare/quote", () => {
+    renderLayout("/compare/quote");
+    const header = screen.getByTestId("mobile-header");
+    const compareSegment = within(header).getByRole("link", { name: "Compare" });
+    expect(compareSegment.className).toContain("bg-ink");
+    expect(compareSegment.getAttribute("aria-current")).toBe("page");
+  });
+
+  it("does NOT highlight Compare segment on /compare/insights (Insights pill owns the active state)", () => {
+    renderLayout("/compare/insights");
+    const header = screen.getByTestId("mobile-header");
+    const compareSegment = within(header).getByRole("link", { name: "Compare" });
+    expect(compareSegment.className).not.toContain("bg-ink");
+    expect(compareSegment.getAttribute("aria-current")).not.toBe("page");
+    const insightsLink = within(header).getByRole("link", { name: "Insights" });
+    expect(insightsLink.className).toContain("bg-teal");
+  });
+
+  it("does NOT highlight ML segment on /ml/insights", () => {
+    renderLayout("/ml/insights");
+    const header = screen.getByTestId("mobile-header");
+    const mlSegment = within(header).getByRole("link", { name: "ML" });
+    expect(mlSegment.className).not.toContain("bg-ink");
+    const insightsLink = within(header).getByRole("link", { name: "Insights" });
+    expect(insightsLink.className).toContain("bg-teal");
+  });
+});
+
 describe("DemoLayout aria-current active link", () => {
   it("marks Compare Quote link as aria-current=page when at /compare/quote", () => {
     renderLayout("/compare/quote");

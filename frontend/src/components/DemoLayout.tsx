@@ -58,10 +58,18 @@ function SidebarLink({
 function MobileToolSwitch({
   compareActive,
   mlActive,
+  onInsights,
 }: {
   compareActive: boolean;
   mlActive: boolean;
+  onInsights: boolean;
 }) {
+  // Tool-segment pills (Compare / ML) light up for the tool Quote/Compare
+  // sub-views only. On the Insights sub-view we clear the tool pill so the
+  // Insights pill stands alone as the current-view indicator — otherwise
+  // both the Compare segment and the Insights pill would appear selected.
+  const compareSegmentActive = compareActive && !onInsights;
+  const mlSegmentActive = mlActive && !onInsights;
   const segmentBase =
     "inline-flex items-center justify-center px-3 py-2 md:py-1.5 text-sm eyebrow rounded-sm" +
     " transition-colors duration-150 ease-out focus-visible:outline-none" +
@@ -80,11 +88,11 @@ function MobileToolSwitch({
           to="/compare/quote"
           className={cn(
             segmentBase,
-            compareActive
+            compareSegmentActive
               ? "bg-ink text-white font-semibold shadow-sm"
               : "text-muted hover:text-ink",
           )}
-          aria-current={compareActive ? "page" : undefined}
+          aria-current={compareSegmentActive ? "page" : undefined}
         >
           Compare
         </NavLink>
@@ -92,11 +100,11 @@ function MobileToolSwitch({
           to="/ml/quote"
           className={cn(
             segmentBase,
-            mlActive
+            mlSegmentActive
               ? "bg-ink text-white font-semibold shadow-sm"
               : "text-muted hover:text-ink",
           )}
-          aria-current={mlActive ? "page" : undefined}
+          aria-current={mlSegmentActive ? "page" : undefined}
         >
           ML
         </NavLink>
@@ -127,6 +135,7 @@ export function DemoLayout() {
 
   const compareActive = pathname.startsWith("/compare");
   const mlActive = pathname.startsWith("/ml");
+  const onInsights = pathname.endsWith("/insights");
   const isHome = pathname === "/";
   const tool = toolLabel(pathname);
   const page = pageLabel(pathname);
@@ -244,7 +253,11 @@ export function DemoLayout() {
                 <span>Home</span>
               </Link>
             )}
-            <MobileToolSwitch compareActive={compareActive} mlActive={mlActive} />
+            <MobileToolSwitch
+              compareActive={compareActive}
+              mlActive={mlActive}
+              onInsights={onInsights}
+            />
           </div>
           {(tool || page) && !isHome && (
             <div className="pb-2 -mt-0.5 flex items-center gap-2 text-xs">
