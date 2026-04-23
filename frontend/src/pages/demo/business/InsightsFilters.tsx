@@ -2,7 +2,12 @@ import { useEffect, useRef } from "react";
 import { Search, X } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { DEFAULT_FILTER, isDefaultFilter } from "./insightsFilterDefaults";
+import { useIsNarrow } from "@/lib/useMediaQuery";
+import {
+  DEFAULT_FILTER,
+  activeFilterCount,
+  isDefaultFilter,
+} from "./insightsFilterDefaults";
 
 export type InsightsFilterState = {
   industries: Set<string>;
@@ -99,42 +104,54 @@ export function InsightsFilters({
   };
 
   const isDefault = isDefaultFilter(filter);
+  const activeCount = activeFilterCount(filter);
+  const isNarrow = useIsNarrow();
 
-  return (
-    <div
-      className={cn(
-        "card p-4 mb-6 space-y-4 sticky top-4 z-20",
-        "bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/80",
-        "shadow-[0_1px_0_rgba(13,27,42,0.04)]",
-      )}
-    >
-      <div className="flex items-center justify-between gap-x-4 gap-y-1.5 flex-wrap">
-        <div className="eyebrow text-xs text-muted">
-          Filters
-          <span className="ml-2 mono tnum normal-case tracking-normal text-muted">
-            Showing{" "}
-            <span className="text-ink font-medium">{filteredCount}</span>
-            {" "}of{" "}
-            <span className="text-ink">{totalCount}</span>
-            {" "}projects
-          </span>
-        </div>
-        {!isDefault && (
-          <button
-            type="button"
-            onClick={handleReset}
+  const summary = (
+    <div className="flex items-center justify-between gap-x-4 gap-y-1.5 flex-wrap">
+      <div className="eyebrow text-xs text-muted">
+        Filters
+        {activeCount > 0 && (
+          <span
             className={cn(
-              "inline-flex items-center gap-1 text-sm text-muted hover:text-danger",
-              "transition-colors duration-150 ease-out rounded-sm px-1 -mx-1",
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
+              "ml-2 inline-flex items-center justify-center rounded-sm",
+              "bg-teal text-white text-[10px] font-medium px-1.5 py-0.5 tracking-normal normal-case",
             )}
+            aria-label={`${activeCount} active filter${activeCount === 1 ? "" : "s"}`}
           >
-            <X size={12} strokeWidth={1.75} aria-hidden="true" />
-            Reset filters
-          </button>
+            {activeCount}
+          </span>
         )}
+        <span className="ml-2 mono tnum normal-case tracking-normal text-muted">
+          Showing{" "}
+          <span className="text-ink font-medium">{filteredCount}</span>
+          {" "}of{" "}
+          <span className="text-ink">{totalCount}</span>
+          {" "}projects
+        </span>
       </div>
+      {!isDefault && (
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            handleReset();
+          }}
+          className={cn(
+            "inline-flex items-center gap-1 text-sm text-muted hover:text-danger",
+            "transition-colors duration-150 ease-out rounded-sm px-1 -mx-1",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
+          )}
+        >
+          <X size={12} strokeWidth={1.75} aria-hidden="true" />
+          Reset filters
+        </button>
+      )}
+    </div>
+  );
 
+  const body = (
+    <div className="space-y-4">
       {/* Search */}
       <div className="relative">
         <Search
@@ -213,6 +230,45 @@ export function InsightsFilters({
           ))}
         </div>
       </div>
+    </div>
+  );
+
+  const wrapperClass = cn(
+    "card p-4 mb-6 md:sticky md:top-4 md:z-20",
+    "bg-paper/95 backdrop-blur supports-[backdrop-filter]:bg-paper/80",
+    "shadow-[0_1px_0_rgba(13,27,42,0.04)]",
+  );
+
+  if (isNarrow) {
+    return (
+      <details className={cn(wrapperClass, "group")}>
+        <summary
+          className={cn(
+            "list-none cursor-pointer -m-4 p-4 rounded-sm",
+            "flex items-center justify-between gap-2",
+            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
+          )}
+        >
+          <div className="min-w-0 flex-1">{summary}</div>
+          <span
+            aria-hidden="true"
+            className={cn(
+              "shrink-0 text-muted text-xs transition-transform duration-150 ease-out",
+              "group-open:rotate-180",
+            )}
+          >
+            ▾
+          </span>
+        </summary>
+        <div className="mt-4">{body}</div>
+      </details>
+    );
+  }
+
+  return (
+    <div className={cn(wrapperClass, "space-y-4")}>
+      {summary}
+      {body}
     </div>
   );
 }

@@ -15,3 +15,12 @@ export function isDefaultFilter(f: InsightsFilterState): boolean {
     f.search === ""
   );
 }
+
+export function activeFilterCount(f: InsightsFilterState): number {
+  return (
+    f.industries.size +
+    f.categories.size +
+    f.complexities.size +
+    (f.search ? 1 : 0)
+  );
+}

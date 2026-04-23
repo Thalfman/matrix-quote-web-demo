@@ -2,9 +2,25 @@ import { act, screen, fireEvent } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 
 import { renderWithProviders } from "@/test/render";
-import { DEFAULT_FILTER } from "./insightsFilterDefaults";
+import {
+  DEFAULT_FILTER,
+  activeFilterCount,
+} from "./insightsFilterDefaults";
 import { InsightsFilters } from "./InsightsFilters";
 import type { InsightsFilterState } from "./InsightsFilters";
+
+function mockMatchMedia(matches: boolean) {
+  window.matchMedia = vi.fn().mockImplementation((query: string) => ({
+    matches,
+    media: query,
+    onchange: null,
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  }));
+}
 
 const INDUSTRIES = ["Automotive", "Food & Bev", "Pharma"];
 const CATEGORIES = ["Assembly", "Welding", "Palletizing"];
@@ -384,6 +400,100 @@ describe("InsightsFilters — reset", () => {
     expect(nextFilter.categories.size).toBe(0);
     expect(nextFilter.complexities.size).toBe(0);
     expect(nextFilter.search).toBe("");
+  });
+});
+
+describe("InsightsFilters — mobile collapse", () => {
+  afterEach(() => {
+    // Reset back to the jsdom default so subsequent suites get desktop.
+    // @ts-expect-error matchMedia is optional on Window in some type defs.
+    delete window.matchMedia;
+  });
+
+  it("wraps the filter body in a <details> when the viewport is narrow", () => {
+    mockMatchMedia(true);
+    const { container } = renderWithProviders(
+      <InsightsFilters
+        filter={makeFilter()}
+        onChange={vi.fn()}
+        availableIndustries={INDUSTRIES}
+        availableCategories={CATEGORIES}
+        totalCount={10}
+        filteredCount={10}
+      />,
+    );
+    expect(container.querySelector("details")).not.toBeNull();
+    expect(container.querySelector("summary")).not.toBeNull();
+  });
+
+  it("does not wrap in <details> on desktop", () => {
+    mockMatchMedia(false);
+    const { container } = renderWithProviders(
+      <InsightsFilters
+        filter={makeFilter()}
+        onChange={vi.fn()}
+        availableIndustries={INDUSTRIES}
+        availableCategories={CATEGORIES}
+        totalCount={10}
+        filteredCount={10}
+      />,
+    );
+    expect(container.querySelector("details")).toBeNull();
+  });
+
+  it("shows an active-count badge in the summary when filters are non-default", () => {
+    mockMatchMedia(true);
+    renderWithProviders(
+      <InsightsFilters
+        filter={makeFilter({
+          industries: new Set(["Automotive", "Pharma"]),
+          categories: new Set(["Welding"]),
+        })}
+        onChange={vi.fn()}
+        availableIndustries={INDUSTRIES}
+        availableCategories={CATEGORIES}
+        totalCount={10}
+        filteredCount={4}
+      />,
+    );
+    expect(
+      screen.getByLabelText(/3 active filters/i),
+    ).toBeInTheDocument();
+  });
+
+  it("omits the active-count badge when the filter is default", () => {
+    mockMatchMedia(true);
+    renderWithProviders(
+      <InsightsFilters
+        filter={makeFilter()}
+        onChange={vi.fn()}
+        availableIndustries={INDUSTRIES}
+        availableCategories={CATEGORIES}
+        totalCount={10}
+        filteredCount={10}
+      />,
+    );
+    expect(screen.queryByLabelText(/active filter/i)).not.toBeInTheDocument();
+  });
+
+  it("activeFilterCount sums sets and search presence", () => {
+    expect(activeFilterCount(DEFAULT_FILTER)).toBe(0);
+    expect(
+      activeFilterCount({
+        industries: new Set(["a", "b"]),
+        categories: new Set(["c"]),
+        complexities: new Set([1, 2, 3]),
+        search: "hello",
+      }),
+    ).toBe(7);
+    expect(
+      activeFilterCount({
+        industries: new Set(),
+        categories: new Set(),
+        complexities: new Set(),
+        search: "x",
+      }),
+    ).toBe(1);
   });
 });
 
