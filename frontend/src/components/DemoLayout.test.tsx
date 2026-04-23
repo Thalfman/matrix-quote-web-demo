@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { MemoryRouter } from "react-router-dom";
 import { render } from "@testing-library/react";
@@ -116,6 +116,105 @@ describe("DemoLayout sidebar structure", () => {
   it("has a Home link in the sidebar", () => {
     renderLayout();
     expect(screen.getByRole("link", { name: /^home$/i })).toBeInTheDocument();
+  });
+});
+
+describe("DemoLayout mobile back button", () => {
+  it("hides the Back to demo home link on the home route", () => {
+    renderLayout("/");
+    const header = screen.getByTestId("mobile-header");
+    expect(
+      within(header).queryByRole("link", { name: /back to demo home/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("renders the Back to demo home link on non-home routes and points at /", () => {
+    renderLayout("/compare/insights");
+    const header = screen.getByTestId("mobile-header");
+    const back = within(header).getByRole("link", { name: /back to demo home/i });
+    expect(back).toBeInTheDocument();
+    expect((back as HTMLAnchorElement).getAttribute("href")).toBe("/");
+  });
+});
+
+describe("DemoLayout mobile tool switch", () => {
+  function toolNav(route: string) {
+    renderLayout(route);
+    const header = screen.getByTestId("mobile-header");
+    return within(header).getByRole("navigation", { name: /switch tool/i });
+  }
+
+  it("highlights Compare segment on /compare/*", () => {
+    const nav = toolNav("/compare/insights");
+    const compareSegment = within(nav).getByRole("link", { name: "Compare" });
+    expect(compareSegment.className).toContain("bg-ink");
+    expect(compareSegment.getAttribute("aria-current")).toBe("page");
+  });
+
+  it("highlights ML segment on /ml/*", () => {
+    const nav = toolNav("/ml/quote");
+    const mlSegment = within(nav).getByRole("link", { name: "ML" });
+    expect(mlSegment.className).toContain("bg-ink");
+  });
+
+  it("Compare segment preserves the current sub-view (insights → /compare/insights)", () => {
+    const nav = toolNav("/ml/insights");
+    const compareSegment = within(nav).getByRole("link", { name: "Compare" });
+    expect(
+      (compareSegment as HTMLAnchorElement).getAttribute("href"),
+    ).toBe("/compare/insights");
+  });
+
+  it("ML segment preserves the current sub-view (compare → /ml/compare)", () => {
+    const nav = toolNav("/compare/compare");
+    const mlSegment = within(nav).getByRole("link", { name: "ML" });
+    expect((mlSegment as HTMLAnchorElement).getAttribute("href")).toBe("/ml/compare");
+  });
+
+  it("tool segments default to /<tool>/quote on the home route", () => {
+    const nav = toolNav("/");
+    const compareSegment = within(nav).getByRole("link", { name: "Compare" });
+    const mlSegment = within(nav).getByRole("link", { name: "ML" });
+    expect((compareSegment as HTMLAnchorElement).getAttribute("href")).toBe("/compare/quote");
+    expect((mlSegment as HTMLAnchorElement).getAttribute("href")).toBe("/ml/quote");
+  });
+});
+
+describe("DemoLayout mobile sub-view tabs", () => {
+  it("does not render sub-view tabs on the home route", () => {
+    renderLayout("/");
+    const header = screen.getByTestId("mobile-header");
+    expect(within(header).queryByRole("navigation", { name: /sub-view/i })).toBeNull();
+  });
+
+  it("renders Quote / Compare / Insights tabs on /compare/*", () => {
+    renderLayout("/compare/quote");
+    const header = screen.getByTestId("mobile-header");
+    const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
+    const labels = within(subNav).getAllByRole("link").map((l) => l.textContent);
+    expect(labels).toEqual(["Quote", "Compare", "Insights"]);
+  });
+
+  it("points every tab at the current tool prefix (/ml on /ml/insights)", () => {
+    renderLayout("/ml/insights");
+    const header = screen.getByTestId("mobile-header");
+    const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
+    const links = within(subNav).getAllByRole("link") as HTMLAnchorElement[];
+    const hrefs = links.map((l) => l.getAttribute("href"));
+    expect(hrefs).toEqual(["/ml/quote", "/ml/compare", "/ml/insights"]);
+  });
+
+  it("highlights only the current sub-view tab", () => {
+    renderLayout("/compare/insights");
+    const header = screen.getByTestId("mobile-header");
+    const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
+    const quote = within(subNav).getByRole("link", { name: "Quote" });
+    const compare = within(subNav).getByRole("link", { name: "Compare" });
+    const insights = within(subNav).getByRole("link", { name: "Insights" });
+    expect(insights.className).toContain("bg-teal");
+    expect(insights.getAttribute("aria-current")).toBe("page");
+    expect(quote.className).not.toContain("bg-teal");
+    expect(compare.className).not.toContain("bg-teal");
   });
 });
 

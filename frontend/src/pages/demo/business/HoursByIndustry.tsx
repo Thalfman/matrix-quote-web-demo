@@ -4,10 +4,15 @@ import {
 } from "recharts";
 
 import { cn } from "@/lib/utils";
+import { useIsNarrow } from "@/lib/useMediaQuery";
 import {
   AXIS_LINE, AXIS_TICK, CHART_COLORS, DATA_LABEL, GRID_STYLE, TOOLTIP_CURSOR, TOOLTIP_STYLE,
 } from "@/pages/insights/chartTheme";
 import { IndustryRow } from "./portfolioStats";
+
+function truncateLabel(s: string, max: number): string {
+  return s.length > max ? s.slice(0, max - 1).trimEnd() + "…" : s;
+}
 
 const fmtHours = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
 
@@ -60,6 +65,7 @@ export function HoursByIndustry({
   onIndustryClick,
 }: Props) {
   const [metric, setMetric] = useState<Metric>("avg");
+  const isNarrow = useIsNarrow();
 
   const hasSelection = selectedIndustries && selectedIndustries.size > 0;
 
@@ -119,7 +125,12 @@ export function HoursByIndustry({
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
-              margin={{ top: 4, right: 8, left: -8, bottom: 32 }}
+              margin={{
+                top: 4,
+                right: 8,
+                left: -8,
+                bottom: isNarrow ? 56 : 32,
+              }}
               onClick={
                 onIndustryClick
                   ? (e) => {
@@ -137,13 +148,15 @@ export function HoursByIndustry({
                     x={props.x}
                     y={props.y + 8}
                     textAnchor="end"
-                    transform={`rotate(-30, ${props.x}, ${props.y + 8})`}
+                    transform={`rotate(${isNarrow ? -45 : -30}, ${props.x}, ${props.y + 8})`}
                     fontSize={AXIS_TICK.fontSize}
                     fill={AXIS_TICK.fill}
                     fontFamily={AXIS_TICK.fontFamily}
                     style={onIndustryClick ? { cursor: "pointer" } : undefined}
                   >
-                    {props.payload.value}
+                    {isNarrow
+                      ? truncateLabel(props.payload.value, 10)
+                      : props.payload.value}
                   </text>
                 )}
                 axisLine={AXIS_LINE}

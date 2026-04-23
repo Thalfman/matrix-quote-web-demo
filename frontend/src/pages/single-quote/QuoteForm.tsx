@@ -80,7 +80,7 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
             />
           </Field>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
           <Controller
             control={control}
             name="has_controls"
@@ -278,7 +278,7 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
         </div>
         <details className="mt-2">
           <summary className="cursor-pointer muted text-xs tracking-widest">ADVANCED · derived indices</summary>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-3">
             <Field
               label="Stations/robot idx"
               hint="Auto-computed server-side if left at 0"
@@ -322,7 +322,7 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
           {compareOpen ? "Hide" : "Optional:"} compare to your quoted hours
         </button>
         {compareOpen && (
-          <div className="card p-5 mt-3 grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="card p-5 mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {SALES_BUCKETS.map((bucket) => (
               <Field key={bucket} label={`${bucket} quoted hours`}>
                 <Input

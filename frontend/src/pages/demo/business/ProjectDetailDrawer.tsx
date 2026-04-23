@@ -86,7 +86,9 @@ export function ProjectDetailDrawer({ row, onClose }: Props) {
                 type="button"
                 onClick={onClose}
                 className={cn(
-                  "shrink-0 mt-0.5 p-1.5 rounded-sm text-muted hover:text-ink hover:bg-line",
+                  "shrink-0 mt-0.5 rounded-sm text-muted hover:text-ink hover:bg-line",
+                  "inline-flex items-center justify-center",
+                  "min-w-[44px] min-h-[44px] md:min-w-0 md:min-h-0 md:p-1.5",
                   "transition-colors duration-150 ease-out",
                   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
                 )}

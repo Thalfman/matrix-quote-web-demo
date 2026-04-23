@@ -73,6 +73,19 @@
   .fade-in {
     animation: matrix-fade-in 180ms ease-out both;
   }
+
+  /* Respect iOS notch / Android display cutouts. Paired with
+     viewport-fit=cover in index.html. Falls back to zero on browsers
+     that don't support env(). */
+  @supports (padding: max(0px)) {
+    .mobile-safe-top {
+      padding-top: max(0.75rem, env(safe-area-inset-top));
+    }
+    .mobile-safe-x {
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
+  }
 }
 
 @keyframes matrix-fade-in {
