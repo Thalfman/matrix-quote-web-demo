@@ -14,7 +14,7 @@ describe("DataProvenanceNote - real variant", () => {
   it("warns about overfitting on a small dataset in the real variant", () => {
     renderWithProviders(<DataProvenanceNote variant="real" />);
     expect(screen.getByText(/overfit/i)).toBeInTheDocument();
-    expect(screen.getByText(/lower confidence/i)).toBeInTheDocument();
+    expect(screen.getByText(/confidence drops/i)).toBeInTheDocument();
   });
 
   it("does NOT render synthetic copy in the real variant", () => {

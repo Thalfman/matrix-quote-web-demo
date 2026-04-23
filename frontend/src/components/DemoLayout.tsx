@@ -240,7 +240,7 @@ export function DemoLayout() {
               <span className="text-sm font-semibold text-amber">Demo mode</span>
             </div>
             <p className="text-sm text-white/60 leading-snug">
-              Runs entirely in your browser. No backend, no sign-in.
+              Self-contained demo instance. No backend, no sign-in.
             </p>
             <p className="text-sm text-white/50 leading-snug">
               Dataset:{" "}

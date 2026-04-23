@@ -164,7 +164,7 @@ export function MachineLearningQuoteTool() {
       <PageHeader
         eyebrow="Synthetic Data · Quote"
         title="Machine Learning Quote Tool"
-        description="Estimate hours with a likely range and the drivers behind each number. Runs in the browser."
+        description="Estimates hours for a new project using models trained on five hundred synthetic projects, with a likely range and the drivers behind each number."
         chips={chips}
       />
       <DataProvenanceNote variant="synthetic" />
@@ -187,10 +187,10 @@ export function MachineLearningQuoteTool() {
             aria-hidden="true"
           />
           <div className="min-w-0 flex-1">
-            <div className="font-medium">Couldn&apos;t warm up the in-browser runtime.</div>
+            <div className="font-medium">Couldn&apos;t warm up the runtime.</div>
             <div className="text-muted mt-1">
               Refresh the page to try again. Trained models and the Python runtime load
-              once; subsequent visits use the browser&apos;s cache.
+              once and are cached for subsequent visits.
             </div>
             <pre className="mt-3 text-[11px] text-muted mono whitespace-pre-wrap break-all">
               {error}

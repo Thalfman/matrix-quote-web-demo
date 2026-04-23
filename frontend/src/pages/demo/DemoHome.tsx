@@ -97,7 +97,7 @@ export function DemoHome() {
       <PageHeader
         eyebrow="Matrix · Demo"
         title="Pick a tool"
-        description="Two views of the quoting engine. Real Data is trained on your historical projects. Synthetic Data shows the same engine after more data is collected."
+        description="Two views of the same quoting engine. Real Data uses twenty-four completed historical projects. Synthetic Data scales the training set to illustrate the engine at larger data volumes."
       />
 
       <div className="mt-6 grid gap-6 sm:grid-cols-1 md:grid-cols-2">

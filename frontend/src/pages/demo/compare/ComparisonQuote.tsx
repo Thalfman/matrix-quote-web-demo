@@ -160,7 +160,7 @@ export function ComparisonQuote() {
       <PageHeader
         eyebrow="Real Data · Quote"
         title="Real Data Quote"
-        description="Estimate hours for a new project using models trained on twenty-four of your completed projects."
+        description="Estimates hours for a new project using models trained on twenty-four completed historical projects."
         chips={chips}
       />
       <DataProvenanceNote variant="real" />
@@ -184,11 +184,11 @@ export function ComparisonQuote() {
           />
           <div className="min-w-0 flex-1">
             <div className="font-medium">
-              Couldn&apos;t warm up the in-browser runtime.
+              Couldn&apos;t warm up the runtime.
             </div>
             <div className="text-muted mt-1">
               Refresh the page to try again. Trained models and the Python
-              runtime load once; subsequent visits use the browser&apos;s cache.
+              runtime load once and are cached for subsequent visits.
             </div>
             <pre className="mt-3 text-[11px] text-muted mono whitespace-pre-wrap break-all">
               {error}

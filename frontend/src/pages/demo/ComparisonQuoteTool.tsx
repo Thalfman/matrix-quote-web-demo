@@ -60,7 +60,7 @@ export function ComparisonQuoteTool() {
       <PageHeader
         eyebrow="Comparison · Real historical data"
         title="Comparison Quote Tool"
-        description="Browse real historical projects side-by-side, or enter your own inputs to surface the closest matches."
+        description="Browse real historical projects side-by-side, or enter a new project profile to surface the closest matches."
         chips={
           data
             ? [{ label: `${data.length} projects loaded`, tone: "accent" }]
