@@ -1,7 +1,8 @@
 import {
-  Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip,
+  Cell, Legend, Pie, PieChart, ResponsiveContainer, Tooltip as RechartsTooltip,
 } from "recharts";
 
+import { Tooltip, TooltipProvider, GlossaryHelpIcon } from "@/components/Tooltip";
 import { AXIS_TICK, CHART_COLORS, TOOLTIP_STYLE } from "@/pages/insights/chartTheme";
 import { CategoryRow } from "./portfolioStats";
 
@@ -92,10 +93,14 @@ export function SystemCategoryMix({ data, selectedCategories, onCategoryClick }:
   const hasSelection = selectedCategories && selectedCategories.size > 0;
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="card p-4 sm:p-5 h-80 lg:h-96 flex flex-col">
       <div className="flex items-baseline justify-between gap-3 mb-3">
-        <div className="eyebrow text-xs text-muted">
-          Share of projects · by system type
+        <div className="eyebrow text-xs text-muted flex items-center gap-1">
+          <span>Share of projects · by system type</span>
+          <Tooltip term="System Category" side="bottom">
+            <GlossaryHelpIcon ariaLabel="What is System Category?" />
+          </Tooltip>
         </div>
         {onCategoryClick && (
           <div className="text-xs eyebrow text-muted">
@@ -143,7 +148,7 @@ export function SystemCategoryMix({ data, selectedCategories, onCategoryClick }:
                   );
                 })}
               </Pie>
-              <Tooltip content={<CustomTooltip total={total} />} />
+              <RechartsTooltip content={<CustomTooltip total={total} />} />
               <Legend
                 layout="vertical"
                 align="right"
@@ -167,5 +172,6 @@ export function SystemCategoryMix({ data, selectedCategories, onCategoryClick }:
         </div>
       )}
     </div>
+    </TooltipProvider>
   );
 }
