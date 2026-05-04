@@ -2,6 +2,7 @@
 import { TrendingUp, TrendingDown } from "lucide-react";
 
 import type { UnifiedQuoteResult } from "@/demo/quoteResult";
+import type { QuoteFormValues } from "@/pages/single-quote/schema";
 
 // ---------------------------------------------------------------------------
 // Label maps
@@ -46,9 +47,21 @@ function fmtHrs(n: number): string {
 // Component
 // ---------------------------------------------------------------------------
 
-export function QuoteResultPanel({ result }: { result: UnifiedQuoteResult }) {
+export function QuoteResultPanel({
+  result,
+  input,
+}: {
+  result: UnifiedQuoteResult;
+  input: QuoteFormValues;
+}) {
   return (
     <div className="space-y-6" id="quote-results">
+      {/* Your inputs — recap so the user can see what they fed the model */}
+      <div className="card p-5">
+        <div className="eyebrow text-[10px] text-muted mb-3">Your inputs</div>
+        <YourInputsRecap input={input} />
+      </div>
+
       {/* Hero estimate */}
       <div className="card p-6">
         <div className="flex items-baseline justify-between">
@@ -142,4 +155,117 @@ export function QuoteResultPanel({ result }: { result: UnifiedQuoteResult }) {
       </div>
     </div>
   );
+}
+
+// ---------------------------------------------------------------------------
+// Your-inputs recap (UX-01)
+// ---------------------------------------------------------------------------
+
+const SECTIONS: ReadonlyArray<{
+  title: string;
+  rows: ReadonlyArray<[string, (v: QuoteFormValues) => string]>;
+}> = [
+  {
+    title: "Project classification",
+    rows: [
+      ["Industry segment", (v) => v.industry_segment || "—"],
+      ["System category", (v) => v.system_category || "—"],
+      ["Automation level", (v) => v.automation_level || "—"],
+      ["Includes controls", (v) => yesNo(v.has_controls)],
+      ["Includes robotics", (v) => yesNo(v.has_robotics)],
+      ["Retrofit project", (v) => yesNo(v.retrofit)],
+      ["Duplicate of prior", (v) => yesNo(v.duplicate)],
+    ],
+  },
+  {
+    title: "Physical scale",
+    rows: [
+      ["Stations count", (v) => fmtCount(v.stations_count)],
+      ["Robot count", (v) => fmtCount(v.robot_count)],
+      ["Fixture sets", (v) => fmtCount(v.fixture_sets)],
+      ["Part types", (v) => fmtCount(v.part_types)],
+      ["Weldment perimeter (ft)", (v) => fmtDecimal(v.weldment_perimeter_ft)],
+      ["Fence length (ft)", (v) => fmtDecimal(v.fence_length_ft)],
+      ["Safety doors", (v) => fmtCount(v.safety_doors)],
+      ["Safety devices count", (v) => fmtCount(v.safety_devices_count)],
+      ["Conveyor length (ft)", (v) => fmtDecimal(v.conveyor_length_ft)],
+    ],
+  },
+  {
+    title: "Controls & automation",
+    rows: [
+      ["PLC family", (v) => v.plc_family || "—"],
+      ["HMI family", (v) => v.hmi_family || "—"],
+      ["Vision type", (v) => v.vision_type || "—"],
+      ["Panel count", (v) => fmtCount(v.panel_count)],
+      ["Servo axes", (v) => fmtCount(v.servo_axes)],
+      ["Drive count", (v) => fmtCount(v.drive_count)],
+      ["Pneumatic devices", (v) => fmtCount(v.pneumatic_devices)],
+      ["Vision systems count", (v) => fmtCount(v.vision_systems_count)],
+    ],
+  },
+  {
+    title: "Product & process",
+    rows: [
+      ["Product familiarity (1–5)", (v) => fmtCount(v.product_familiarity_score)],
+      ["Product rigidity (1–5)", (v) => fmtCount(v.product_rigidity)],
+      ["Bulk rigidity (1–5)", (v) => fmtCount(v.bulk_rigidity_score)],
+      ["Process uncertainty (1–5)", (v) => fmtCount(v.process_uncertainty_score)],
+      ["Changeover time (min)", (v) => fmtCount(v.changeover_time_min)],
+      ["Product deformable", (v) => yesNo(v.is_product_deformable)],
+      ["Bulk product", (v) => yesNo(v.is_bulk_product)],
+      ["Tricky packaging", (v) => yesNo(v.has_tricky_packaging)],
+    ],
+  },
+  {
+    title: "Complexity & indices",
+    rows: [
+      ["Overall complexity (1–5)", (v) => fmtCount(v.complexity_score_1_5)],
+      ["Custom %", (v) => `${fmtCount(v.custom_pct)}%`],
+    ],
+  },
+  {
+    title: "Cost",
+    rows: [
+      ["Estimated materials cost", (v) => fmtMoney(v.estimated_materials_cost)],
+    ],
+  },
+];
+
+function YourInputsRecap({ input }: { input: QuoteFormValues }) {
+  return (
+    <div className="space-y-4">
+      {SECTIONS.map((section) => (
+        <div key={section.title}>
+          <div className="text-[11px] eyebrow text-muted mb-1.5">
+            {section.title}
+          </div>
+          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+            {section.rows.map(([label, get]) => (
+              <div key={label} className="contents">
+                <dt className="text-muted truncate">{label}</dt>
+                <dd className="text-ink tnum text-right truncate">{get(input)}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function yesNo(b: boolean): string {
+  return b ? "Yes" : "No";
+}
+function fmtCount(n: number): string {
+  return Number.isFinite(n) ? n.toLocaleString() : "—";
+}
+function fmtDecimal(n: number): string {
+  return Number.isFinite(n)
+    ? n.toLocaleString(undefined, { maximumFractionDigits: 1 })
+    : "—";
+}
+function fmtMoney(n: number): string {
+  if (!Number.isFinite(n) || n <= 0) return "—";
+  return `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 }
