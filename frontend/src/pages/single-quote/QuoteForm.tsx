@@ -8,6 +8,7 @@ import { Section } from "@/components/Section";
 import { Select } from "@/components/Select";
 import { Slider } from "@/components/Slider";
 import { Switch } from "@/components/Switch";
+import { Tooltip, TooltipProvider } from "@/components/Tooltip";
 
 import { parseQuotedHours } from "@/lib/parseQuotedHours";
 
@@ -58,14 +59,14 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
       )}
       <Section step="01" title="Project classification" description="Segment, system type, and project flags">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-          <Field label="Industry segment" error={formState.errors.industry_segment?.message}>
+          <Field label="Industry segment" glossaryTerm="Industry Segment" error={formState.errors.industry_segment?.message}>
             <Select
               placeholder="Select..."
               options={opts("industry_segment", ["Automotive", "Food & Beverage", "General Industry"])}
               {...register("industry_segment")}
             />
           </Field>
-          <Field label="System category" error={formState.errors.system_category?.message}>
+          <Field label="System category" glossaryTerm="System Category" error={formState.errors.system_category?.message}>
             <Select
               placeholder="Select..."
               options={opts("system_category", [
@@ -78,7 +79,7 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
               {...register("system_category")}
             />
           </Field>
-          <Field label="Automation level" error={formState.errors.automation_level?.message}>
+          <Field label="Automation level" glossaryTerm="Automation Level" error={formState.errors.automation_level?.message}>
             <Select
               placeholder="Select..."
               options={opts("automation_level", ["Semi-Automatic", "Robotic", "Hard Automation"])}
@@ -156,13 +157,13 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
         description="PLC/HMI platform, vision, panels, and drives"
       >
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Field label="PLC family">
+          <Field label="PLC family" glossaryTerm="PLC Family">
             <Select options={opts("plc_family", ["AB Compact Logix", "AB Control Logix", "Siemens S7"])} {...register("plc_family")} />
           </Field>
-          <Field label="HMI family">
+          <Field label="HMI family" glossaryTerm="HMI Family">
             <Select options={opts("hmi_family", ["AB PanelView Plus", "Siemens Comfort Panel"])} {...register("hmi_family")} />
           </Field>
-          <Field label="Vision type">
+          <Field label="Vision type" glossaryTerm="Vision Type">
             <Select options={opts("vision_type", ["None", "2D", "3D"])} {...register("vision_type")} />
           </Field>
           <Field label="Panel count">
@@ -260,7 +261,7 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
             control={control}
             name="complexity_score_1_5"
             render={({ field }) => (
-              <Field label="Overall complexity (1–5)">
+              <Field label="Overall complexity (1–5)" glossaryTerm="Complexity (1–5)">
                 <Slider value={field.value} onChange={(e) => field.onChange(Number(e.currentTarget.value))} />
               </Field>
             )}
@@ -320,13 +321,17 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
       </Section>
 
       <section className="mb-8">
-        <button
-          type="button"
-          onClick={() => setCompareOpen((v) => !v)}
-          className="eyebrow text-[11px] text-teal hover:text-tealDark"
-        >
-          {compareOpen ? "Hide" : "Optional:"} compare to your quoted hours
-        </button>
+        <TooltipProvider delayDuration={200}>
+          <Tooltip term="Sales Bucket" side="top">
+            <button
+              type="button"
+              onClick={() => setCompareOpen((v) => !v)}
+              className="eyebrow text-[11px] text-teal hover:text-tealDark"
+            >
+              {compareOpen ? "Hide" : "Optional:"} compare to your quoted hours
+            </button>
+          </Tooltip>
+        </TooltipProvider>
         {compareOpen && (
           <div className="card p-5 mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {SALES_BUCKETS.map((bucket) => {

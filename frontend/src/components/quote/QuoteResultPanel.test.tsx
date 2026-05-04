@@ -308,3 +308,54 @@ describe("QuoteResultPanel — Your inputs recap (UX-01)", () => {
     expect(screen.getAllByText("—").length).toBeGreaterThan(0);
   });
 });
+
+describe("QuoteResultPanel — glossary tooltips on recap row labels (UX-03)", () => {
+  it("renders a focusable HelpCircle next to 'Industry segment' label", () => {
+    renderWithProviders(
+      <QuoteResultPanel
+        result={HIGH_CONFIDENCE_RESULT}
+        input={makeFormValues({ industry_segment: "Automotive" })}
+      />,
+    );
+    const btn = screen.getByRole("button", { name: /What is Industry Segment\?/i });
+    expect(btn).toBeInTheDocument();
+  });
+
+  it("renders HelpCircle for all 7 row labels that match glossary terms", () => {
+    renderWithProviders(
+      <QuoteResultPanel result={HIGH_CONFIDENCE_RESULT} input={makeFormValues()} />,
+    );
+    const labels = [
+      "Industry Segment",
+      "System Category",
+      "Automation Level",
+      "PLC Family",
+      "HMI Family",
+      "Vision Type",
+      "Complexity (1–5)",
+    ];
+    for (const t of labels) {
+      const escaped = t.replace(/[()]/g, "\\$&");
+      const btn = screen.getByRole("button", { name: new RegExp(`What is ${escaped}\\?`, "i") });
+      expect(btn, `Missing glossary affordance for ${t}`).toBeInTheDocument();
+    }
+  });
+
+  it("does NOT render a HelpCircle for plain row labels (e.g., 'Stations count')", () => {
+    renderWithProviders(
+      <QuoteResultPanel result={HIGH_CONFIDENCE_RESULT} input={makeFormValues()} />,
+    );
+    expect(
+      screen.queryByRole("button", { name: /What is Stations count\?/i }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("does NOT render a HelpCircle on section titles (e.g., 'Project classification')", () => {
+    renderWithProviders(
+      <QuoteResultPanel result={HIGH_CONFIDENCE_RESULT} input={makeFormValues()} />,
+    );
+    expect(
+      screen.queryByRole("button", { name: /What is Project classification\?/i }),
+    ).not.toBeInTheDocument();
+  });
+});

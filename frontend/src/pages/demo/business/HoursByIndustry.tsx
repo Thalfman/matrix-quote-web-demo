@@ -1,8 +1,9 @@
 import { useState } from "react";
 import {
-  Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Bar, BarChart, CartesianGrid, Cell, LabelList, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis,
 } from "recharts";
 
+import { Tooltip, TooltipProvider, GlossaryHelpIcon } from "@/components/Tooltip";
 import { cn } from "@/lib/utils";
 import { useIsNarrow } from "@/lib/useMediaQuery";
 import {
@@ -80,12 +81,18 @@ export function HoursByIndustry({
   }));
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="card p-4 sm:p-5 h-80 lg:h-96 flex flex-col">
       <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="eyebrow text-xs text-muted">
-          {metric === "avg"
-            ? "Average hours per project · by industry"
-            : "Total hours · by industry"}
+        <div className="eyebrow text-xs text-muted flex items-center gap-1">
+          <span>
+            {metric === "avg"
+              ? "Average hours per project · by industry"
+              : "Total hours · by industry"}
+          </span>
+          <Tooltip term="Industry Segment" side="bottom">
+            <GlossaryHelpIcon ariaLabel="What is Industry Segment?" />
+          </Tooltip>
         </div>
         <div
           className="inline-flex rounded-sm border hairline bg-surface p-0.5 gap-0.5"
@@ -169,7 +176,7 @@ export function HoursByIndustry({
                 tickLine={false}
                 tickFormatter={(v: number) => fmtHours.format(v)}
               />
-              <Tooltip
+              <RechartsTooltip
                 content={<CustomTooltip metric={metric} />}
                 cursor={TOOLTIP_CURSOR}
               />
@@ -196,5 +203,6 @@ export function HoursByIndustry({
         </div>
       )}
     </div>
+    </TooltipProvider>
   );
 }

@@ -29,6 +29,7 @@ export type CategoryRow = {
 };
 
 export type ScatterPoint = {
+  projectId: string;
   complexity: number;
   stations: number;
   hours: number;
@@ -320,7 +321,7 @@ export function buildPortfolio(records: ProjectRecord[]): PortfolioStats {
     }
 
     // Scatter
-    scatter.push({ complexity, stations, hours: total_hours, industry, name: project_name });
+    scatter.push({ projectId: project_id, complexity, stations, hours: total_hours, industry, name: project_name });
 
     // Log materials cost (guard NaN/0)
     if (Number.isFinite(logMat)) {

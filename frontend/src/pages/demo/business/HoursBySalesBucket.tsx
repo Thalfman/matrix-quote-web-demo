@@ -1,8 +1,9 @@
 import { useState } from "react";
 import {
-  Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip, XAxis, YAxis,
+  Bar, BarChart, CartesianGrid, LabelList, ResponsiveContainer, Tooltip as RechartsTooltip, XAxis, YAxis,
 } from "recharts";
 
+import { Tooltip, TooltipProvider, GlossaryHelpIcon } from "@/components/Tooltip";
 import { cn } from "@/lib/utils";
 import {
   AXIS_LINE, AXIS_TICK, CHART_COLORS, DATA_LABEL, GRID_STYLE, TOOLTIP_CURSOR, TOOLTIP_STYLE,
@@ -43,14 +44,20 @@ export function HoursBySalesBucket({ data }: { data: BucketRow[] }) {
     metric === "share" ? fmtPct.format(v) : fmtHours.format(v);
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="card p-4 sm:p-5 h-80 lg:h-96 flex flex-col">
       <div className="flex items-center justify-between gap-3 mb-3">
-        <div className="eyebrow text-xs text-muted">
-          {metric === "total"
-            ? "Total hours · by sales bucket"
-            : metric === "avg"
-              ? "Avg hours · by sales bucket"
-              : "Share of total hours · by sales bucket"}
+        <div className="eyebrow text-xs text-muted flex items-center gap-1">
+          <span>
+            {metric === "total"
+              ? "Total hours · by sales bucket"
+              : metric === "avg"
+                ? "Avg hours · by sales bucket"
+                : "Share of total hours · by sales bucket"}
+          </span>
+          <Tooltip term="Sales Bucket" side="bottom">
+            <GlossaryHelpIcon ariaLabel="What is Sales Bucket?" />
+          </Tooltip>
         </div>
         <div
           className="inline-flex rounded-sm border hairline bg-surface p-0.5 gap-0.5"
@@ -102,7 +109,7 @@ export function HoursBySalesBucket({ data }: { data: BucketRow[] }) {
                 tickLine={false}
                 tickFormatter={tickFormatter}
               />
-              <Tooltip
+              <RechartsTooltip
                 contentStyle={TOOLTIP_STYLE}
                 cursor={TOOLTIP_CURSOR}
                 formatter={(v: number) => [tooltipFormatter(v), METRIC_LABELS[metric]]}
@@ -120,5 +127,6 @@ export function HoursBySalesBucket({ data }: { data: BucketRow[] }) {
         </div>
       )}
     </div>
+    </TooltipProvider>
   );
 }

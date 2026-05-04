@@ -1,7 +1,9 @@
 /** Shared result panel used by both Real and Synthetic Quote tabs - renders estimate, likely range, top drivers, per-category H/M/L confidence, and closest matching records. */
 import { Download, TrendingUp, TrendingDown } from "lucide-react";
 
+import { Tooltip, TooltipProvider, GlossaryHelpIcon } from "@/components/Tooltip";
 import type { UnifiedQuoteResult } from "@/demo/quoteResult";
+import { lookup } from "@/lib/glossary";
 import type { QuoteFormValues } from "@/pages/single-quote/schema";
 
 // ---------------------------------------------------------------------------
@@ -241,25 +243,61 @@ const SECTIONS: ReadonlyArray<{
   },
 ];
 
+/**
+ * Resolve a recap row label to a glossary key, if one exists. Returns
+ * null when the row has no matching glossary entry — the row renders
+ * plainly (no tooltip).
+ */
+function recapLabelToGlossaryTerm(label: string): string | null {
+  const MAP: Record<string, string> = {
+    "Industry segment": "Industry Segment",
+    "System category": "System Category",
+    "Automation level": "Automation Level",
+    "PLC family": "PLC Family",
+    "HMI family": "HMI Family",
+    "Vision type": "Vision Type",
+    "Overall complexity (1–5)": "Complexity (1–5)",
+  };
+  const candidate = MAP[label];
+  if (candidate && lookup(candidate)) return candidate;
+  return null;
+}
+
 function YourInputsRecap({ input }: { input: QuoteFormValues }) {
   return (
-    <div className="space-y-4">
-      {SECTIONS.map((section) => (
-        <div key={section.title}>
-          <div className="text-[11px] eyebrow text-muted mb-1.5">
-            {section.title}
+    <TooltipProvider delayDuration={200}>
+      <div className="space-y-4">
+        {SECTIONS.map((section) => (
+          <div key={section.title}>
+            <div className="text-[11px] eyebrow text-muted mb-1.5">
+              {section.title}
+            </div>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
+              {section.rows.map(([label, get]) => {
+                const term = recapLabelToGlossaryTerm(label);
+                return (
+                  <div key={label} className="contents">
+                    <dt className="text-muted truncate">
+                      {term ? (
+                        <span className="inline-flex items-center gap-1">
+                          <span>{label}</span>
+                          <Tooltip term={term} side="top">
+                            <GlossaryHelpIcon ariaLabel={`What is ${term}?`} />
+                          </Tooltip>
+                        </span>
+                      ) : (
+                        label
+                      )}
+                    </dt>
+                    <dd className="text-ink tnum text-right truncate">{get(input)}</dd>
+                  </div>
+                );
+              })}
+            </dl>
           </div>
-          <dl className="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
-            {section.rows.map(([label, get]) => (
-              <div key={label} className="contents">
-                <dt className="text-muted truncate">{label}</dt>
-                <dd className="text-ink tnum text-right truncate">{get(input)}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+    </TooltipProvider>
   );
 }
 
