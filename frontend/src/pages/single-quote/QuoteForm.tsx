@@ -9,6 +9,8 @@ import { Select } from "@/components/Select";
 import { Slider } from "@/components/Slider";
 import { Switch } from "@/components/Switch";
 
+import { parseQuotedHours } from "@/lib/parseQuotedHours";
+
 import { QuoteFormValues, SALES_BUCKETS } from "./schema";
 
 type Props = {
@@ -21,14 +23,18 @@ type Props = {
 
 export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Props) {
   const [compareOpen, setCompareOpen] = useState(false);
-  const [quotedHours, setQuotedHours] = useState<Record<string, number>>({});
+  const [quotedHours, setQuotedHours] = useState<Record<string, number | undefined>>({});
+  const [rawQuotedHours, setRawQuotedHours] = useState<Record<string, string>>({});
   const [lastValues] = useState(readLastValues);
 
   const { register, handleSubmit, control, reset, formState } = form;
 
   const fire = handleSubmit(() => {
     const cleaned = Object.fromEntries(
-      Object.entries(quotedHours).filter(([, v]) => v > 0),
+      Object.entries(quotedHours).filter(
+        (entry): entry is [string, number] =>
+          typeof entry[1] === "number" && entry[1] > 0,
+      ),
     ) as Partial<Record<(typeof SALES_BUCKETS)[number], number>>;
     onSubmit(cleaned);
   });
@@ -323,19 +329,33 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
         </button>
         {compareOpen && (
           <div className="card p-5 mt-3 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-            {SALES_BUCKETS.map((bucket) => (
-              <Field key={bucket} label={`${bucket} quoted hours`}>
-                <Input
-                  type="number"
-                  min={0}
-                  step={1}
-                  value={quotedHours[bucket] ?? 0}
-                  onChange={(e) =>
-                    setQuotedHours((prev) => ({ ...prev, [bucket]: Number(e.currentTarget.value) }))
-                  }
-                />
-              </Field>
-            ))}
+            {SALES_BUCKETS.map((bucket) => {
+              const raw = rawQuotedHours[bucket] ?? "";
+              const parsed = quotedHours[bucket];
+              const showError = raw.trim() !== "" && parsed === undefined;
+              return (
+                <Field
+                  key={bucket}
+                  label={`${bucket} quoted hours`}
+                  error={showError ? "Enter a number" : undefined}
+                >
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    autoComplete="off"
+                    value={raw}
+                    onChange={(e) => {
+                      const next = e.currentTarget.value;
+                      setRawQuotedHours((prev) => ({ ...prev, [bucket]: next }));
+                      setQuotedHours((prev) => ({
+                        ...prev,
+                        [bucket]: parseQuotedHours(next) ?? undefined,
+                      }));
+                    }}
+                  />
+                </Field>
+              );
+            })}
           </div>
         )}
       </section>
@@ -360,6 +380,7 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
           onClick={() => {
             reset();
             setQuotedHours({});
+            setRawQuotedHours({});
           }}
           className="ml-auto text-xs text-muted hover:text-ink transition-colors"
         >

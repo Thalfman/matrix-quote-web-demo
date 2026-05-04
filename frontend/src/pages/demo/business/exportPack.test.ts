@@ -17,7 +17,7 @@ function makePortfolio(overrides: Partial<PortfolioStats> = {}): PortfolioStats 
       medianHours: 300,
       avgMaterialsCost: 50000,
     },
-    buckets: [{ bucket: "ME", hours: 900 }],
+    buckets: [{ bucket: "ME", hours: 900, projectCount: 3 }],
     industries: [
       { industry: "Automotive", projectCount: 2, avgHours: 350, totalHours: 700 },
       { industry: "Food & Bev", projectCount: 1, avgHours: 200, totalHours: 200 },

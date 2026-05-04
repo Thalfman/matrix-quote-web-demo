@@ -139,6 +139,38 @@ describe("buildPortfolio – buckets", () => {
   });
 });
 
+describe("buildPortfolio – bucket projectCount (BUG-02)", () => {
+  it("counts each project that contributes positive p50 to a bucket", () => {
+    // RECORDS has 4 projects, all with positive me10_actual_hours that map
+    // to the ME bucket. ME projectCount should be 4 and Total != Avg.
+    const { buckets } = buildPortfolio(RECORDS);
+    const me = buckets.find((b) => b.bucket === "ME");
+    expect(me).toBeDefined();
+    expect(me!.projectCount).toBe(4);
+    // Total != Avg: 1000 / 4 = 250 ≠ 1000.
+    const avg = me!.hours / me!.projectCount;
+    expect(avg).not.toBe(me!.hours);
+    expect(avg).toBeCloseTo(250, 5);
+  });
+
+  it("excludes zero-hours buckets entirely (projectCount has no meaning there)", () => {
+    const { buckets } = buildPortfolio(RECORDS);
+    // No EE op data in RECORDS → no EE bucket emitted.
+    expect(buckets.find((b) => b.bucket === "EE")).toBeUndefined();
+  });
+
+  it("produces projectCount = 1 for a single-project bucket (Total = Avg expected)", () => {
+    const records: ProjectRecord[] = [
+      makeRecord({ project_id: "solo", me10_actual_hours: 100 }),
+    ];
+    const { buckets } = buildPortfolio(records);
+    const me = buckets.find((b) => b.bucket === "ME");
+    expect(me).toBeDefined();
+    expect(me!.projectCount).toBe(1);
+    expect(me!.hours / me!.projectCount).toBeCloseTo(me!.hours, 5);
+  });
+});
+
 describe("buildPortfolio – industries", () => {
   const { industries } = buildPortfolio(RECORDS);
 
