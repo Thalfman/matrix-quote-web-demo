@@ -12,8 +12,8 @@
 
 | # | Phase | Goal | Requirements | UI hint | Dependencies |
 |---|---|---|---|---|---|
-| 1 | Customer-blocking bug sweep | Stop the demo from crashing on Ben's input flow; correct the wrong Total/Avg signal; surface the user's inputs in the result panel. | BUG-01, BUG-02, UX-01 | yes | none |
-| 2 | Hover affordances | Add the drill-down tooltips Ben asked for so the user can interrogate charts and category labels without leaving the page. | UX-02, UX-03 | yes | Phase 1 (so we don't ship hover work over a still-broken Compare flow) |
+| 1 | Customer-blocking bug sweep ✅ | Stop the demo from crashing on Ben's input flow; correct the wrong Total/Avg signal; surface the user's inputs in the result panel. | BUG-01, BUG-02, UX-01 | yes | none |
+| 2 | Hover affordances ✅ 2026-05-04 | Add the drill-down tooltips Ben asked for so the user can interrogate charts and category labels without leaving the page. | UX-02, UX-03 | yes | Phase 1 (so we don't ship hover work over a still-broken Compare flow) |
 | 3 | Insights pack rework | Make the downloadable bundle self-explanatory to a non-technical audience — drop or label the JSON, document the CSV columns. | INSIGHTS-01, INSIGHTS-02 | yes (download UX + bundle README) | Phase 1 |
 | 4 | Build / quality hardening | Fix the dead Vercel cache rule, make the LFS guard fail loudly, extend the jargon guard to uncovered surfaces. | DATA-01, DATA-02, DATA-03 | no | Phase 1 |
 
@@ -57,11 +57,11 @@ Phases 2, 3, 4 are independent of each other once Phase 1 lands — they can run
 **Plans:** 5 plans
 
 Plans:
-- [ ] 02-01-PLAN.md — Wave 1: Add Radix tooltip dep + Tooltip.tsx wrapper + a11y test
-- [ ] 02-02-PLAN.md — Wave 1: Glossary module (8 terms) + lookup() + jargon-guard test
-- [ ] 02-03-PLAN.md — Wave 2: UX-02 drill-down on Complexity vs Hours + chart axis glossary affordances
-- [ ] 02-04-PLAN.md — Wave 2: UX-03 on QuoteResultPanel recap + QuoteForm field labels (Field gains glossaryTerm prop)
-- [ ] 02-05-PLAN.md — Wave 3: Verification (test/typecheck/lint/build/manual smoke)
+- [x] 02-01-PLAN.md — Wave 1: Add Radix tooltip dep + Tooltip.tsx wrapper + a11y test
+- [x] 02-02-PLAN.md — Wave 1: Glossary module (8 terms) + lookup() + jargon-guard test
+- [x] 02-03-PLAN.md — Wave 2: UX-02 drill-down on Complexity vs Hours + chart axis glossary affordances
+- [x] 02-04-PLAN.md — Wave 2: UX-03 on QuoteResultPanel recap + QuoteForm field labels (Field gains glossaryTerm prop)
+- [x] 02-05-PLAN.md — Wave 3: Verification (test/typecheck/lint/build/manual smoke)
 
 
 ---

@@ -8,21 +8,22 @@
 - **Project code:** MQW
 - **Project title:** Matrix Quote Web
 - **Path:** `C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo`
-- **Branch:** `feat/demo-tool-separation`
+- **Branch:** `feat/02-hover-affordances`
 - **Repo type:** brownfield, static-only Vite/React SPA on Vercel CDN
 
 ## Current Position
 
 - **Milestone:** v1.0 — Customer-trust fixes
-- **Phase:** 1 — Customer-blocking bug sweep
-- **Plans created:** 1 (`.planning/phases/01-customer-blocking-bug-sweep/01-PLAN.md`)
-- **Plans executed:** 1 (7 tasks across 3 waves; all atomic commits landed)
-- **Stopped at:** Phase 1 verified PASS (5/5 criteria, gsd-verifier); ready for browser smoke or `/gsd-ship`
+- **Phase:** 2 — Hover affordances ✅ executed
+- **Plans created:** 5 (`.planning/phases/02-hover-affordances/02-0[1-5]-PLAN.md`)
+- **Plans executed:** 5 (3 waves; UX-02 + UX-03 closed; Vitest 599/599, typecheck + lint clean, build green)
+- **Stopped at:** Phase 2 implementation complete on `feat/02-hover-affordances`; pending `/gsd-verify-phase 2` then `/gsd-ship`
 
 ## Recent Activity
 
 | Date | Event |
 |---|---|
+| 2026-05-04 | `/gsd-execute-phase 2` → 13 atomic commits across 3 waves; UX-02 drill-down + UX-03 glossary tooltips landed; Vitest 599/599, typecheck/lint/build all green |
 | 2026-05-04 | `/gsd-verify-phase 1` → gsd-verifier PASS, 5/5 criteria; VERIFICATION.md written |
 | 2026-05-04 | `/gsd-execute-phase 1` → 7 atomic commits (T1–T7); BUG-01, BUG-02, UX-01 closed; Vitest 516/516, typecheck + lint clean |
 | 2026-05-04 | `/gsd-plan-phase 1` → `01-CONTEXT.md` + `01-PLAN.md` written; gsd-plan-checker → PASS (3 non-blocking nits, 2 absorbed) |
