@@ -4,7 +4,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import { renderWithProviders } from "@/test/render";
-import { QuoteForm, parseQuotedHours } from "./QuoteForm";
+import { parseQuotedHours } from "@/lib/parseQuotedHours";
+import { QuoteForm } from "./QuoteForm";
 import {
   quoteFormDefaults,
   quoteFormSchema,
