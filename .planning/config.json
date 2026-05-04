@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "mode": "yolo",
+  "granularity": "coarse",
+  "parallelization": true,
+  "commit_docs": true,
+  "model_profile": "balanced",
+  "workflow": {
+    "research": false,
+    "plan_check": true,
+    "verifier": true,
+    "nyquist_validation": false,
+    "auto_advance": true,
+    "discuss_mode": "discuss"
+  },
+  "notes": [
+    "research disabled by default — we have a mapped codebase (.planning/codebase/) and a customer-validated direction (.planning/feedback/2026-05-01-ben-bertsche-review.md). Flip per-phase via /gsd-plan-phase --research when a phase warrants it.",
+    "coarse granularity — milestone-sized phases are appropriate for a demo where a single dev iterates fast.",
+    "specialist agents that target a backend (auth-admin-specialist, backend-specialist, storage-specialist) DO NOT apply to this static-SPA repo. See .planning/codebase/ARCHITECTURE.md and project memory project_static_demo_no_backend.md."
+  ]
+}
