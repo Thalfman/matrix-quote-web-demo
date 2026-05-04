@@ -248,6 +248,7 @@ describe("buildPortfolio – scatter", () => {
 
   it("each entry has expected fields", () => {
     for (const pt of scatter) {
+      expect(typeof pt.projectId).toBe("string");
       expect(typeof pt.complexity).toBe("number");
       expect(typeof pt.stations).toBe("number");
       expect(typeof pt.hours).toBe("number");
@@ -260,6 +261,20 @@ describe("buildPortfolio – scatter", () => {
     const alpha = scatter.find((p) => p.name === "Alpha");
     expect(alpha).toBeDefined();
     expect(alpha!.hours).toBeCloseTo(100, 5);
+  });
+
+  it("attaches project_id to each ScatterPoint (UX-02)", () => {
+    const alpha = scatter.find((p) => p.projectId === "p1");
+    const beta = scatter.find((p) => p.projectId === "p2");
+    expect(alpha?.name).toBe("Alpha");
+    expect(beta?.name).toBe("Beta");
+  });
+
+  it("uses empty string for projectId when project_id is missing", () => {
+    const result = buildPortfolio([
+      makeRecord({ project_id: undefined as never, project_name: "Anon", me10_actual_hours: 50 }),
+    ]);
+    expect(result.scatter[0].projectId).toBe("");
   });
 });
 
