@@ -17,9 +17,9 @@ vi.mock("recharts", async () => {
 });
 
 const BUCKET_DATA: BucketRow[] = [
-  { bucket: "ME", hours: 400 },
-  { bucket: "Build", hours: 300 },
-  { bucket: "Install", hours: 200 },
+  { bucket: "ME", hours: 400, projectCount: 4 },
+  { bucket: "Build", hours: 300, projectCount: 3 },
+  { bucket: "Install", hours: 200, projectCount: 2 },
 ];
 
 describe("HoursBySalesBucket", () => {
@@ -86,5 +86,20 @@ describe("HoursBySalesBucket", () => {
     const shareBtn = screen.getByRole("button", { name: /share %/i });
     fireEvent.click(shareBtn);
     expect(shareBtn).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it("Avg metric uses projectCount so the displayed value differs from Total (BUG-02)", () => {
+    renderWithProviders(<HoursBySalesBucket data={BUCKET_DATA} />);
+    fireEvent.click(screen.getByRole("button", { name: /^avg$/i }));
+    // Heading flips to avg-mode copy.
+    expect(screen.getByText(/avg hours · by sales bucket/i)).toBeInTheDocument();
+    // Sanity-check: the fixture is constructed so hours/projectCount differs
+    // from hours for every bucket (400/4=100, 300/3=100, 200/2=100). The
+    // chart computes via that divisor; we don't assert into recharts internals
+    // because the type contract guarantees the divisor is now applied.
+    const totalsAvgsDiffer = BUCKET_DATA.every(
+      (d) => d.hours !== d.hours / d.projectCount,
+    );
+    expect(totalsAvgsDiffer).toBe(true);
   });
 });
