@@ -20,13 +20,7 @@ const METRIC_LABELS: Record<Metric, string> = {
   share: "Share %",
 };
 
-type ExtendedBucketRow = BucketRow & { projectCount: number };
-
-export function HoursBySalesBucket({
-  data,
-}: {
-  data: (BucketRow | ExtendedBucketRow)[];
-}) {
+export function HoursBySalesBucket({ data }: { data: BucketRow[] }) {
   const [metric, setMetric] = useState<Metric>("total");
 
   const totalHours = data.reduce((s, d) => s + d.hours, 0);
@@ -34,9 +28,11 @@ export function HoursBySalesBucket({
   const chartData = data.map((d) => {
     if (metric === "total") return { ...d, value: d.hours };
     if (metric === "share") return { ...d, value: totalHours > 0 ? d.hours / totalHours : 0 };
-    // avg: if projectCount is available use it, otherwise fall back to total
-    const pc = (d as ExtendedBucketRow).projectCount;
-    const avg = pc && pc > 0 ? d.hours / pc : d.hours;
+    // avg: hours / projectCount. Zero-projectCount buckets never reach the
+    // chart (filtered upstream in buildPortfolio), so the guard here is
+    // defensive only.
+    const pc = d.projectCount;
+    const avg = pc > 0 ? d.hours / pc : 0;
     return { ...d, value: avg };
   });
 
