@@ -28,6 +28,8 @@ import {
   type QuoteFormValues,
 } from "@/pages/single-quote/schema";
 
+type ResultState = { unified: UnifiedQuoteResult; formValues: QuoteFormValues };
+
 function buildDropdowns(pool: Record<string, unknown>[]) {
   function uniqueStrings(field: string): string[] {
     const set = new Set<string>();
@@ -66,7 +68,7 @@ export function ComparisonQuote() {
 
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<UnifiedQuoteResult | null>(null);
+  const [result, setResult] = useState<ResultState | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -108,7 +110,8 @@ export function ComparisonQuote() {
     if (!ready || !pool) return;
     setSubmitting(true);
     try {
-      const input = transformToQuoteInput(form.getValues());
+      const formValues = form.getValues();
+      const input = transformToQuoteInput(formValues);
       const [prediction, importances] = await Promise.all([
         predictQuote(input, "real"),
         getFeatureImportances("real"),
@@ -127,8 +130,8 @@ export function ComparisonQuote() {
         };
       }
 
-      setResult(
-        toUnifiedResult({
+      setResult({
+        unified: toUnifiedResult({
           input,
           prediction: predByTarget,
           importances,
@@ -136,7 +139,8 @@ export function ComparisonQuote() {
           supportingPool: pool,
           supportingLabel: "Most similar past projects",
         }),
-      );
+        formValues,
+      });
       requestAnimationFrame(() => {
         document
           .getElementById("quote-results")
@@ -218,7 +222,12 @@ export function ComparisonQuote() {
             />
           </div>
           <aside className="lg:sticky lg:top-6 self-start">
-            {result && <QuoteResultPanel result={result} />}
+            {result && (
+              <QuoteResultPanel
+                result={result.unified}
+                input={result.formValues}
+              />
+            )}
           </aside>
         </div>
       )}
