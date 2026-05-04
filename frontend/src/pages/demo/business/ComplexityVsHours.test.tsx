@@ -3,7 +3,8 @@ import { describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "@/test/render";
 
-import { bucketByComplexity, ComplexityVsHours, type LevelRow } from "./ComplexityVsHours";
+import { bucketByComplexity, type LevelRow } from "./complexityBuckets";
+import { ComplexityVsHours } from "./ComplexityVsHours";
 import type { ScatterPoint } from "./portfolioStats";
 
 vi.mock("recharts", async () => {
