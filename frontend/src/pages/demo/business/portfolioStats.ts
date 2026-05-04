@@ -39,6 +39,7 @@ export type ScatterPoint = {
 export type BucketRow = {
   bucket: string;
   hours: number;
+  projectCount: number;
 };
 
 export type RankedRow = {
@@ -252,7 +253,7 @@ export function buildPortfolio(records: ProjectRecord[]): PortfolioStats {
     };
   }
 
-  const bucketsTotal: Record<string, number> = {};
+  const bucketsAccum: Record<string, { hours: number; projects: number }> = {};
   const industryMap: Record<string, { count: number; total: number }> = {};
   const categoryMap: Record<string, number> = {};
   const scatter: ScatterPoint[] = [];
@@ -287,9 +288,15 @@ export function buildPortfolio(records: ProjectRecord[]): PortfolioStats {
       }
     }
 
-    // Accumulate bucket totals
+    // Accumulate bucket totals AND per-bucket project counts. A bucket only
+    // counts a project when that project contributes positive p50 hours to
+    // it — projects with zero hours in a bucket should not dilute its avg.
     for (const [bName, bPred] of Object.entries(pred.sales_buckets)) {
-      bucketsTotal[bName] = (bucketsTotal[bName] ?? 0) + bPred.p50;
+      if (!Number.isFinite(bPred.p50) || bPred.p50 <= 0) continue;
+      const slot = bucketsAccum[bName] ?? { hours: 0, projects: 0 };
+      slot.hours += bPred.p50;
+      slot.projects += 1;
+      bucketsAccum[bName] = slot;
     }
 
     const industry = toStr(r.industry_segment) || "Unknown";
@@ -421,9 +428,13 @@ export function buildPortfolio(records: ProjectRecord[]): PortfolioStats {
   }
 
   // Buckets sorted desc by hours, filter zero
-  const buckets: BucketRow[] = Object.entries(bucketsTotal)
-    .filter(([, h]) => h > 0)
-    .map(([bucket, hours]) => ({ bucket, hours }))
+  const buckets: BucketRow[] = Object.entries(bucketsAccum)
+    .filter(([, { hours }]) => hours > 0)
+    .map(([bucket, { hours, projects }]) => ({
+      bucket,
+      hours,
+      projectCount: projects,
+    }))
     .sort((a, b) => b.hours - a.hours);
 
   // Industries sorted by totalHours desc
