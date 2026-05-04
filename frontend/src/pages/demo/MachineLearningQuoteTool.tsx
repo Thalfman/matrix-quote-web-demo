@@ -29,6 +29,8 @@ import {
   transformToQuoteInput,
 } from "@/pages/single-quote/schema";
 
+type ResultState = { unified: UnifiedQuoteResult; formValues: QuoteFormValues };
+
 function uniqueStrings(pool: Record<string, unknown>[], field: string): string[] {
   const set = new Set<string>();
   for (const r of pool) {
@@ -63,7 +65,7 @@ export function MachineLearningQuoteTool() {
 
   const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<UnifiedQuoteResult | null>(null);
+  const [result, setResult] = useState<ResultState | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
 
@@ -129,8 +131,8 @@ export function MachineLearningQuoteTool() {
         };
       }
 
-      setResult(
-        toUnifiedResult({
+      setResult({
+        unified: toUnifiedResult({
           input,
           prediction: predByTarget,
           importances,
@@ -138,7 +140,8 @@ export function MachineLearningQuoteTool() {
           supportingPool: pool ?? [],
           supportingLabel: "Most similar training rows",
         }),
-      );
+        formValues: values,
+      });
       requestAnimationFrame(() => {
         document.getElementById("quote-results")?.scrollIntoView({
           behavior: "smooth",
@@ -220,7 +223,12 @@ export function MachineLearningQuoteTool() {
             />
           </div>
           <aside className="lg:sticky lg:top-6 self-start">
-            {result && <QuoteResultPanel result={result} />}
+            {result && (
+              <QuoteResultPanel
+                result={result.unified}
+                input={result.formValues}
+              />
+            )}
           </aside>
         </div>
       )}
