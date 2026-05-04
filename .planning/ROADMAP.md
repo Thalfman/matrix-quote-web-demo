@@ -54,6 +54,16 @@ Phases 2, 3, 4 are independent of each other once Phase 1 lands — they can run
 3. Tooltips are accessible (focusable / keyboard-triggered) — not pure mouse hover.
 4. No new ML jargon enters customer-facing copy through these tooltips (jargon-guard test extension covers them; this dovetails with DATA-03 in Phase 4).
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 02-01-PLAN.md — Wave 1: Add Radix tooltip dep + Tooltip.tsx wrapper + a11y test
+- [ ] 02-02-PLAN.md — Wave 1: Glossary module (8 terms) + lookup() + jargon-guard test
+- [ ] 02-03-PLAN.md — Wave 2: UX-02 drill-down on Complexity vs Hours + chart axis glossary affordances
+- [ ] 02-04-PLAN.md — Wave 2: UX-03 on QuoteResultPanel recap + QuoteForm field labels (Field gains glossaryTerm prop)
+- [ ] 02-05-PLAN.md — Wave 3: Verification (test/typecheck/lint/build/manual smoke)
+
+
 ---
 
 ### Phase 3: Insights pack rework
