@@ -20,6 +20,7 @@ import {
   type WorkflowStatus,
   type Workspace,
 } from "@/lib/savedQuoteSchema";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 import { cn } from "@/lib/utils";
 import type { QuoteFormValues } from "@/pages/single-quote/schema";
 import type { UnifiedQuoteResult } from "@/demo/quoteResult";
@@ -65,8 +66,12 @@ export function SaveQuoteDialog({
   );
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const panelRef = useRef<HTMLFormElement>(null);
   const saveQuote = useSaveQuote();
   const setStatusMutation = useSetStatus();
+
+  // UI-SPEC mandate: tab MUST cycle field → Cancel → Save → field.
+  useFocusTrap(open, panelRef);
 
   // Reset state every time the modal opens with a new payload.
   useEffect(() => {
@@ -170,6 +175,7 @@ export function SaveQuoteDialog({
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
         <form
+          ref={panelRef}
           onSubmit={onSubmit}
           className="card max-w-md w-full p-6 space-y-4"
           onClick={(e) => e.stopPropagation()}

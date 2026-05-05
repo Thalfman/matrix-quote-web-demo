@@ -8,10 +8,11 @@
  * verbatim D-17 copy → primary danger button on right; Cancel on left), T-05-12
  * (no raw HTML insertion; React text node escaping is the boundary).
  */
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { toast } from "sonner";
 
 import { useDeleteQuote } from "@/hooks/useSavedQuotes";
+import { useFocusTrap } from "@/lib/useFocusTrap";
 
 // ---------------------------------------------------------------------------
 // Props
@@ -37,6 +38,10 @@ export function DeleteQuoteModal({
   onDeleted,
 }: DeleteQuoteModalProps) {
   const deleteQuote = useDeleteQuote();
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  // UI-SPEC mandate: tab cycles Keep it → Delete permanently → Keep it.
+  useFocusTrap(open, panelRef);
 
   // ESC closes (matches SaveQuoteDialog scaffold).
   const handleEsc = useCallback(
@@ -81,6 +86,7 @@ export function DeleteQuoteModal({
         className="fixed inset-0 z-50 flex items-center justify-center p-4"
       >
         <div
+          ref={panelRef}
           className="card max-w-md w-full p-6 space-y-4"
           onClick={(e) => e.stopPropagation()}
         >
