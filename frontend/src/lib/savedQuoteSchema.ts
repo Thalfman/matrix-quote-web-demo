@@ -42,8 +42,9 @@ export const savedQuoteNameSchema = z
 
 /**
  * UnifiedQuoteResult zod with `.passthrough()` at every nesting level so
- * unknown fields from production (e.g. Phase 6 multi-vision details, Phase 7
- * ROM-mode metadata) round-trip through save/load without truncation. W8.
+ * unknown fields from the live shape (e.g. Phase 6 multi-vision details,
+ * Phase 7 ROM-mode metadata) round-trip through save/load without
+ * truncation. W8.
  *
  * Validates the known fields; preserves everything else verbatim. Storage
  * fidelity > strictness.
