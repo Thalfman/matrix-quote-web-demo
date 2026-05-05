@@ -331,11 +331,11 @@ describe("jargon-guard (DATA-03 — Phase 5 surface coverage)", () => {
   it("SavedQuotePage renders no banned ML-jargon tokens", () => {
     renderWithProviders(<SavedQuotePage />);
     const body = document.body.textContent ?? "";
-    // Stub renders "Back to My Quotes" anchor copy. Plan 05-08 will replace
-    // with the full detail page; the marker here ensures the page renders
-    // *something* recognizable instead of a blank fallback.
+    // Without a router :id param the page renders its loading state. The
+    // marker regex accepts loading copy or any of the loaded-state landmarks
+    // so the test stays meaningful regardless of how data fetching resolves.
     expect(body, "expected SavedQuotePage chrome to render").toMatch(
-      /(back to my quotes|version history|status)/i,
+      /(back to my quotes|version history|status|loading)/i,
     );
     assertNoBannedTokens("SavedQuotePage", body);
   });
