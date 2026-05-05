@@ -412,3 +412,83 @@ export function buildPortfolioWorkbook(
   XLSX.utils.book_append_sheet(wb, buildReadmeSheet(), "README");
   return XLSX.write(wb, { bookType: "xlsx", type: "array" }) as ArrayBuffer;
 }
+
+// ---------------------------------------------------------------------------
+// Bundle README template + engineer-side JSON helpers (CONTEXT D-06, D-07, D-08)
+//
+// buildBundleReadme produces the top-level README.md the zip ships with.
+// Hand-written; substitutes only {datasetLabel} and {ISO date}.
+// Names the three default-bundle files (summary.md, business-insights.xlsx,
+// README.md) and points engineers to the secondary "Download raw JSON
+// (for engineers)" button per CONTEXT D-07.
+//
+// buildPortfolioJson is the engineer-side download body. Byte-equivalent to
+// the prior bundle's portfolio.json so engineers' downstream tooling keeps
+// working without changes.
+// ---------------------------------------------------------------------------
+
+/**
+ * Top-level README.md that ships inside the insights pack zip.
+ *
+ * Template per CONTEXT D-06; only {datasetLabel} and {ISO date} are
+ * substituted at build time. Zero ML jargon — INSIGHTS-02.
+ */
+export function buildBundleReadme(
+  datasetLabel: string,
+  generatedAt: Date = new Date(),
+): string {
+  return [
+    `# Business Insights Pack — ${datasetLabel}`,
+    "",
+    `Generated: ${generatedAt.toISOString()}`,
+    "",
+    "## What's inside",
+    "- `summary.md` — One-page narrative summary of this dataset.",
+    "- `business-insights.xlsx` — Spreadsheet with four tabs: Summary, Drivers, Raw, README.",
+    "- `README.md` — This file.",
+    "",
+    "## Where to start",
+    "- Open `summary.md` in any text editor or your browser. (Try VS Code, Notepad, or just double-click.)",
+    "- Open `business-insights.xlsx` in Excel, Apple Numbers, or Google Sheets.",
+    "  Start with the **README** tab — it explains what every column means.",
+    "",
+    "## Need the raw data?",
+    'A separate "Download raw JSON (for engineers)" button in the app',
+    "produces a `portfolio.json` file with the full structured dataset.",
+    "",
+  ].join("\n");
+}
+
+/**
+ * Engineer-side JSON download body. Byte-equivalent to the prior bundle's
+ * portfolio.json — `JSON.stringify(portfolio, null, 2)`. Used by the
+ * secondary "Download raw JSON (for engineers)" button (plan 03-04).
+ *
+ * Public so tests can assert byte equivalence with the prior bundle.
+ */
+export function buildPortfolioJson(portfolio: PortfolioStats): string {
+  return JSON.stringify(portfolio, null, 2);
+}
+
+/**
+ * Engineer-side JSON download filename. Mirrors `packFilename`'s slug rule
+ * so the on-disk artifact stays recognizable next to its zip cousin.
+ *
+ * `"Real Data"` + 2026-04-22 → `portfolio-real-data-2026-04-22.json`.
+ * Empty / whitespace label → `portfolio-pack-2026-04-22.json` (same fallback
+ * `packFilename` uses).
+ *
+ * Public so `BusinessInsightsView.test.tsx` (plan 03-04) can assert the
+ * filename pattern when the engineer-side button fires.
+ */
+export function jsonFilename(
+  datasetLabel: string,
+  generatedAt: Date = new Date(),
+): string {
+  const slug = datasetLabel
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  const date = generatedAt.toISOString().slice(0, 10);
+  return `portfolio-${slug || "pack"}-${date}.json`;
+}
