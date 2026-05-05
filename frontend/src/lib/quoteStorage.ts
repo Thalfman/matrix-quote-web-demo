@@ -189,13 +189,29 @@ function deriveVisionLabel(values: QuoteFormValues): string {
 // Public API
 // ---------------------------------------------------------------------------
 
-/** Returns ALL saved quotes, NEWEST updatedAt FIRST. */
+/**
+ * Returns ALL saved quotes, NEWEST updatedAt FIRST.
+ *
+ * T-05-05: validate every record via savedQuoteSchema.safeParse so a row with
+ * a future schemaVersion (Phase 6/7) or a tampered shape can't crash the list
+ * render. Malformed records are silently skipped (alternative would be a typed
+ * error; the list view's UX is "show everything we can render", so dropping is
+ * preferable to a hard fail).
+ */
 export async function listSavedQuotes(): Promise<SavedQuote[]> {
   const handle = await db();
   const tx = handle.transaction(QUOTE_STORE_NAME, "readonly");
-  const all = (await tx.store.getAll()) as SavedQuote[];
+  const raw = await tx.store.getAll();
   await tx.done;
-  return all.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
+  const validated: SavedQuote[] = [];
+  for (const rec of raw) {
+    const parsed = savedQuoteSchema.safeParse(rec);
+    if (parsed.success) validated.push(parsed.data);
+    // else: drop malformed/future-schema record — a row that listSavedQuotes
+    // skips can still surface via getSavedQuote, where T-05-05 is enforced
+    // strictly (throws). The list path needs to be resilient.
+  }
+  return validated.sort((a, b) => (a.updatedAt < b.updatedAt ? 1 : -1));
 }
 
 /**

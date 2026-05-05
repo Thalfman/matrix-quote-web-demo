@@ -534,4 +534,44 @@ describe("quoteStorage", () => {
       mod.getSavedQuote("11111111-1111-4111-8111-111111111111"),
     ).rejects.toThrow();
   });
+
+  it("listSavedQuotes drops malformed/future-schema records (WR-02; T-05-05 even enforcement)", async () => {
+    const mod = await import("./quoteStorage");
+    // Save one valid record through the public API.
+    const valid = await mod.saveSavedQuote({
+      name: "Valid Quote",
+      workspace: "real",
+      formValues: makeFormValues(),
+      unifiedResult: makeUnifiedResult(),
+    });
+    // Inject one malformed record (schemaVersion: 2 — Phase 6/7 future).
+    const { openDB } = await import("idb");
+    const db = await openDB("matrix-quotes", 1);
+    await db.put("quotes", {
+      id: "22222222-2222-4222-8222-222222222222",
+      schemaVersion: 2,
+      name: "Future Phase 6",
+      workspace: "real",
+      status: "draft",
+      createdAt: "2026-05-05T12:00:00.000Z",
+      updatedAt: "2026-05-05T13:00:00.000Z",
+      versions: [
+        {
+          version: 1,
+          savedAt: "2026-05-05T12:00:00.000Z",
+          statusAtTime: "draft",
+          formValues: makeFormValues(),
+          unifiedResult: makeUnifiedResult(),
+        },
+      ],
+      salesBucket: "ME",
+      visionLabel: "No vision",
+      materialsCost: 0,
+    });
+    db.close();
+
+    const list = await mod.listSavedQuotes();
+    // Future-schema record is dropped; valid record survives.
+    expect(list.map((q) => q.id)).toEqual([valid.id]);
+  });
 });
