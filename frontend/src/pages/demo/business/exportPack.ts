@@ -1,7 +1,6 @@
 import JSZip from "jszip";
 import * as XLSX from "xlsx";
 
-import { toCsv } from "./csv";
 import type { PortfolioStats } from "./portfolioStats";
 
 const fmtInt = new Intl.NumberFormat("en-US", { maximumFractionDigits: 0 });
@@ -130,17 +129,28 @@ export function buildInsightsPackZip(
   generatedAt: Date = new Date(),
 ): JSZip {
   const zip = new JSZip();
-  zip.file("projects.csv", toCsv(portfolio.ranked));
-  zip.file("portfolio.json", JSON.stringify(portfolio, null, 2));
+  // Order matters for deterministic test snapshots: summary.md first
+  // (Ben's praised notepad — CONTEXT D-05), then the new spreadsheet,
+  // then the top-level README that points at both.
   zip.file("summary.md", buildSummaryMarkdown(portfolio, datasetLabel, generatedAt));
+  zip.file(
+    "business-insights.xlsx",
+    buildPortfolioWorkbook(portfolio, datasetLabel, generatedAt),
+  );
+  zip.file("README.md", buildBundleReadme(datasetLabel, generatedAt));
   return zip;
 }
 
 /**
  * Build a "Download insights pack" zip containing:
- *   - projects.csv   (the filtered ranked-table, same shape as the CSV export)
- *   - portfolio.json (the full PortfolioStats - KPIs + all aggregations)
- *   - summary.md     (a one-page human-readable summary)
+ *   - summary.md             (one-page human-readable summary; unchanged from prior bundles — CONTEXT D-05)
+ *   - business-insights.xlsx (multi-sheet workbook: Summary / Drivers / Raw / README — CONTEXT D-03)
+ *   - README.md              (short top-level guide pointing at the workbook — CONTEXT D-06)
+ *
+ * The default bundle deliberately ships no .json and no .csv: per Ben Bertsche's
+ * 2026-05-01 review, a non-technical reviewer can't open JSON and CSV columns
+ * read as cryptic. Engineers who need raw JSON use the secondary
+ * "Download raw JSON (for engineers)" button on BusinessInsightsView (INSIGHTS-01).
  */
 export async function buildInsightsPack(
   portfolio: PortfolioStats,
