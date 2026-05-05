@@ -1,3 +1,17 @@
+---
+gsd_state_version: 1.0
+milestone: v2.0
+milestone_name: — Workflow fit
+status: planning
+last_updated: "2026-05-05T16:59:51.886Z"
+last_activity: 2026-05-05 — roadmap created (Phases 5–7); ROADMAP.md + REQUIREMENTS.md traceability filled; 8/8 v2.0 reqs mapped (100% coverage)
+progress:
+  total_phases: 3
+  completed_phases: 0
+  total_plans: 0
+  completed_plans: 0
+---
+
 # STATE
 
 > Live project memory. Updated by every GSD command. Read by `/gsd-progress` to route to the next action.
@@ -12,9 +26,9 @@
 - **Repo type:** brownfield, static-only Vite/React SPA on Vercel CDN
 
 - **Milestone:** v2.0 — Workflow fit (started 2026-05-05; roadmap finalized)
-- **Phase:** Phase 5 — Quote Persistence (not started — ready for `/gsd-plan-phase 5`)
+- **Phase:** Phase 5 — Quote Persistence (context gathered — ready for `/gsd-plan-phase 5`)
 - **Plan:** —
-- **Status:** Roadmap finalized; ready to plan Phase 5
+- **Status:** Phase 5 CONTEXT.md written (2026-05-05); 19 decisions locked (D-01..D-19); ready to plan
 - **In scope for v2.0:** PERSIST-01..06 (Phase 5 — quote persistence + workflow status + version history), DATA-04 + DATA-06 (Phase 6 — multi-vision incl. per-vision drivers breakdown), ROM-01 + ROM-02 (Phase 7 — ROM mode)
 - **Deferred from v2.0:** BENCH-01 (Manager-spreadsheet benchmark — optional, no firm slot)
 - **Last activity:** 2026-05-05 — roadmap created (Phases 5–7); ROADMAP.md + REQUIREMENTS.md traceability filled; 8/8 v2.0 reqs mapped (100% coverage)
@@ -24,6 +38,7 @@
 
 | Date | Event |
 |---|---|
+| 2026-05-05 | `/gsd-discuss-phase 5` → `05-CONTEXT.md` + `05-DISCUSSION-LOG.md` written; 19 implementation decisions locked (D-01..D-19); **headline architecture decision resolved: browser-only IndexedDB, no backend** (specialist routing unchanged); unified `/quotes` route across Real + Synthetic; fork-restore versioning; manual workflow-status chip with one re-save assist; ready for `/gsd-plan-phase 5` |
 | 2026-05-05 | Ben-feedback alignment pass → added PERSIST-05 (workflow status: draft/sent/won/lost/revised) + PERSIST-06 (version history) verbatim from Ben's 2026-05-01 email; tightened Phase 6 SC to require per-vision drivers breakdown on QuoteResultPanel; removed speculative "Quote sharing between SEs" out-of-scope row; Phase 5 grew from 5 to 7 success criteria; v2.0 req count 8 → 10 (Phase 5: 6, Phase 6: 2, Phase 7: 2) |
 | 2026-05-05 | Roadmap created → Phases 5 (PERSIST), 6 (Multi-vision), 7 (ROM); 8/8 v2.0 reqs mapped; ROADMAP.md + STATE.md + REQUIREMENTS.md traceability updated; coarse granularity, 3 phases; Phase 5 PERSIST-01 carries open architecture decision (browser-only vs backend) for discuss step |
 | 2026-05-05 | `/gsd-new-milestone` → milestone v2.0 (Workflow fit) seeded; PROJECT.md updated with Current Milestone section; STATE.md reset for v2; PERSIST-01 + DATA-04 + ROM-01 confirmed in scope; BENCH-01 deferred; REQUIREMENTS.md + ROADMAP.md pending in this run |
@@ -59,7 +74,7 @@
 | 2026-05-04 | Per-phase research disabled by default in `config.json` | Codebase map + customer feedback already provide richer context than research could; flip on per-phase as needed |
 | 2026-05-04 | YOLO mode + coarse granularity | Single-dev iteration; auto-advance through approval gates that don't need fresh thought |
 | 2026-05-05 | v2.0 split into 3 coarse phases (5: PERSIST, 6: Multi-vision, 7: ROM) | Natural delivery boundaries; coarse granularity matches `config.json`; Phase 6 + 7 depend on Phase 5 schema for save/reopen round-trip |
-| ⏳ pending | Quote persistence: browser-only vs introduce a backend | Decision deferred to Phase 5 discuss step (`/gsd-plan-phase 5`) |
+| 2026-05-05 | Quote persistence = browser-only via IndexedDB; no backend introduced in v2.0 | Static-SPA-no-backend posture from v1.0 holds. Backend is milestone-sized work not justified by v2.0 evidence. Cross-device sync durably out for v2.0 (REQUIREMENTS.md). Specialist routing unchanged (frontend/ui/test only). Reopens in v3 if real-data ingest or AI Scope-Review forces it. |
 
 ## Blockers
 
@@ -76,6 +91,6 @@
 ## Notes for Future Sessions
 
 - The runtime hook ("no master dataset / 409") is **stale for this repo**. It describes parent-app behavior. Treat it as informational. See memory `project_static_demo_no_backend.md`.
-- Specialist agents for backend/auth/storage **do not apply** to this repo — UNTIL Phase 5's discuss step. If `PERSIST-01` chooses the backend route, `auth-admin-specialist`, `backend-specialist`, and `storage-specialist` come into play for the first time on this repo. Today (pre-Phase-5-discuss), use `frontend-specialist`, `ui-ux-specialist`, `test-writer` only.
+- Specialist agents for backend/auth/storage **do not apply** to this repo. Phase 5 discuss step resolved the architecture decision: **browser-only IndexedDB, no backend introduced**. `auth-admin-specialist`, `backend-specialist`, `storage-specialist` remain N/A through v2.0. Use `frontend-specialist`, `ui-ux-specialist`, `test-writer` only. Backend question may reopen in v3 if real-data ingest (DATA-05) or AI Scope-Review (AI-01) forces it.
 - The user prefers plans with concrete code skeletons / exact strings / exact paths (memory `feedback_plan_specificity.md`), and a two-view plan format (memory `feedback_plan_format.md`). Honor both when running `/gsd-plan-phase`.
 - v2.0 phase numbering continues from v1.0: Phase 5 is the first v2.0 phase. Do not restart numbering at 1.
