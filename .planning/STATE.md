@@ -11,16 +11,20 @@
 - **Branch:** `main`
 - **Repo type:** brownfield, static-only Vite/React SPA on Vercel CDN
 
-## Current Position
-
-- **Milestone:** v1.0 ✅ SHIPPED 2026-05-05 (10/10 v1 requirements complete) — see `.planning/milestones/v1.0-ROADMAP.md`
-- **Next milestone:** v2.0 — Workflow fit (planned, not yet seeded). Headline open decision: `PERSIST-01` browser-only vs introduce a backend.
-- **Stopped at:** v1.0 milestone archived (PR #23 merged in commit `48a1b5a`; REQUIREMENTS.md archived + `git rm`'d; tag `v1.0` created). Ready for `/gsd-new-milestone` to seed v2.
+- **Milestone:** v2.0 — Workflow fit (started 2026-05-05; defining requirements)
+- **Phase:** Not started — REQUIREMENTS.md + ROADMAP.md still being seeded by `/gsd-new-milestone`
+- **Plan:** —
+- **Status:** Defining requirements
+- **In scope for v2.0:** PERSIST-01 (quote persistence), DATA-04 (multi-vision per project), ROM-01 (ROM-quote mode)
+- **Deferred from v2.0:** BENCH-01 (Manager-spreadsheet benchmark — optional, no firm slot)
+- **Last activity:** 2026-05-05 — `/gsd-new-milestone` → PROJECT.md updated (Current Milestone: v2.0 Workflow fit); STATE.md reset for v2; REQUIREMENTS.md + ROADMAP.md still pending in this run
+- **Previously shipped:** v1.0 ✅ 2026-05-05 (10/10 v1 requirements complete) — see `.planning/milestones/v1.0-ROADMAP.md` and `.planning/MILESTONES.md`
 
 ## Recent Activity
 
 | Date | Event |
 |---|---|
+| 2026-05-05 | `/gsd-new-milestone` → milestone v2.0 (Workflow fit) seeded; PROJECT.md updated with Current Milestone section; STATE.md reset for v2; PERSIST-01 + DATA-04 + ROM-01 confirmed in scope; BENCH-01 deferred; REQUIREMENTS.md + ROADMAP.md pending in this run |
 | 2026-05-05 | `/gsd-complete-milestone 1.0` → archives written (`milestones/v1.0-ROADMAP.md`, `milestones/v1.0-REQUIREMENTS.md`); `MILESTONES.md` + `RETROSPECTIVE.md` created; PROJECT.md evolved (v1 reqs → Validated, v2/v3 surfaced); ROADMAP.md collapsed to milestone view; REQUIREMENTS.md `git rm`'d (fresh for v2); tag `v1.0` created |
 | 2026-05-05 | PR #23 merged to `main` (Phase 4, feat/04-build-quality-hardening, merge commit `48a1b5a`); v1.0 functionally complete |
 | 2026-05-05 | `/gsd-ship 4` → PR #23 opened (feat/04-build-quality-hardening → main); 16 commits including WR-01 fix; auto checks all green; no manual UAT (Phase 4 has zero customer-visible UI changes) |

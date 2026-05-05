@@ -52,10 +52,18 @@ Success looks like:
 - **Specialist agents:** `frontend-specialist`, `ui-ux-specialist`, `test-writer` apply here. `auth-admin-specialist`, `backend-specialist`, `storage-specialist` describe ownership in the **parent `matrix_quote_app`** and do **not** apply to this repo.
 - **Tests:** Vitest only (frontend). No backend pytest in this repo. Recent gap-fill coverage at commit `ac8aaa844dad26f82` covers Pyodide client cache, feature labels, project hours, jargon guard.
 
-## Current State
+## Current Milestone: v2.0 — Workflow fit
 
-**Shipped:** v1.0 — Customer-trust fixes (2026-05-05). All 10 v1 requirements complete. See `.planning/MILESTONES.md` and `.planning/milestones/v1.0-ROADMAP.md`.
-**Next:** v2.0 — Workflow fit (planned). Run `/gsd-new-milestone` to seed phases. Open headline decision: quote persistence — browser-only vs introduce a backend.
+**Started:** 2026-05-05 (`/gsd-new-milestone`)
+
+**Goal:** Reshape the tool to match Ben's actual quoting workflow — multi-week revisions, multi-vision projects, and a ROM-quote-only path.
+
+**Target features:**
+- **PERSIST-01** — Quote persistence (save / resume across sessions). Headline open sub-decision (browser-only vs introduce a backend) is resolved at the PERSIST phase's discuss step, not at milestone seed.
+- **DATA-04** — Multi-vision per project (schema + ML feature engineering + multi-row UI).
+- **ROM-01** — ROM-quote mode (material-cost-only path for early-stage estimates).
+
+**Previously shipped:** v1.0 — Customer-trust fixes (2026-05-05). All 10 v1 requirements complete. See `.planning/MILESTONES.md` and `.planning/milestones/v1.0-ROADMAP.md`.
 
 ## Requirements
 
@@ -84,15 +92,17 @@ Success looks like:
 - ✓ **DATA-02** LFS-pointer guard hard-fails build with locked error format — v1.0 (Phase 4)
 - ✓ **DATA-03** Jargon guard extended to QuoteResultPanel + BusinessInsights + BusinessInsightsView — v1.0 (Phase 4; caught real "training data" leak in `DataProvenanceNote.tsx` → in-scope Rule-1 copy fix)
 
-### Active (next milestone — v2.0 Workflow fit)
+### Active (current milestone — v2.0 Workflow fit)
 
-Reshape the tool to match Ben's actual quoting workflow (multi-week revisions, multi-vision projects, ROM-quote-only path). REQ-IDs will land in a fresh `.planning/REQUIREMENTS.md` after `/gsd-new-milestone`.
+REQ-IDs land in `.planning/REQUIREMENTS.md`, created at the end of this `/gsd-new-milestone` run.
 
-Headline open questions:
-- **PERSIST-01:** browser-only (localStorage / IndexedDB) vs introduce a backend for the first time. Decision deferred to v2 discuss-phase.
+In scope for v2.0:
+- **PERSIST-01:** quote persistence (save / resume across sessions). Headline sub-decision — browser-only (localStorage / IndexedDB) vs introduce a backend for the first time — is resolved at the PERSIST phase's discuss step.
 - **DATA-04:** multi-vision per project — schema + ML feature engineering + UI multi-row vision picker.
-- **ROM-01:** ROM-quote mode (material-cost-only path).
-- **BENCH-01** (optional, low priority): benchmark vs Manager spreadsheet estimators.
+- **ROM-01:** ROM-quote mode (material-cost-only path for early-stage estimates).
+
+Deferred from v2.0:
+- **BENCH-01** (optional, low priority): benchmark vs Manager spreadsheet estimators. Comparator only, not training inputs. Surfaces if/when Ben asks; no firm slot.
 
 ### Reserved (v3 — Manager out of the loop)
 
@@ -139,4 +149,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Codebase Reality with current state if architecture moved (e.g., introducing a backend for v2)
 
 ---
-*Last updated: 2026-05-05 after v1.0 milestone close (10/10 v1 requirements complete)*
+*Last updated: 2026-05-05 — v2.0 milestone seeded (PERSIST-01, DATA-04, ROM-01 in scope; BENCH-01 deferred)*
