@@ -37,7 +37,9 @@ metrics:
   pytest_total: 7
   completed_date: 2026-05-05
 commits:
-  - hash: TBD
+  - hash: 95f5357
+    message: "docs(04-04): SUMMARY for Phase 4 verification (DATA-01, DATA-02, DATA-03)"
+  - hash: 8689fcc
     message: "chore(04): verify Phase 4 build-hygiene fixes (DATA-01, DATA-02, DATA-03)"
 ---
 
