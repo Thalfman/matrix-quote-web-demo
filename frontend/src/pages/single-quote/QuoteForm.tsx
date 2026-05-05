@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, UseFormReturn } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
 
 import { DropdownOptions } from "@/api/types";
 import { Field } from "@/components/Field";
@@ -26,9 +27,35 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
   const [compareOpen, setCompareOpen] = useState(false);
   const [quotedHours, setQuotedHours] = useState<Record<string, number | undefined>>({});
   const [rawQuotedHours, setRawQuotedHours] = useState<Record<string, string>>({});
-  const [lastValues] = useState(readLastValues);
 
   const { register, handleSubmit, control, reset, formState } = form;
+
+  // Phase 5 (D-16): replaces the deprecated `sessionStorage["matrix.singlequote.last"]`
+  // recall. When `?fromQuote=<id>` is present, hydrate the form from IndexedDB.
+  // `?restoreVersion=N` selects an older version (D-06 fork-on-restore).
+  const [searchParams] = useSearchParams();
+  const fromQuoteId = searchParams.get("fromQuote");
+  const restoreVersion = searchParams.get("restoreVersion");
+
+  useEffect(() => {
+    if (!fromQuoteId) return;
+    let cancelled = false;
+    void (async () => {
+      const { getSavedQuote } = await import("@/lib/quoteStorage");
+      const saved = await getSavedQuote(fromQuoteId);
+      if (cancelled || !saved || saved.versions.length === 0) return;
+      const versionN = restoreVersion
+        ? Number(restoreVersion)
+        : saved.versions[saved.versions.length - 1].version;
+      const target =
+        saved.versions.find((v) => v.version === versionN) ??
+        saved.versions[saved.versions.length - 1];
+      form.reset(target.formValues);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [fromQuoteId, restoreVersion, form]);
 
   const fire = handleSubmit(() => {
     const cleaned = Object.fromEntries(
@@ -45,18 +72,6 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
 
   return (
     <form ref={formRef} onSubmit={fire}>
-      {Object.keys(lastValues).length > 0 && (
-        <div className="mb-4 flex justify-end">
-          <button
-            type="button"
-            onClick={() => form.reset(lastValues)}
-            className="inline-flex items-center gap-2 px-3 py-2 text-xs border hairline rounded-sm bg-surface hover:bg-paper transition-colors"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-muted2" aria-hidden="true" />
-            Populate with last quote
-          </button>
-        </div>
-      )}
       <Section step="01" title="Project classification" description="Segment, system type, and project flags">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
           <Field label="Industry segment" glossaryTerm="Industry Segment" error={formState.errors.industry_segment?.message}>
@@ -394,14 +409,4 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
       </div>
     </form>
   );
-}
-
-const LAST_KEY = "matrix.singlequote.last";
-
-function readLastValues(): QuoteFormValues {
-  try {
-    return JSON.parse(sessionStorage.getItem(LAST_KEY) ?? "{}");
-  } catch {
-    return {} as QuoteFormValues;
-  }
 }

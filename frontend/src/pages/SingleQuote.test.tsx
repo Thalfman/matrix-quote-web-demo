@@ -241,63 +241,9 @@ describe("SingleQuote", () => {
     });
   });
 
-  it("shows the 'Populate with last quote' link when sessionStorage is populated and fills form on click", async () => {
-    // Pre-seed sessionStorage with a previous form submission.
-    const lastValues = {
-      industry_segment: "Automotive",
-      system_category: "Machine Tending",
-      automation_level: "Robotic",
-      has_controls: true,
-      has_robotics: true,
-      retrofit: false,
-      duplicate: false,
-      stations_count: 5,
-      part_types: 0,
-      safety_doors: 0,
-      robot_count: 2,
-      weldment_perimeter_ft: 0,
-      safety_devices_count: 0,
-      fixture_sets: 0,
-      fence_length_ft: 0,
-      conveyor_length_ft: 0,
-      plc_family: "AB Compact Logix",
-      hmi_family: "AB PanelView Plus",
-      vision_type: "None",
-      panel_count: 0,
-      servo_axes: 0,
-      drive_count: 0,
-      pneumatic_devices: 0,
-      vision_systems_count: 0,
-      product_familiarity_score: 3,
-      product_rigidity: 3,
-      bulk_rigidity_score: 3,
-      process_uncertainty_score: 3,
-      changeover_time_min: 0,
-      is_product_deformable: false,
-      is_bulk_product: false,
-      has_tricky_packaging: false,
-      complexity_score_1_5: 3,
-      custom_pct: 50,
-      stations_robot_index: 0,
-      mech_complexity_index: 0,
-      controls_complexity_index: 0,
-      physical_scale_index: 0,
-      estimated_materials_cost: 0,
-    };
-    sessionStorage.setItem("matrix.singlequote.last", JSON.stringify(lastValues));
-
-    mockGet.mockImplementation(readyGetMock);
-    renderWithProviders(<SingleQuote />);
-
-    // The link should appear because sessionStorage has a value.
-    const link = await screen.findByRole("button", { name: /populate with last quote/i });
-    expect(link).toBeInTheDocument();
-
-    // Clicking it should not throw.
-    fireEvent.click(link);
-    // Link remains in the DOM (form still has session data).
-    expect(screen.getByRole("button", { name: /populate with last quote/i })).toBeInTheDocument();
-  });
+  // Phase 5 (D-16): the UX-01 "Populate with last quote" sessionStorage recall
+  // was deprecated. The behaviour is now provided by `?fromQuote=<id>`
+  // rehydration tested in QuoteForm.test.tsx (Plan 05-09 Task 2).
 
   // ---------------------------------------------------------------------------
   // Export PDF (Plan D)

@@ -1,6 +1,7 @@
-/** Shared result panel used by both Real and Synthetic Quote tabs - renders estimate, likely range, top drivers, per-category H/M/L confidence, and closest matching records. */
+/** Shared result panel used by both Real and Synthetic Quote tabs - renders estimate, likely range, top drivers, per-category H/M/L confidence, closest matching records, and (when workspace is provided) the Save quote button. */
 import { Download, TrendingUp, TrendingDown } from "lucide-react";
 
+import { SaveQuoteButton } from "@/components/quote/SaveQuoteButton";
 import { Tooltip, TooltipProvider, GlossaryHelpIcon } from "@/components/Tooltip";
 import type { UnifiedQuoteResult } from "@/demo/quoteResult";
 import { lookup } from "@/lib/glossary";
@@ -52,9 +53,19 @@ function fmtHrs(n: number): string {
 export function QuoteResultPanel({
   result,
   input,
+  workspace,
+  quoteId,
+  existingName,
+  status,
+  restoredFromVersion,
 }: {
   result: UnifiedQuoteResult;
   input: QuoteFormValues;
+  workspace?: "real" | "synthetic";
+  quoteId?: string;
+  existingName?: string;
+  status?: "draft" | "sent" | "won" | "lost" | "revised";
+  restoredFromVersion?: number;
 }) {
   return (
     <div className="space-y-6" id="quote-results">
@@ -155,11 +166,25 @@ export function QuoteResultPanel({
         </div>
       </div>
 
-      {/* Export */}
+      {/* Save quote (Phase 5 — only render when workspace is known) */}
+      {workspace && (
+        <SaveQuoteButton
+          workspace={workspace}
+          formValues={input}
+          unifiedResult={result}
+          quoteId={quoteId}
+          existingName={existingName}
+          status={status}
+          restoredFromVersion={restoredFromVersion}
+          variant="primary"
+        />
+      )}
+
+      {/* Export — secondary now that Save quote is the primary action (UI-SPEC §"Trigger button placement") */}
       <button
         type="button"
         onClick={() => window.print()}
-        className="no-print w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-teal text-white text-sm font-medium rounded-sm hover:bg-tealDark transition-colors"
+        className="no-print w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 bg-paper text-ink text-sm font-medium rounded-sm border hairline hover:bg-line/40 transition-colors"
       >
         <Download size={16} strokeWidth={1.75} aria-hidden="true" />
         Export PDF

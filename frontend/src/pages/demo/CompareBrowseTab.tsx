@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
+import { SaveQuoteButton } from "@/components/quote/SaveQuoteButton";
 import { ProjectRecord, recordToSavedQuote, recordToSummary } from "@/demo/realProjects";
+import type { UnifiedQuoteResult } from "@/demo/quoteResult";
+import { transformToFormValues } from "@/lib/savedQuoteSchema";
 import { QuotesBulkBar } from "@/pages/quotes/QuotesBulkBar";
 import { QuotesFilters } from "@/pages/quotes/QuotesFilters";
 import { QuotesTable } from "@/pages/quotes/QuotesTable";
@@ -86,6 +89,41 @@ export function CompareBrowseTab({ records }: Props) {
         <div className="card p-5">
           <CompareHeader quotes={selectedQuotes} />
         </div>
+
+        {/*
+          Phase 5 D-13: Compare-side save. I1 simplification — the FIRST
+          selected project's record-derived prediction is the saveable shape.
+          `compareInputs.humanQuotedByBucket` carries the human comparator
+          number when one is supplied (the CompareBrowseTab UI itself does not
+          collect human numbers; the field is reserved for QuoteForm-side use).
+        */}
+        {selectedQuotes.length > 0 && (() => {
+          const head = selectedQuotes[0];
+          const formValues = transformToFormValues(head.inputs);
+          const unifiedResult: UnifiedQuoteResult = {
+            estimateHours: head.prediction.total_p50,
+            likelyRangeLow: head.prediction.total_p10,
+            likelyRangeHigh: head.prediction.total_p90,
+            overallConfidence: "high",
+            perCategory: [],
+            topDrivers: [],
+            supportingMatches: {
+              label: "Most similar past projects",
+              items: [],
+            },
+          };
+          return (
+            <div className="flex justify-end">
+              <SaveQuoteButton
+                workspace="real"
+                formValues={formValues}
+                unifiedResult={unifiedResult}
+                compareInputs={{ humanQuotedByBucket: {} }}
+                variant="compact"
+              />
+            </div>
+          );
+        })()}
 
         <div>
           <div className="eyebrow text-sm text-muted mb-3">Per-bucket hours (actuals)</div>

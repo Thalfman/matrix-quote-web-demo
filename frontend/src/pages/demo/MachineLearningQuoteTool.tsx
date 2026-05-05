@@ -227,6 +227,7 @@ export function MachineLearningQuoteTool() {
               <QuoteResultPanel
                 result={result.unified}
                 input={result.formValues}
+                workspace="synthetic"
               />
             )}
           </aside>

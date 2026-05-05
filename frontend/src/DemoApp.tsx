@@ -34,6 +34,16 @@ const MachineLearningCompare = lazy(() =>
     default: m.MachineLearningCompare,
   })),
 );
+const MyQuotesPage = lazy(() =>
+  import("@/pages/quotes/MyQuotesPage").then((m) => ({
+    default: m.MyQuotesPage,
+  })),
+);
+const SavedQuotePage = lazy(() =>
+  import("@/pages/quotes/SavedQuotePage").then((m) => ({
+    default: m.SavedQuotePage,
+  })),
+);
 
 function Fallback() {
   return (
@@ -68,6 +78,10 @@ export function DemoApp() {
           <Route path="compare-tool" element={<Navigate to="/compare/quote" replace />} />
           <Route path="business" element={<Navigate to="/compare/insights" replace />} />
           <Route path="ml-tool" element={<Navigate to="/ml/quote" replace />} />
+
+          {/* My Quotes (Phase 5 - quote persistence) */}
+          <Route path="quotes" element={<MyQuotesPage />} />
+          <Route path="quotes/:id" element={<SavedQuotePage />} />
 
           {/* Catch-all */}
           <Route path="*" element={<Navigate to="/" replace />} />
