@@ -15,7 +15,7 @@
 | 1 | Customer-blocking bug sweep ✅ | Stop the demo from crashing on Ben's input flow; correct the wrong Total/Avg signal; surface the user's inputs in the result panel. | BUG-01, BUG-02, UX-01 | yes | none |
 | 2 | Hover affordances ✅ 2026-05-04 | Add the drill-down tooltips Ben asked for so the user can interrogate charts and category labels without leaving the page. | UX-02, UX-03 | yes | Phase 1 (so we don't ship hover work over a still-broken Compare flow) |
 | 3 | Insights pack rework ✅ 2026-05-04 | Make the downloadable bundle self-explanatory to a non-technical audience — drop or label the JSON, document the CSV columns. | INSIGHTS-01, INSIGHTS-02 | yes (download UX + bundle README) | Phase 1 |
-| 4 | Build / quality hardening | Fix the dead Vercel cache rule, make the LFS guard fail loudly, extend the jargon guard to uncovered surfaces. | DATA-01, DATA-02, DATA-03 | no | Phase 1 |
+| 4 | Build / quality hardening ✅ 2026-05-05 | Fix the dead Vercel cache rule, make the LFS guard fail loudly, extend the jargon guard to uncovered surfaces. | DATA-01, DATA-02, DATA-03 | no | Phase 1 |
 
 Phases 2, 3, 4 are independent of each other once Phase 1 lands — they can run in parallel via `/gsd-execute-phase --wave` if desired.
 
@@ -104,6 +104,14 @@ Plans:
 2. `scripts/build_demo_static.py` LFS-pointer guard exits non-zero with an actionable error message ("LFS pointer detected at <path>; run `git lfs pull` and re-build") rather than silent-skipping. Tested by intentionally introducing a pointer file in a build sandbox.
 3. The jargon-guard test extends to scan `QuoteResultPanel.tsx`, `BusinessInsights*.tsx`, and any new copy in the result panel + insights surfaces. The banned-term list is unchanged from current.
 4. CI / `npm test` continues to pass.
+
+**Plans:** 4 plans
+
+Plans:
+- [x] 04-01-PLAN.md — Wave 1: vercel.json cache rules (DATA-01)
+- [x] 04-02-PLAN.md — Wave 1: LFS-pointer hard-fail in build_demo_static.py (DATA-02)
+- [x] 04-03-PLAN.md — Wave 1: Shared jargon-guard module + test for QuoteResultPanel/BusinessInsights surfaces (DATA-03)
+- [x] 04-04-PLAN.md — Wave 2: Verification suite (vitest 648/648, pytest 7/7, typecheck/lint/build green)
 
 ---
 
