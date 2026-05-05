@@ -83,3 +83,53 @@ def test_joblib_files_list_has_12_entries():
     assert len(TARGETS) == 12, (
         f"Expected 12 TARGETS (one joblib per target), got {len(TARGETS)}"
     )
+
+
+def test_lfs_pointer_triggers_hard_fail(build_mod, tmp_path, monkeypatch, capsys):
+    """A *.joblib file < 1024 bytes under DEMO_ROOT must abort the build via _die()."""
+    # Set up a fake demo tree with one pointer-sized joblib in models_real/.
+    fake_demo_root = tmp_path / "demo_assets"
+    (fake_demo_root / "models_real").mkdir(parents=True)
+    pointer_joblib = fake_demo_root / "models_real" / "me10_actual_hours.joblib"
+    pointer_joblib.write_bytes(b"version https://git-lfs.github.com/spec/v1\n")  # 44 bytes
+    assert pointer_joblib.stat().st_size < 1024, "test fixture must be a fake LFS pointer"
+
+    # Redirect DEMO_ROOT and OUT so the function operates on the tmp tree.
+    fake_out = tmp_path / "out"
+    fake_out.mkdir()
+    monkeypatch.setattr(build_mod, "DEMO_ROOT", fake_demo_root)
+    monkeypatch.setattr(build_mod, "OUT", fake_out)
+
+    with pytest.raises(SystemExit) as exc_info:
+        build_mod._copy_model_bundle("models_real")
+
+    # _die calls sys.exit(1)
+    assert exc_info.value.code == 1, f"expected exit code 1, got {exc_info.value.code}"
+
+    captured = capsys.readouterr()
+    assert "LFS pointer detected at" in captured.err, (
+        f"stderr did not contain expected LFS error message; got: {captured.err!r}"
+    )
+    assert str(pointer_joblib) in captured.err, (
+        "stderr did not include the offending file path"
+    )
+
+
+def test_missing_src_dir_does_not_hard_fail(build_mod, tmp_path, monkeypatch, capsys):
+    """When the entire src dir is missing, the function still returns 0 (CONTEXT D-02)."""
+    # No models_real/ directory created — simulating a docs-only deploy.
+    fake_demo_root = tmp_path / "demo_assets"
+    fake_demo_root.mkdir()
+    fake_out = tmp_path / "out"
+    fake_out.mkdir()
+    monkeypatch.setattr(build_mod, "DEMO_ROOT", fake_demo_root)
+    monkeypatch.setattr(build_mod, "OUT", fake_out)
+
+    # Must NOT raise SystemExit.
+    result = build_mod._copy_model_bundle("models_real")
+    assert result == 0, f"expected 0 from missing-src path, got {result}"
+
+    captured = capsys.readouterr()
+    assert "ML tool will be non-functional" in captured.err, (
+        "missing-src branch should still emit its informational WARN"
+    )
