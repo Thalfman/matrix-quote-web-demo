@@ -28,36 +28,43 @@ import {
   transformToQuoteInput,
   type QuoteFormValues,
 } from "@/pages/single-quote/schema";
-import type { UnifiedQuoteResult } from "@/demo/quoteResult";
 
 // ---------------------------------------------------------------------------
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const PRODUCTION_UNIFIED_FIXTURE: UnifiedQuoteResult = {
+const PRODUCTION_UNIFIED_FIXTURE = {
   estimateHours: 1500,
   likelyRangeLow: 1200,
   likelyRangeHigh: 1800,
-  overallConfidence: "high",
+  overallConfidence: "high" as const,
   perCategory: [
     {
       label: "Mechanical Engineering",
       estimateHours: 800,
       rangeLow: 640,
       rangeHigh: 960,
-      confidence: "high",
+      confidence: "high" as const,
     },
     {
       label: "Electrical Engineering",
       estimateHours: 240,
       rangeLow: 192,
       rangeHigh: 288,
-      confidence: "moderate",
+      confidence: "moderate" as const,
     },
   ],
   topDrivers: [
-    { label: "Stations count", direction: "increases", magnitude: "strong" },
-    { label: "Vision systems", direction: "increases", magnitude: "moderate" },
+    {
+      label: "Stations count",
+      direction: "increases" as const,
+      magnitude: "strong" as const,
+    },
+    {
+      label: "Vision systems",
+      direction: "increases" as const,
+      magnitude: "moderate" as const,
+    },
   ],
   supportingMatches: {
     label: "Most similar past projects",
@@ -68,8 +75,20 @@ const PRODUCTION_UNIFIED_FIXTURE: UnifiedQuoteResult = {
   },
 };
 
+/**
+ * quoteFormDefaults has empty strings for industry/system/automation that the
+ * form-schema's `requiredString` rejects on parse. Tests that round-trip
+ * through savedQuoteSchema (which embeds quoteFormSchema in versions) must
+ * therefore provide non-empty placeholders.
+ */
 function makeFormValues(over: Partial<QuoteFormValues> = {}): QuoteFormValues {
-  return { ...quoteFormDefaults, ...over };
+  return {
+    ...quoteFormDefaults,
+    industry_segment: "Automotive",
+    system_category: "Machine Tending",
+    automation_level: "Robotic",
+    ...over,
+  };
 }
 
 function makeVersion(over: Partial<QuoteVersion> = {}): QuoteVersion {
@@ -185,7 +204,12 @@ describe("transformToFormValues — inverse of transformToQuoteInput", () => {
     });
     const wire = transformToQuoteInput(populated);
     const back = transformToFormValues(wire);
-    expect(back).toEqual(populated);
+    // log1p / expm1 introduces sub-microscopic floating-point drift; compare
+    // the cost within tolerance and the rest field-for-field.
+    const { estimated_materials_cost: backCost, ...backRest } = back;
+    const { estimated_materials_cost: popCost, ...popRest } = populated;
+    expect(backRest).toEqual(popRest);
+    expect(backCost).toBeCloseTo(popCost, 6);
   });
 
   it("inverse-maps log_quoted_materials_cost back to estimated_materials_cost (within 1e-6)", () => {
