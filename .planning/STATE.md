@@ -11,19 +11,20 @@
 - **Branch:** `main`
 - **Repo type:** brownfield, static-only Vite/React SPA on Vercel CDN
 
-- **Milestone:** v2.0 — Workflow fit (started 2026-05-05; defining requirements)
-- **Phase:** Not started — REQUIREMENTS.md + ROADMAP.md still being seeded by `/gsd-new-milestone`
+- **Milestone:** v2.0 — Workflow fit (started 2026-05-05; roadmap finalized)
+- **Phase:** Phase 5 — Quote Persistence (not started — ready for `/gsd-plan-phase 5`)
 - **Plan:** —
-- **Status:** Defining requirements
-- **In scope for v2.0:** PERSIST-01 (quote persistence), DATA-04 (multi-vision per project), ROM-01 (ROM-quote mode)
+- **Status:** Roadmap finalized; ready to plan Phase 5
+- **In scope for v2.0:** PERSIST-01..04 (Phase 5 — quote persistence), DATA-04 + DATA-06 (Phase 6 — multi-vision), ROM-01 + ROM-02 (Phase 7 — ROM mode)
 - **Deferred from v2.0:** BENCH-01 (Manager-spreadsheet benchmark — optional, no firm slot)
-- **Last activity:** 2026-05-05 — `/gsd-new-milestone` → PROJECT.md updated (Current Milestone: v2.0 Workflow fit); STATE.md reset for v2; REQUIREMENTS.md + ROADMAP.md still pending in this run
+- **Last activity:** 2026-05-05 — roadmap created (Phases 5–7); ROADMAP.md + REQUIREMENTS.md traceability filled; 8/8 v2.0 reqs mapped (100% coverage)
 - **Previously shipped:** v1.0 ✅ 2026-05-05 (10/10 v1 requirements complete) — see `.planning/milestones/v1.0-ROADMAP.md` and `.planning/MILESTONES.md`
 
 ## Recent Activity
 
 | Date | Event |
 |---|---|
+| 2026-05-05 | Roadmap created → Phases 5 (PERSIST), 6 (Multi-vision), 7 (ROM); 8/8 v2.0 reqs mapped; ROADMAP.md + STATE.md + REQUIREMENTS.md traceability updated; coarse granularity, 3 phases; Phase 5 PERSIST-01 carries open architecture decision (browser-only vs backend) for discuss step |
 | 2026-05-05 | `/gsd-new-milestone` → milestone v2.0 (Workflow fit) seeded; PROJECT.md updated with Current Milestone section; STATE.md reset for v2; PERSIST-01 + DATA-04 + ROM-01 confirmed in scope; BENCH-01 deferred; REQUIREMENTS.md + ROADMAP.md pending in this run |
 | 2026-05-05 | `/gsd-complete-milestone 1.0` → archives written (`milestones/v1.0-ROADMAP.md`, `milestones/v1.0-REQUIREMENTS.md`); `MILESTONES.md` + `RETROSPECTIVE.md` created; PROJECT.md evolved (v1 reqs → Validated, v2/v3 surfaced); ROADMAP.md collapsed to milestone view; REQUIREMENTS.md `git rm`'d (fresh for v2); tag `v1.0` created |
 | 2026-05-05 | PR #23 merged to `main` (Phase 4, feat/04-build-quality-hardening, merge commit `48a1b5a`); v1.0 functionally complete |
@@ -56,7 +57,8 @@
 | 2026-05-04 | Manager hour-estimator spreadsheets out of scope as training inputs (durable) | Customer deliberate exclusion; data should drive, not crude heuristics |
 | 2026-05-04 | Per-phase research disabled by default in `config.json` | Codebase map + customer feedback already provide richer context than research could; flip on per-phase as needed |
 | 2026-05-04 | YOLO mode + coarse granularity | Single-dev iteration; auto-advance through approval gates that don't need fresh thought |
-| ⏳ pending | Quote persistence: browser-only vs introduce a backend | Decision deferred to v2 milestone discuss-phase |
+| 2026-05-05 | v2.0 split into 3 coarse phases (5: PERSIST, 6: Multi-vision, 7: ROM) | Natural delivery boundaries; coarse granularity matches `config.json`; Phase 6 + 7 depend on Phase 5 schema for save/reopen round-trip |
+| ⏳ pending | Quote persistence: browser-only vs introduce a backend | Decision deferred to Phase 5 discuss step (`/gsd-plan-phase 5`) |
 
 ## Blockers
 
@@ -73,5 +75,6 @@
 ## Notes for Future Sessions
 
 - The runtime hook ("no master dataset / 409") is **stale for this repo**. It describes parent-app behavior. Treat it as informational. See memory `project_static_demo_no_backend.md`.
-- Specialist agents for backend/auth/storage **do not apply** to this repo. Use `frontend-specialist`, `ui-ux-specialist`, `test-writer` only.
+- Specialist agents for backend/auth/storage **do not apply** to this repo — UNTIL Phase 5's discuss step. If `PERSIST-01` chooses the backend route, `auth-admin-specialist`, `backend-specialist`, and `storage-specialist` come into play for the first time on this repo. Today (pre-Phase-5-discuss), use `frontend-specialist`, `ui-ux-specialist`, `test-writer` only.
 - The user prefers plans with concrete code skeletons / exact strings / exact paths (memory `feedback_plan_specificity.md`), and a two-view plan format (memory `feedback_plan_format.md`). Honor both when running `/gsd-plan-phase`.
+- v2.0 phase numbering continues from v1.0: Phase 5 is the first v2.0 phase. Do not restart numbering at 1.

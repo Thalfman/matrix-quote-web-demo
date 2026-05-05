@@ -60,20 +60,21 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| PERSIST-01 | TBD | Pending |
-| PERSIST-02 | TBD | Pending |
-| PERSIST-03 | TBD | Pending |
-| PERSIST-04 | TBD | Pending |
-| DATA-04 | TBD | Pending |
-| DATA-06 | TBD | Pending |
-| ROM-01 | TBD | Pending |
-| ROM-02 | TBD | Pending |
+| PERSIST-01 | Phase 5 | Pending |
+| PERSIST-02 | Phase 5 | Pending |
+| PERSIST-03 | Phase 5 | Pending |
+| PERSIST-04 | Phase 5 | Pending |
+| DATA-04 | Phase 6 | Pending |
+| DATA-06 | Phase 6 | Pending |
+| ROM-01 | Phase 7 | Pending |
+| ROM-02 | Phase 7 | Pending |
 
 **Coverage:**
 - v2.0 requirements: 8 total
-- Mapped to phases: 0 (roadmapper has not run yet)
-- Unmapped: 8
+- Mapped to phases: 8 (Phase 5: 4, Phase 6: 2, Phase 7: 2)
+- Unmapped: 0
+- Coverage: 8/8 (100%) ✓
 
 ---
 *Requirements defined: 2026-05-05*
-*Last updated: 2026-05-05 after `/gsd-new-milestone` v2.0 — PERSIST-01..04, DATA-04, DATA-06, ROM-01, ROM-02 in scope; BENCH-01 deferred*
+*Last updated: 2026-05-05 — roadmap created (Phases 5–7); all 8 v2.0 reqs mapped 100%*
