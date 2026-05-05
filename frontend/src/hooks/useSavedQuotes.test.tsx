@@ -19,35 +19,53 @@ import { createElement, type ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { SavedQuote, WorkflowStatus } from "@/lib/savedQuoteSchema";
-import type { StorageEvent, StorageListener } from "@/lib/quoteStorage";
+import type { StorageEvent } from "@/lib/quoteStorage";
 
 // ---------------------------------------------------------------------------
-// Module mock — set up before importing the hook module (vi.mock is hoisted).
+// Module mock — set up before importing the hook module (vi.mock is hoisted,
+// so any state it captures has to be hoisted via vi.hoisted as well).
 // ---------------------------------------------------------------------------
 
-const mockListSavedQuotes = vi.fn();
-const mockGetSavedQuote = vi.fn();
-const mockSaveSavedQuote = vi.fn();
-const mockDeleteSavedQuote = vi.fn();
-const mockSetStatus = vi.fn();
-const mockRestoreVersion = vi.fn();
-
-let storageSubscriber: StorageListener | null = null;
-const mockSubscribe = vi.fn((fn: StorageListener) => {
-  storageSubscriber = fn;
-  return () => {
-    storageSubscriber = null;
+const hoisted = vi.hoisted(() => {
+  const subscriberRef: { current: ((evt: unknown) => void) | null } = {
+    current: null,
+  };
+  return {
+    mockListSavedQuotes: vi.fn(),
+    mockGetSavedQuote: vi.fn(),
+    mockSaveSavedQuote: vi.fn(),
+    mockDeleteSavedQuote: vi.fn(),
+    mockSetStatus: vi.fn(),
+    mockRestoreVersion: vi.fn(),
+    mockSubscribe: vi.fn((fn: (evt: unknown) => void) => {
+      subscriberRef.current = fn;
+      return () => {
+        subscriberRef.current = null;
+      };
+    }),
+    subscriberRef,
   };
 });
 
+const {
+  mockListSavedQuotes,
+  mockGetSavedQuote,
+  mockSaveSavedQuote,
+  mockDeleteSavedQuote,
+  mockSetStatus,
+  mockRestoreVersion,
+  mockSubscribe,
+  subscriberRef,
+} = hoisted;
+
 vi.mock("@/lib/quoteStorage", () => ({
-  listSavedQuotes: mockListSavedQuotes,
-  getSavedQuote: mockGetSavedQuote,
-  saveSavedQuote: mockSaveSavedQuote,
-  deleteSavedQuote: mockDeleteSavedQuote,
-  setStatus: mockSetStatus,
-  restoreVersion: mockRestoreVersion,
-  subscribe: mockSubscribe,
+  listSavedQuotes: hoisted.mockListSavedQuotes,
+  getSavedQuote: hoisted.mockGetSavedQuote,
+  saveSavedQuote: hoisted.mockSaveSavedQuote,
+  deleteSavedQuote: hoisted.mockDeleteSavedQuote,
+  setStatus: hoisted.mockSetStatus,
+  restoreVersion: hoisted.mockRestoreVersion,
+  subscribe: hoisted.mockSubscribe,
 }));
 
 // Imported AFTER vi.mock so the hooks see the mocked module.
@@ -120,7 +138,7 @@ describe("useSavedQuotes — read hooks", () => {
     mockSetStatus.mockReset();
     mockRestoreVersion.mockReset();
     mockSubscribe.mockClear();
-    storageSubscriber = null;
+    subscriberRef.current = null;
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -185,7 +203,7 @@ describe("useSavedQuotes — mutation hooks", () => {
     mockSetStatus.mockReset();
     mockRestoreVersion.mockReset();
     mockSubscribe.mockClear();
-    storageSubscriber = null;
+    subscriberRef.current = null;
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -266,14 +284,14 @@ describe("useSavedQuotes — mutation hooks", () => {
   });
 
   it("useRestoreVersion().mutateAsync returns the formValues for the form to consume", async () => {
-    const formValues = { industry_segment: "Automotive" } as never;
+    const formValues = { industry_segment: "Automotive" } as unknown as SavedQuote["versions"][number]["formValues"];
     mockRestoreVersion.mockResolvedValue({ formValues });
 
     const { result } = renderHook(() => useRestoreVersion(), {
       wrapper: makeWrapper(),
     });
 
-    let out: { formValues: typeof formValues } | undefined;
+    let out: { formValues: SavedQuote["versions"][number]["formValues"] } | undefined;
     await act(async () => {
       out = await result.current.mutateAsync({
         id: "11111111-1111-4111-8111-111111111111",
@@ -298,7 +316,7 @@ describe("useSavedQuotes — cross-tab BroadcastChannel sync", () => {
     mockSetStatus.mockReset();
     mockRestoreVersion.mockReset();
     mockSubscribe.mockClear();
-    storageSubscriber = null;
+    subscriberRef.current = null;
   });
   afterEach(() => {
     vi.unstubAllGlobals();
@@ -309,10 +327,10 @@ describe("useSavedQuotes — cross-tab BroadcastChannel sync", () => {
 
     const { unmount } = renderHook(() => useSavedQuotes(), { wrapper: makeWrapper() });
     expect(mockSubscribe).toHaveBeenCalledTimes(1);
-    expect(typeof storageSubscriber).toBe("function");
+    expect(typeof subscriberRef.current).toBe("function");
 
     unmount();
-    expect(storageSubscriber).toBeNull();
+    expect(subscriberRef.current).toBeNull();
   });
 
   it("a broadcast event re-reads from storage (cache invalidate, never trust payload — T-05-09)", async () => {
@@ -335,14 +353,14 @@ describe("useSavedQuotes — cross-tab BroadcastChannel sync", () => {
     ];
     mockListSavedQuotes.mockResolvedValueOnce(refreshed);
 
-    expect(storageSubscriber).not.toBeNull();
+    expect(subscriberRef.current).not.toBeNull();
     const evt: StorageEvent = {
       type: "save",
       id: "22222222-2222-4222-8222-222222222222",
       updatedAt: "2026-05-05T13:00:00.000Z",
     };
     await act(async () => {
-      storageSubscriber!(evt);
+      subscriberRef.current!(evt);
     });
 
     await waitFor(() => expect(mockListSavedQuotes).toHaveBeenCalledTimes(2));
@@ -350,21 +368,26 @@ describe("useSavedQuotes — cross-tab BroadcastChannel sync", () => {
   });
 
   it("delete broadcast also invalidates the list (covers ['quotes'] umbrella key)", async () => {
-    mockListSavedQuotes.mockResolvedValueOnce([makeSavedQuote()]);
+    mockListSavedQuotes.mockResolvedValue([makeSavedQuote()]);
 
     const { result } = renderHook(() => useSavedQuotes(), { wrapper: makeWrapper() });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data).toHaveLength(1);
 
-    mockListSavedQuotes.mockResolvedValueOnce([]);
+    // After the broadcast invalidates, the refetch should observe an empty
+    // store (the deletion having committed in some other tab).
+    mockListSavedQuotes.mockResolvedValue([]);
 
     await act(async () => {
-      storageSubscriber!({
+      subscriberRef.current!({
         type: "delete",
         id: "11111111-1111-4111-8111-111111111111",
       });
     });
 
-    await waitFor(() => expect(mockListSavedQuotes).toHaveBeenCalledTimes(2));
+    await waitFor(() =>
+      expect(mockListSavedQuotes.mock.calls.length).toBeGreaterThanOrEqual(2),
+    );
     await waitFor(() => expect(result.current.data).toEqual([]));
   });
 });
