@@ -117,28 +117,64 @@ describe("jargon-guard (DATA-03 — Phase 4)", () => {
       <QuoteResultPanel result={HIGH_CONFIDENCE_RESULT} input={makeFormValues()} />,
     );
     const body = document.body.textContent ?? "";
-    expect(body.length, "expected non-empty rendered body").toBeGreaterThan(0);
+    // Marker assertion: stable copy from QuoteResultPanel header eyebrow row.
+    // Stronger than `length > 0` — guarantees the panel actually rendered
+    // its meaningful chrome rather than (e.g.) a future error-boundary fallback.
+    expect(body, "expected QuoteResultPanel chrome to render").toMatch(/estimated hours/i);
     assertNoBannedTokens("QuoteResultPanel", body);
   });
 
   it("BusinessInsights renders no banned ML-jargon tokens", () => {
     renderWithProviders(<BusinessInsights />);
     const body = document.body.textContent ?? "";
-    expect(body.length, "expected non-empty rendered body").toBeGreaterThan(0);
+    // Marker assertion: PageHeader renders "Business Insights" title.
+    // The LoadingSkeleton branch contains only <SkeletonBlock> divs (no text
+    // nodes), so this marker fails loudly if a future mock regression drops
+    // the BusinessInsights/BusinessInsightsView path into the loading state.
+    expect(body, "expected BusinessInsights page chrome to render").toMatch(
+      /business insights/i,
+    );
     assertNoBannedTokens("BusinessInsights", body);
   });
 
-  it("BusinessInsightsView renders no banned ML-jargon tokens", () => {
+  it("BusinessInsightsView (real variant) renders no banned ML-jargon tokens", () => {
     renderWithProviders(
       <BusinessInsightsView
         records={FAKE_RECORDS}
         datasetLabel="Test · Real"
+        source="real"
         isLoading={false}
         error={null}
       />,
     );
     const body = document.body.textContent ?? "";
-    expect(body.length, "expected non-empty rendered body").toBeGreaterThan(0);
-    assertNoBannedTokens("BusinessInsightsView", body);
+    expect(body, "expected BusinessInsightsView chrome to render").toMatch(
+      /business insights/i,
+    );
+    assertNoBannedTokens("BusinessInsightsView (real)", body);
+  });
+
+  // WR-01 (Phase 4 review): the previous two BusinessInsights* cases both
+  // resolve to <DataProvenanceNote variant="real">. The /ml/insights route
+  // ships <DataProvenanceNote variant="synthetic"> as well, and a Rule-1
+  // leak introduced *only* into the synthetic copy block would slip past
+  // the BusinessInsights*-via-shim cases. This third explicit render covers
+  // the synthetic variant of DataProvenanceNote and exercises the same
+  // BusinessInsightsView surface with `source="synthetic"`.
+  it("BusinessInsightsView (synthetic variant) renders no banned ML-jargon tokens", () => {
+    renderWithProviders(
+      <BusinessInsightsView
+        records={FAKE_RECORDS}
+        datasetLabel="Test · Synthetic"
+        source="synthetic"
+        isLoading={false}
+        error={null}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    expect(body, "expected BusinessInsightsView (synthetic) chrome to render").toMatch(
+      /business insights/i,
+    );
+    assertNoBannedTokens("BusinessInsightsView (synthetic)", body);
   });
 });
