@@ -178,9 +178,10 @@ export function DemoLayout() {
         </div>
 
         <nav aria-label="Primary" className="contents">
-          {/* Home link */}
+          {/* Home + My Quotes (top-level) */}
           <div className="flex flex-col gap-1 mb-6">
             <SidebarLink to="/" label="Home" end />
+            <SidebarLink to="/quotes" label="My Quotes" />
           </div>
 
           {/* Section divider + Comparison Tool */}

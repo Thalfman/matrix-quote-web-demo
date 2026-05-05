@@ -226,6 +226,7 @@ export function ComparisonQuote() {
               <QuoteResultPanel
                 result={result.unified}
                 input={result.formValues}
+                workspace="real"
               />
             )}
           </aside>
