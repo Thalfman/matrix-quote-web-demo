@@ -106,6 +106,7 @@ Phase 3 only touches `frontend/src/pages/demo/business/` (the Business Insights 
   - Add `buildPortfolioJson(portfolio: PortfolioStats): string` — pure stringify with the same `JSON.stringify(portfolio, null, 2)` semantics. Used by the engineer-side button. Public so tests assert byte equivalence with the prior bundle's `portfolio.json`.
   - Add `buildPortfolioWorkbook(portfolio, datasetLabel, generatedAt): ArrayBuffer` — pure SheetJS workbook builder. Used by `buildInsightsPackZip()`; tested directly so the zip integration test stays small.
   - Add `buildBundleReadme(datasetLabel, generatedAt): string` — pure markdown formatter for the top-level README.
+  - Add `jsonFilename(datasetLabel, generatedAt): string` — slug-aware filename for the engineer-side JSON download. Mirrors `packFilename`'s slug rule (lowercase, non-alphanum → `-`, trim leading/trailing `-`, `"pack"` fallback for empty input). Used by `BusinessInsightsView` for the secondary "Download raw JSON (for engineers)" button. Public so `BusinessInsightsView.test.tsx` can assert the filename pattern. *(Added 2026-05-04 during plan-checker triage to keep plan 03-04 file-disjoint from plan 03-03 in Wave 2.)*
 
 ### Tests (acceptance instrumentation)
 

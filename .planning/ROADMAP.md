@@ -80,6 +80,15 @@ Plans:
 3. The notepad-style narrative content (which Ben praised) is preserved unchanged.
 4. Manual UAT: a non-technical reviewer (Ben, Tom acting as proxy, or an internal customer) can open every file in the bundle and answer "what does this column mean?" without external help.
 
+**Plans:** 5 plans
+
+Plans:
+- [ ] 03-01-PLAN.md — Wave 1: Add `xlsx` (SheetJS) dep + `buildPortfolioWorkbook` pure helper (Summary / Drivers / Raw / README sheets) + unit tests
+- [ ] 03-02-PLAN.md — Wave 1: `buildBundleReadme` + `buildPortfolioJson` + `jsonFilename` helpers + unit tests
+- [ ] 03-03-PLAN.md — Wave 2: Rewire `buildInsightsPackZip` (drop CSV+JSON, add XLSX+README) + integration tests
+- [ ] 03-04-PLAN.md — Wave 2: Engineer-side "Download raw JSON (for engineers)" button + tests
+- [ ] 03-05-PLAN.md — Wave 3: Verification (jargon-guard extension + test/typecheck/lint/build/manual smoke)
+
 ---
 
 ### Phase 4: Build / quality hardening
