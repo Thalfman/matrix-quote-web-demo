@@ -85,7 +85,7 @@ describe("buildPortfolioJson — byte-equivalence (INSIGHTS-01 backward-compat)"
     // Second line is the first nested key, indented by exactly two spaces.
     const lines = out.split("\n");
     expect(lines[0]).toBe("{");
-    expect(lines[1]).toMatch(/^  "kpis":/);
+    expect(lines[1]).toMatch(/^ {2}"kpis":/);
   });
 
   it("does NOT append a trailing newline", () => {
