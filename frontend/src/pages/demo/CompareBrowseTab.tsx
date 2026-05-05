@@ -93,9 +93,12 @@ export function CompareBrowseTab({ records }: Props) {
         {/*
           Phase 5 D-13: Compare-side save. I1 simplification — the FIRST
           selected project's record-derived prediction is the saveable shape.
-          `compareInputs.humanQuotedByBucket` carries the human comparator
-          number when one is supplied (the CompareBrowseTab UI itself does not
-          collect human numbers; the field is reserved for QuoteForm-side use).
+          `compareInputs.humanQuotedByBucket` is intentionally OMITTED here:
+          the CompareBrowseTab UI does not collect human comparator numbers,
+          and a forced empty object would be misleading schema cruft. D-13's
+          full intent (persist human comparator alongside the model-side
+          fields) is partial; lift `quotedHours` from QuoteForm into a shared
+          context to fully satisfy D-13. Tracked as Phase 5 follow-up.
         */}
         {selectedQuotes.length > 0 && (() => {
           const head = selectedQuotes[0];
@@ -118,7 +121,6 @@ export function CompareBrowseTab({ records }: Props) {
                 workspace="real"
                 formValues={formValues}
                 unifiedResult={unifiedResult}
-                compareInputs={{ humanQuotedByBucket: {} }}
                 variant="compact"
               />
             </div>
