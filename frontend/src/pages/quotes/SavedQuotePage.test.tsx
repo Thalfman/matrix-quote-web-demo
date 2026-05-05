@@ -390,7 +390,7 @@ describe("SavedQuotePage - version history sidebar", () => {
 
 describe("SavedQuotePage - delete flow", () => {
   it("renders 'Delete quote' button (top-right)", () => {
-    mockUseSavedQuote.mockReturnValueOnce({
+    mockUseSavedQuote.mockReturnValue({
       data: makeSavedQuote(),
       isLoading: false,
     });
@@ -401,23 +401,27 @@ describe("SavedQuotePage - delete flow", () => {
   });
 
   it("clicking 'Delete quote' opens DeleteQuoteModal with the quote name", () => {
-    mockUseSavedQuote.mockReturnValueOnce({
+    // Use mockReturnValue (not Once) — clicking the button triggers a re-render
+    // and useSavedQuote is called again on the second pass.
+    mockUseSavedQuote.mockReturnValue({
       data: makeSavedQuote({ name: "Alpha line 4" }),
       isLoading: false,
     });
     renderWithProviders(<SavedQuotePage />);
     fireEvent.click(screen.getByRole("button", { name: /Delete quote/i }));
     // The modal title appears.
-    expect(screen.getByRole("dialog")).toBeInTheDocument();
+    const dialog = screen.getByRole("dialog");
+    expect(dialog).toBeInTheDocument();
     expect(screen.getByText("Delete this quote?")).toBeInTheDocument();
-    // The quote name is rendered in <strong> inside the modal body.
-    const strong = screen.getByText("Alpha line 4");
+    // The quote name is rendered in <strong> inside the modal body. Scope the
+    // query to the dialog because the page header <h1> also renders the name.
+    const strong = within(dialog).getByText("Alpha line 4");
     expect(strong.tagName).toBe("STRONG");
   });
 
   it("on delete confirm, navigates back to /quotes", async () => {
     mockMutateDelete.mockResolvedValueOnce(undefined);
-    mockUseSavedQuote.mockReturnValueOnce({
+    mockUseSavedQuote.mockReturnValue({
       data: makeSavedQuote(),
       isLoading: false,
     });
