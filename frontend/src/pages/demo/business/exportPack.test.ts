@@ -1,3 +1,4 @@
+import * as XLSX from "xlsx";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -181,25 +182,37 @@ describe("packFilename", () => {
 });
 
 describe("buildInsightsPackZip", () => {
-  it("populates the zip with projects.csv, portfolio.json, and summary.md", async () => {
+  it("populates the zip with summary.md, business-insights.xlsx, and README.md (CONTEXT D-08)", async () => {
     const zip = buildInsightsPackZip(makePortfolio(), "Real", FIXED_DATE);
-    expect(zip.file("projects.csv")).not.toBeNull();
-    expect(zip.file("portfolio.json")).not.toBeNull();
     expect(zip.file("summary.md")).not.toBeNull();
+    expect(zip.file("business-insights.xlsx")).not.toBeNull();
+    expect(zip.file("README.md")).not.toBeNull();
+  });
 
-    const csv = await zip.file("projects.csv")!.async("string");
-    expect(csv.split("\n")[0]).toBe(
-      "project_id,project_name,industry,system_category,stations,total_hours,primary_bucket",
-    );
-    expect(csv).toContain("p1,Alpha,");
+  it("does NOT include any .json or .csv entry in the default bundle (INSIGHTS-01 acceptance)", () => {
+    const zip = buildInsightsPackZip(makePortfolio(), "Real", FIXED_DATE);
+    const filenames = Object.keys(zip.files);
+    for (const name of filenames) {
+      expect(name.endsWith(".json"), `Unexpected JSON entry: ${name}`).toBe(false);
+      expect(name.endsWith(".csv"), `Unexpected CSV entry: ${name}`).toBe(false);
+    }
+  });
 
-    const json = await zip.file("portfolio.json")!.async("string");
-    const parsed = JSON.parse(json);
-    expect(parsed.kpis.projectCount).toBe(3);
-    expect(parsed.riskCorrelations.length).toBeGreaterThan(0);
+  it("contains exactly three entries in the canonical order", () => {
+    const zip = buildInsightsPackZip(makePortfolio(), "Real", FIXED_DATE);
+    expect(Object.keys(zip.files)).toEqual([
+      "summary.md",
+      "business-insights.xlsx",
+      "README.md",
+    ]);
+  });
 
+  it("preserves buildSummaryMarkdown output byte-for-byte inside the zip (CONTEXT D-05)", async () => {
+    const portfolio = makePortfolio();
+    const zip = buildInsightsPackZip(portfolio, "Real", FIXED_DATE);
     const md = await zip.file("summary.md")!.async("string");
-    expect(md).toContain("# Business Insights Pack - Real");
+    // Direct call should produce the same string the zip stored.
+    expect(md).toBe(buildSummaryMarkdown(portfolio, "Real", FIXED_DATE));
   });
 });
 
@@ -208,5 +221,61 @@ describe("buildInsightsPack", () => {
     const blob = await buildInsightsPack(makePortfolio(), "Real", FIXED_DATE);
     expect(blob).toBeInstanceOf(Blob);
     expect(blob.size).toBeGreaterThan(0);
+  });
+});
+
+// End-to-end integration: exercises the full zip round-trip without going
+// through Blob (Blob.arrayBuffer() is not polyfilled in jsdom). We use
+// buildInsightsPackZip directly and round-trip through JSZip.generateAsync
+// + JSZip.loadAsync to prove every file survives serialization.
+describe("buildInsightsPack — end-to-end integration (INSIGHTS-01, INSIGHTS-02)", () => {
+  it("opens summary.md and asserts the canonical heading", async () => {
+    const zip = buildInsightsPackZip(makePortfolio(), "Real", FIXED_DATE);
+    const buf = await zip.generateAsync({ type: "arraybuffer" });
+    const opened = await new (await import("jszip")).default().loadAsync(buf);
+    const md = await opened.file("summary.md")!.async("string");
+    expect(md).toContain("# Business Insights Pack - Real");
+  });
+
+  it("opens business-insights.xlsx and confirms the four canonical sheets are present", async () => {
+    const zip = buildInsightsPackZip(makePortfolio(), "Real", FIXED_DATE);
+    const buf = await zip.generateAsync({ type: "arraybuffer" });
+    const opened = await new (await import("jszip")).default().loadAsync(buf);
+    const xlsxBytes = await opened.file("business-insights.xlsx")!.async("arraybuffer");
+    const wb = XLSX.read(xlsxBytes, { type: "array" });
+    expect(wb.SheetNames).toEqual(["Summary", "Drivers", "Raw", "README"]);
+  });
+
+  it("opens README.md and confirms the engineer-side button reference is present (CONTEXT D-07)", async () => {
+    const zip = buildInsightsPackZip(makePortfolio(), "Real", FIXED_DATE);
+    const buf = await zip.generateAsync({ type: "arraybuffer" });
+    const opened = await new (await import("jszip")).default().loadAsync(buf);
+    const readme = await opened.file("README.md")!.async("string");
+    expect(readme).toContain("Business Insights Pack — Real");
+    expect(readme).toContain('"Download raw JSON (for engineers)"');
+  });
+
+  it("asserts zip composition matches every ROADMAP success criterion in this phase", async () => {
+    const zip = buildInsightsPackZip(makePortfolio(), "Real", FIXED_DATE);
+    const buf = await zip.generateAsync({ type: "arraybuffer" });
+    const opened = await new (await import("jszip")).default().loadAsync(buf);
+    const filenames = Object.keys(opened.files);
+
+    // ROADMAP success #1: zero .json
+    for (const f of filenames) {
+      expect(f.endsWith(".json")).toBe(false);
+    }
+    // ROADMAP success #1 (alt path): replaced with .xlsx
+    expect(filenames).toContain("business-insights.xlsx");
+    // ROADMAP success #2: bundled README sheet documents every column
+    const xlsxBytes = await opened.file("business-insights.xlsx")!.async("arraybuffer");
+    const wb = XLSX.read(xlsxBytes, { type: "array" });
+    expect(wb.SheetNames).toContain("README");
+    // ROADMAP success #3: notepad preserved
+    const md = await opened.file("summary.md")!.async("string");
+    expect(md).toContain("# Business Insights Pack - Real");
+    // ROADMAP success #4 (manual UAT proxy): top-level README orients reviewer
+    const readme = await opened.file("README.md")!.async("string");
+    expect(readme).toContain("## Where to start");
   });
 });
