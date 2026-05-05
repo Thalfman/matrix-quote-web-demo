@@ -46,11 +46,38 @@ import type {
 /** Public — list view consumers import this for direct invalidation. */
 export const QUOTES_QUERY_KEY = ["quotes", "all"] as const;
 
-const QUOTE_BY_ID = (id: string) => ["quotes", id] as const;
+/**
+ * Per-id query key. Uses ["quotes", "byId", id] so the namespace is explicit
+ * and disjoint from QUOTES_QUERY_KEY (`["quotes", "all"]`). Wider invalidations
+ * (`["quotes"]`) still match by prefix.
+ */
+const QUOTE_BY_ID = (id: string) => ["quotes", "byId", id] as const;
 
 // ---------------------------------------------------------------------------
 // Read hooks
 // ---------------------------------------------------------------------------
+
+/**
+ * Internal: subscribe to the storage BroadcastChannel and invalidate every
+ * `["quotes", ...]` query on any event. Mirrors T-05-09: we treat broadcasts
+ * as cache-invalidate signals and re-read from IDB through the validated
+ * storage path; we never read evt fields beyond the fact that an event
+ * arrived.
+ *
+ * Used by both useSavedQuotes (list) and useSavedQuote (single) so a tab that
+ * mounts only the detail page (deep link / bookmark to /quotes/:id) still
+ * picks up cross-tab edits — UI-SPEC §"Cross-tab broadcast UI cue" promised
+ * SavedQuotePage live updates.
+ */
+function useStorageInvalidate(): void {
+  const qc = useQueryClient();
+  useEffect(() => {
+    const unsubscribe = subscribe(() => {
+      void qc.invalidateQueries({ queryKey: ["quotes"] });
+    });
+    return unsubscribe;
+  }, [qc]);
+}
 
 /**
  * Returns the full ordered list of saved quotes from IndexedDB.
@@ -61,17 +88,7 @@ const QUOTE_BY_ID = (id: string) => ["quotes", id] as const;
  * never trusted as state (T-05-09).
  */
 export function useSavedQuotes(): UseQueryResult<SavedQuote[]> {
-  const qc = useQueryClient();
-
-  useEffect(() => {
-    // T-05-09: invalidate-only handler. We never read evt fields beyond the
-    // fact that an event arrived.
-    const unsubscribe = subscribe(() => {
-      void qc.invalidateQueries({ queryKey: ["quotes"] });
-    });
-    return unsubscribe;
-  }, [qc]);
-
+  useStorageInvalidate();
   return useQuery<SavedQuote[]>({
     queryKey: QUOTES_QUERY_KEY,
     queryFn: () => listSavedQuotes(),
@@ -82,13 +99,20 @@ export function useSavedQuotes(): UseQueryResult<SavedQuote[]> {
 /**
  * Returns one saved quote by id, or null when no record exists.
  *
- * Disabled when `id` is undefined — getSavedQuote is not invoked.
+ * Disabled when `id` is undefined — getSavedQuote is not invoked. Also
+ * subscribes to the storage BroadcastChannel so a tab that mounts only the
+ * detail page (deep-linked / bookmarked /quotes/:id) still picks up
+ * cross-tab edits to that record's version history. UI-SPEC §"Cross-tab
+ * broadcast UI cue".
  */
 export function useSavedQuote(
   id: string | undefined,
 ): UseQueryResult<SavedQuote | null> {
+  useStorageInvalidate();
   return useQuery<SavedQuote | null>({
-    queryKey: id ? QUOTE_BY_ID(id) : ["quotes", "__noop__"],
+    // IN-02 also addressed here: stable ["quotes", "byId", id|"__none__"]
+    // shape avoids the cache-leaking ["quotes", "__noop__"] placeholder.
+    queryKey: ["quotes", "byId", id ?? "__none__"],
     queryFn: () =>
       id ? getSavedQuote(id) : Promise.resolve(null as SavedQuote | null),
     enabled: !!id,

@@ -367,6 +367,39 @@ describe("useSavedQuotes — cross-tab BroadcastChannel sync", () => {
     await waitFor(() => expect(result.current.data).toHaveLength(2));
   });
 
+  it("useSavedQuote(id) subscribes and re-reads on broadcast (WR-03; UI-SPEC cross-tab cue)", async () => {
+    const v1 = makeSavedQuote({ name: "Detail v1" });
+    mockGetSavedQuote.mockResolvedValue(v1);
+
+    const { result } = renderHook(
+      () => useSavedQuote("11111111-1111-4111-8111-111111111111"),
+      { wrapper: makeWrapper() },
+    );
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(mockGetSavedQuote).toHaveBeenCalledTimes(1);
+    // The detail hook must register its own broadcast subscriber even when
+    // useSavedQuotes (the list hook) is not mounted. Bookmarked /quotes/:id
+    // is the canonical case.
+    expect(mockSubscribe).toHaveBeenCalled();
+    expect(subscriberRef.current).not.toBeNull();
+
+    // Simulate a cross-tab save event; the hook must re-read from storage.
+    // We assert the queryFn was re-invoked (T-05-09 cache-invalidate
+    // contract); the data shape on the second resolve is exercised by the
+    // sibling list test, so we don't duplicate that here.
+    await act(async () => {
+      subscriberRef.current!({
+        type: "save",
+        id: "11111111-1111-4111-8111-111111111111",
+        updatedAt: "2026-05-05T14:00:00.000Z",
+      });
+    });
+
+    await waitFor(() =>
+      expect(mockGetSavedQuote.mock.calls.length).toBeGreaterThanOrEqual(2),
+    );
+  });
+
   it("delete broadcast also invalidates the list (covers ['quotes'] umbrella key)", async () => {
     mockListSavedQuotes.mockResolvedValue([makeSavedQuote()]);
 
