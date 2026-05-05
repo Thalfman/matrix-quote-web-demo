@@ -1,5 +1,5 @@
 import { screen, fireEvent, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { renderWithProviders } from "@/test/render";
 import type { ProjectRecord } from "@/demo/realProjects";
@@ -16,6 +16,20 @@ vi.mock("recharts", async () => {
     ),
   };
 });
+
+// Spy on downloadBlob so we can assert what the engineer-side button
+// triggers without actually invoking <a download> in jsdom.
+vi.mock("./exportPack", async () => {
+  const actual = await vi.importActual<typeof import("./exportPack")>("./exportPack");
+  return {
+    ...actual,
+    downloadBlob: vi.fn(),
+  };
+});
+
+// Re-import the module via dynamic import so we can grab the spy.
+import * as exportPackModule from "./exportPack";
+const downloadBlobSpy = vi.mocked(exportPackModule.downloadBlob);
 
 const FAKE_RECORDS: ProjectRecord[] = [
   {
@@ -332,5 +346,148 @@ describe("BusinessInsightsView - table row click opens drawer", () => {
     await waitFor(() => {
       expect(dialog!.className).toMatch(/translate-x-full/);
     });
+  });
+});
+
+describe("BusinessInsightsView - download buttons (INSIGHTS-01, CONTEXT D-07)", () => {
+  beforeEach(() => {
+    downloadBlobSpy.mockReset();
+  });
+
+  it("renders both the primary 'Download insights pack' button and the secondary engineer-side button", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    expect(
+      screen.getByRole("button", { name: /download insights pack/i }),
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", {
+        name: /download raw portfolio json for engineers/i,
+      }),
+    ).toBeInTheDocument();
+  });
+
+  it("secondary button has the visible label exactly 'Download raw JSON (for engineers)' (CONTEXT D-07)", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    const btn = screen.getByRole("button", {
+      name: /download raw portfolio json for engineers/i,
+    });
+    expect(btn).toHaveTextContent("Download raw JSON (for engineers)");
+  });
+
+  it("clicking the secondary button calls downloadBlob with a JSON Blob and a portfolio-{slug}-{date}.json filename", async () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    const btn = screen.getByRole("button", {
+      name: /download raw portfolio json for engineers/i,
+    });
+    fireEvent.click(btn);
+    expect(downloadBlobSpy).toHaveBeenCalledTimes(1);
+    const [blob, filename] = downloadBlobSpy.mock.calls[0];
+    expect(blob).toBeInstanceOf(Blob);
+    expect((blob as Blob).type).toContain("application/json");
+    // Slug-agnostic regex -- passes for any datasetLabel BASE_PROPS uses,
+    // so this test does not break if BASE_PROPS.datasetLabel ever changes.
+    expect(filename).toMatch(/^portfolio-[a-z0-9-]+-\d{4}-\d{2}-\d{2}\.json$/);
+  });
+
+  it("the secondary button's downloaded blob, when read, is byte-equivalent to JSON.stringify(portfolio, null, 2) for the rendered records", async () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    const btn = screen.getByRole("button", {
+      name: /download raw portfolio json for engineers/i,
+    });
+    fireEvent.click(btn);
+    const [blob] = downloadBlobSpy.mock.calls[0];
+    // jsdom's Blob does not support .text() or Response(blob).text(); use
+    // FileReader which jsdom does implement.
+    const text = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsText(blob as Blob);
+    });
+    // Round-trip parse -- guarantees pretty-printed two-space JSON.
+    expect(() => JSON.parse(text)).not.toThrow();
+    const parsed = JSON.parse(text);
+    expect(parsed.kpis.projectCount).toBe(FAKE_RECORDS.length);
+    // Two-space indent contract (engineers' tooling depends on this)
+    expect(text.split("\n")[1]).toMatch(/^ {2}"/);
+  });
+
+  it("does NOT trigger the secondary download until the user clicks", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    expect(downloadBlobSpy).not.toHaveBeenCalled();
+  });
+
+  it("secondary button uses text-xs / text-muted / underline-on-hover styling (CONTEXT D-07)", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    const btn = screen.getByRole("button", {
+      name: /download raw portfolio json for engineers/i,
+    });
+    const cls = btn.className;
+    expect(cls).toContain("text-xs");
+    expect(cls).toContain("text-muted");
+    expect(cls).toContain("hover:underline");
+  });
+
+  it("secondary button is keyboard-focusable", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    const btn = screen.getByRole("button", {
+      name: /download raw portfolio json for engineers/i,
+    });
+    btn.focus();
+    expect(document.activeElement).toBe(btn);
+  });
+
+  it("does not render either download button when records is empty", () => {
+    renderWithProviders(
+      <BusinessInsightsView
+        records={[]}
+        datasetLabel="Empty"
+        isLoading={false}
+        error={null}
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: /download insights pack/i }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", {
+        name: /download raw portfolio json for engineers/i,
+      }),
+    ).not.toBeInTheDocument();
+  });
+});
+
+describe("BusinessInsightsView - jargon-guard on download surface (cross-cuts DATA-03)", () => {
+  const BANNED = [
+    /\bP10\b/,
+    /\bP50\b/,
+    /\bP90\b/,
+    /Pyodide/i,
+    /\bgradient\s*boost(ing|ed)?\b/i,
+    /R²/,
+    /\bconfidence interval(s)?\b/i,
+    /\bensemble\b/i,
+    /\bcategorical\b/i,
+    /\bembedding\b/i,
+    /\btraining data\b/i,
+    /\bregression\b/i,
+    /\bsklearn\b/i,
+    /\bjoblib\b/i,
+    /\bquantile\b/i,
+  ];
+
+  it("neither download button label/title contains banned ML jargon", () => {
+    renderWithProviders(<BusinessInsightsView {...BASE_PROPS} />);
+    const primary = screen.getByRole("button", { name: /download insights pack/i });
+    const secondary = screen.getByRole("button", {
+      name: /download raw portfolio json for engineers/i,
+    });
+    const surface =
+      [primary.textContent ?? "", primary.getAttribute("title") ?? "",
+       secondary.textContent ?? "", secondary.getAttribute("title") ?? "",
+       secondary.getAttribute("aria-label") ?? ""].join(" | ");
+    for (const re of BANNED) {
+      expect(surface, `Banned token ${re} on download surface`).not.toMatch(re);
+    }
   });
 });
