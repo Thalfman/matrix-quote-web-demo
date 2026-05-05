@@ -151,9 +151,14 @@ def _copy_model_bundle(src_name: str) -> int:
 
     src_name must be one of "models_real" or "models_synthetic".
 
-    If the source joblibs are LFS pointers (e.g. LFS not fetched in CI), warn
-    and skip rather than failing the whole build — the ML tool will be broken
-    in that deployment, but the demo's other pages still ship.
+    If any joblib under src is an LFS pointer (size < 1024 bytes), this
+    function calls _die() and the build aborts. Run `git lfs pull` and
+    re-build to recover. This is intentional: a half-fetched LFS state
+    must NOT ship as a working deploy — the ML tool would silently break.
+
+    The "src does not exist" branch above is a separate concern: that path
+    represents a deliberate "build without ML assets" choice (e.g., a
+    docs-only deploy) and keeps the WARN-and-return-0 behavior.
     """
     import csv as _csv
 
@@ -169,20 +174,15 @@ def _copy_model_bundle(src_name: str) -> int:
     dst = OUT / src_name
     dst.mkdir(parents=True, exist_ok=True)
     count = 0
-    skipped_lfs = 0
     for joblib_file in sorted(src.glob("*.joblib")):
         if joblib_file.stat().st_size < 1024:
-            skipped_lfs += 1
-            continue
+            _die(
+                f"LFS pointer detected at {joblib_file}; "
+                f"run `git lfs pull` and re-build "
+                f"(joblib bundle = {src_name})"
+            )
         shutil.copy2(joblib_file, dst / joblib_file.name)
         count += 1
-    if skipped_lfs:
-        print(
-            f"WARN: {skipped_lfs} joblib(s) in {src_name} were LFS pointers and were skipped. "
-            "Enable LFS in Vercel project settings (or run `git lfs pull` locally) "
-            "to restore the ML tool.",
-            file=sys.stderr,
-        )
 
     # Emit metrics JSON — pick only the columns the frontend cares about.
     metrics_csv = src / "metrics_summary.csv"
