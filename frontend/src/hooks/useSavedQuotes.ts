@@ -1,0 +1,178 @@
+/**
+ * React-side data access for saved quotes. Wraps frontend/src/lib/quoteStorage.ts
+ * with TanStack Query for caching + invalidation, and pipes BroadcastChannel
+ * cross-tab events into cache invalidation.
+ *
+ * Pattern mirrors frontend/src/demo/realProjects.ts (useRealProjects, etc.) —
+ * separate ["quotes", ...] query-key namespace from the demo-data layer.
+ *
+ * Threats mitigated:
+ *   T-05-09: cross-tab BroadcastChannel events are treated as cache-invalidate
+ *            signals only. The handler ignores the event payload body and
+ *            re-reads from IDB through the validated quoteStorage path. The
+ *            implementation in frontend/src/lib/quoteStorage.ts already keeps
+ *            broadcast bodies opaque ({ type, id, updatedAt }); this hook never
+ *            forwards them to the cache as state.
+ */
+import { useEffect } from "react";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type UseMutationResult,
+  type UseQueryResult,
+} from "@tanstack/react-query";
+
+import {
+  deleteSavedQuote,
+  getSavedQuote,
+  listSavedQuotes,
+  restoreVersion,
+  saveSavedQuote,
+  setStatus,
+  subscribe,
+  type SaveSavedQuoteArgs,
+} from "@/lib/quoteStorage";
+import type {
+  QuoteVersion,
+  SavedQuote,
+  WorkflowStatus,
+} from "@/lib/savedQuoteSchema";
+
+// ---------------------------------------------------------------------------
+// Query keys (separate from ["demo", ...] namespace used by realProjects.ts)
+// ---------------------------------------------------------------------------
+
+/** Public — list view consumers import this for direct invalidation. */
+export const QUOTES_QUERY_KEY = ["quotes", "all"] as const;
+
+const QUOTE_BY_ID = (id: string) => ["quotes", id] as const;
+
+// ---------------------------------------------------------------------------
+// Read hooks
+// ---------------------------------------------------------------------------
+
+/**
+ * Returns the full ordered list of saved quotes from IndexedDB.
+ *
+ * Subscribes to the storage broadcast on mount; every cross-tab save / delete /
+ * restore event triggers `qc.invalidateQueries(["quotes"])`, which pulls fresh
+ * data through the validated `listSavedQuotes` path. The event payload is
+ * never trusted as state (T-05-09).
+ */
+export function useSavedQuotes(): UseQueryResult<SavedQuote[]> {
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    // T-05-09: invalidate-only handler. We never read evt fields beyond the
+    // fact that an event arrived.
+    const unsubscribe = subscribe(() => {
+      void qc.invalidateQueries({ queryKey: ["quotes"] });
+    });
+    return unsubscribe;
+  }, [qc]);
+
+  return useQuery<SavedQuote[]>({
+    queryKey: QUOTES_QUERY_KEY,
+    queryFn: () => listSavedQuotes(),
+    staleTime: Infinity,
+  });
+}
+
+/**
+ * Returns one saved quote by id, or null when no record exists.
+ *
+ * Disabled when `id` is undefined — getSavedQuote is not invoked.
+ */
+export function useSavedQuote(
+  id: string | undefined,
+): UseQueryResult<SavedQuote | null> {
+  return useQuery<SavedQuote | null>({
+    queryKey: id ? QUOTE_BY_ID(id) : ["quotes", "__noop__"],
+    queryFn: () =>
+      id ? getSavedQuote(id) : Promise.resolve(null as SavedQuote | null),
+    enabled: !!id,
+    staleTime: Infinity,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Mutation hooks
+// ---------------------------------------------------------------------------
+
+/**
+ * Save a new quote (no id) or append a new version to an existing one (id set).
+ * On success, invalidates the list query AND the per-id query so any open
+ * detail page re-reads its versions array.
+ */
+export function useSaveQuote(): UseMutationResult<
+  SavedQuote,
+  Error,
+  SaveSavedQuoteArgs
+> {
+  const qc = useQueryClient();
+  return useMutation<SavedQuote, Error, SaveSavedQuoteArgs>({
+    mutationFn: (args) => saveSavedQuote(args),
+    onSuccess: (saved) => {
+      void qc.invalidateQueries({ queryKey: QUOTES_QUERY_KEY });
+      void qc.invalidateQueries({ queryKey: QUOTE_BY_ID(saved.id) });
+    },
+  });
+}
+
+/**
+ * Hard delete (D-17). Invalidates the umbrella `["quotes"]` key, which covers
+ * both `["quotes", "all"]` and any `["quotes", id]` queries.
+ */
+export function useDeleteQuote(): UseMutationResult<void, Error, string> {
+  const qc = useQueryClient();
+  return useMutation<void, Error, string>({
+    mutationFn: (id) => deleteSavedQuote(id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: ["quotes"] });
+    },
+  });
+}
+
+/**
+ * D-08/D-09: chip-driven status change. Does not create a new version.
+ * Invalidates list and the per-id query so the detail page redraws the chip.
+ */
+export function useSetStatus(): UseMutationResult<
+  SavedQuote,
+  Error,
+  { id: string; status: WorkflowStatus }
+> {
+  const qc = useQueryClient();
+  return useMutation<
+    SavedQuote,
+    Error,
+    { id: string; status: WorkflowStatus }
+  >({
+    mutationFn: ({ id, status }) => setStatus(id, status),
+    onSuccess: (saved) => {
+      void qc.invalidateQueries({ queryKey: QUOTES_QUERY_KEY });
+      void qc.invalidateQueries({ queryKey: QUOTE_BY_ID(saved.id) });
+    },
+  });
+}
+
+/**
+ * D-06: NON-DESTRUCTIVE restore. Returns the formValues to seed the open form;
+ * the actual `v(N+1)` commit happens on the next `useSaveQuote` mutation with
+ * `restoredFromVersion: N` set in the args. No cache invalidation here — the
+ * underlying record is unchanged until the caller saves.
+ */
+export function useRestoreVersion(): UseMutationResult<
+  { formValues: QuoteVersion["formValues"] },
+  Error,
+  { id: string; version: number }
+> {
+  return useMutation<
+    { formValues: QuoteVersion["formValues"] },
+    Error,
+    { id: string; version: number }
+  >({
+    mutationFn: ({ id, version }) => restoreVersion(id, version),
+  });
+}
