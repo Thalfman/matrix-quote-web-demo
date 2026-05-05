@@ -56,14 +56,22 @@ function makePayload(over: Partial<{
 }> = {}) {
   return {
     workspace: "real" as const,
-    formValues: quoteFormDefaults as QuoteFormValues,
+    formValues: quoteFormDefaults,
     unifiedResult: FAKE_RESULT,
     suggestedName: "ME 800h · Vision · 2026-05-05",
     ...over,
   };
 }
 
-function makeSavedQuote(over: Partial<SavedQuote> = {}): SavedQuote {
+/**
+ * Loose over type — the zod-inferred SavedQuote shape's passthrough types
+ * trip strict assignment from UnifiedQuoteResult fixtures, but tests don't
+ * exercise the schema. Using Record<string, unknown> here keeps fixtures
+ * readable.
+ */
+type SavedQuoteOver = Record<string, unknown>;
+
+function makeSavedQuote(over: SavedQuoteOver = {}): SavedQuote {
   return {
     id: "abc-123",
     schemaVersion: 1,
@@ -77,12 +85,15 @@ function makeSavedQuote(over: Partial<SavedQuote> = {}): SavedQuote {
         version: 1,
         savedAt: "2026-05-05T12:00:00.000Z",
         statusAtTime: "draft",
-        formValues: quoteFormDefaults as QuoteFormValues,
-        unifiedResult: FAKE_RESULT as unknown as Record<string, unknown>,
+        formValues: quoteFormDefaults,
+        unifiedResult: FAKE_RESULT,
       },
     ],
+    salesBucket: "ME",
+    visionLabel: "Vision",
+    materialsCost: 0,
     ...over,
-  } as SavedQuote;
+  } as unknown as SavedQuote;
 }
 
 beforeEach(() => {
@@ -255,15 +266,15 @@ describe("SaveQuoteDialog - submit success", () => {
           version: 1,
           savedAt: "2026-05-05T11:00:00.000Z",
           statusAtTime: "draft",
-          formValues: quoteFormDefaults as QuoteFormValues,
-          unifiedResult: FAKE_RESULT as unknown as Record<string, unknown>,
+          formValues: quoteFormDefaults,
+          unifiedResult: FAKE_RESULT,
         },
         {
           version: 2,
           savedAt: "2026-05-05T12:00:00.000Z",
           statusAtTime: "draft",
-          formValues: quoteFormDefaults as QuoteFormValues,
-          unifiedResult: FAKE_RESULT as unknown as Record<string, unknown>,
+          formValues: quoteFormDefaults,
+          unifiedResult: FAKE_RESULT,
         },
       ],
       status: "draft",
@@ -290,15 +301,15 @@ describe("SaveQuoteDialog - submit success", () => {
           version: 1,
           savedAt: "2026-05-05T11:00:00.000Z",
           statusAtTime: "draft",
-          formValues: quoteFormDefaults as QuoteFormValues,
-          unifiedResult: FAKE_RESULT as unknown as Record<string, unknown>,
+          formValues: quoteFormDefaults,
+          unifiedResult: FAKE_RESULT,
         },
         {
           version: 2,
           savedAt: "2026-05-05T12:00:00.000Z",
           statusAtTime: "revised",
-          formValues: quoteFormDefaults as QuoteFormValues,
-          unifiedResult: FAKE_RESULT as unknown as Record<string, unknown>,
+          formValues: quoteFormDefaults,
+          unifiedResult: FAKE_RESULT,
         },
       ],
       status: "revised",
@@ -370,15 +381,15 @@ describe("SaveQuoteDialog - revised assist", () => {
           version: 1,
           savedAt: "2026-05-05T11:00:00.000Z",
           statusAtTime: "draft",
-          formValues: quoteFormDefaults as QuoteFormValues,
-          unifiedResult: FAKE_RESULT as unknown as Record<string, unknown>,
+          formValues: quoteFormDefaults,
+          unifiedResult: FAKE_RESULT,
         },
         {
           version: 2,
           savedAt: "2026-05-05T12:00:00.000Z",
           statusAtTime: "draft",
-          formValues: quoteFormDefaults as QuoteFormValues,
-          unifiedResult: FAKE_RESULT as unknown as Record<string, unknown>,
+          formValues: quoteFormDefaults,
+          unifiedResult: FAKE_RESULT,
         },
       ],
       status: "draft",
@@ -404,7 +415,8 @@ describe("SaveQuoteDialog - revised assist", () => {
       typeof c[1] === "object" && c[1] !== null && "action" in (c[1] as object),
     );
     expect(call).toBeDefined();
-    const action = (call![1] as { action: { onClick: () => void } }).action;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const action = (call![1] as any).action as { onClick: () => void };
     action.onClick();
 
     expect(mockSetStatusMutateAsync).toHaveBeenCalledWith({
