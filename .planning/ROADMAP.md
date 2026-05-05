@@ -14,7 +14,7 @@
 |---|---|---|---|---|---|
 | 1 | Customer-blocking bug sweep ✅ | Stop the demo from crashing on Ben's input flow; correct the wrong Total/Avg signal; surface the user's inputs in the result panel. | BUG-01, BUG-02, UX-01 | yes | none |
 | 2 | Hover affordances ✅ 2026-05-04 | Add the drill-down tooltips Ben asked for so the user can interrogate charts and category labels without leaving the page. | UX-02, UX-03 | yes | Phase 1 (so we don't ship hover work over a still-broken Compare flow) |
-| 3 | Insights pack rework | Make the downloadable bundle self-explanatory to a non-technical audience — drop or label the JSON, document the CSV columns. | INSIGHTS-01, INSIGHTS-02 | yes (download UX + bundle README) | Phase 1 |
+| 3 | Insights pack rework ✅ 2026-05-04 | Make the downloadable bundle self-explanatory to a non-technical audience — drop or label the JSON, document the CSV columns. | INSIGHTS-01, INSIGHTS-02 | yes (download UX + bundle README) | Phase 1 |
 | 4 | Build / quality hardening | Fix the dead Vercel cache rule, make the LFS guard fail loudly, extend the jargon guard to uncovered surfaces. | DATA-01, DATA-02, DATA-03 | no | Phase 1 |
 
 Phases 2, 3, 4 are independent of each other once Phase 1 lands — they can run in parallel via `/gsd-execute-phase --wave` if desired.
@@ -83,11 +83,11 @@ Plans:
 **Plans:** 5 plans
 
 Plans:
-- [ ] 03-01-PLAN.md — Wave 1: Add `xlsx` (SheetJS) dep + `buildPortfolioWorkbook` pure helper (Summary / Drivers / Raw / README sheets) + unit tests
-- [ ] 03-02-PLAN.md — Wave 1: `buildBundleReadme` + `buildPortfolioJson` + `jsonFilename` helpers + unit tests
-- [ ] 03-03-PLAN.md — Wave 2: Rewire `buildInsightsPackZip` (drop CSV+JSON, add XLSX+README) + integration tests
-- [ ] 03-04-PLAN.md — Wave 2: Engineer-side "Download raw JSON (for engineers)" button + tests
-- [ ] 03-05-PLAN.md — Wave 3: Verification (jargon-guard extension + test/typecheck/lint/build/manual smoke)
+- [x] 03-01-PLAN.md — Wave 1: Add `xlsx` (SheetJS) dep + `buildPortfolioWorkbook` pure helper (Summary / Drivers / Raw / README sheets) + unit tests
+- [x] 03-02-PLAN.md — Wave 1: `buildBundleReadme` + `buildPortfolioJson` + `jsonFilename` helpers + unit tests
+- [x] 03-03-PLAN.md — Wave 2: Rewire `buildInsightsPackZip` (drop CSV+JSON, add XLSX+README) + integration tests
+- [x] 03-04-PLAN.md — Wave 2: Engineer-side "Download raw JSON (for engineers)" button + tests
+- [x] 03-05-PLAN.md — Wave 3: Verification (jargon-guard extension + test/typecheck/lint/build/manual smoke)
 
 ---
 
