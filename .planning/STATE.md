@@ -1,3 +1,18 @@
+---
+gsd_state_version: 1.0
+milestone: v2.0
+milestone_name: — Workflow fit
+status: executing
+last_updated: "2026-05-05T20:50:37.718Z"
+last_activity: 2026-05-05
+progress:
+  total_phases: 1
+  completed_phases: 0
+  total_plans: 9
+  completed_plans: 0
+  percent: 0
+---
+
 # STATE
 
 > Live project memory. Updated by every GSD command. Read by `/gsd-progress` to route to the next action.
@@ -11,16 +26,23 @@
 - **Branch:** `main`
 - **Repo type:** brownfield, static-only Vite/React SPA on Vercel CDN
 
-## Current Position
-
-- **Milestone:** v1.0 ✅ SHIPPED 2026-05-05 (10/10 v1 requirements complete) — see `.planning/milestones/v1.0-ROADMAP.md`
-- **Next milestone:** v2.0 — Workflow fit (planned, not yet seeded). Headline open decision: `PERSIST-01` browser-only vs introduce a backend.
-- **Stopped at:** v1.0 milestone archived (PR #23 merged in commit `48a1b5a`; REQUIREMENTS.md archived + `git rm`'d; tag `v1.0` created). Ready for `/gsd-new-milestone` to seed v2.
+- **Milestone:** v2.0 — Workflow fit (started 2026-05-05; roadmap finalized)
+- **Phase:** Phase 5 — Quote Persistence (context gathered — ready for `/gsd-plan-phase 5`)
+- **Plan:** —
+- **Status:** Ready to execute
+- **In scope for v2.0:** PERSIST-01..06 (Phase 5 — quote persistence + workflow status + version history), DATA-04 + DATA-06 (Phase 6 — multi-vision incl. per-vision drivers breakdown), ROM-01 + ROM-02 (Phase 7 — ROM mode)
+- **Deferred from v2.0:** BENCH-01 (Manager-spreadsheet benchmark — optional, no firm slot)
+- **Last activity:** 2026-05-05
+- **Previously shipped:** v1.0 ✅ 2026-05-05 (10/10 v1 requirements complete) — see `.planning/milestones/v1.0-ROADMAP.md` and `.planning/MILESTONES.md`
 
 ## Recent Activity
 
 | Date | Event |
 |---|---|
+| 2026-05-05 | `/gsd-discuss-phase 5` → `05-CONTEXT.md` + `05-DISCUSSION-LOG.md` written; 19 implementation decisions locked (D-01..D-19); **headline architecture decision resolved: browser-only IndexedDB, no backend** (specialist routing unchanged); unified `/quotes` route across Real + Synthetic; fork-restore versioning; manual workflow-status chip with one re-save assist; ready for `/gsd-plan-phase 5` |
+| 2026-05-05 | Ben-feedback alignment pass → added PERSIST-05 (workflow status: draft/sent/won/lost/revised) + PERSIST-06 (version history) verbatim from Ben's 2026-05-01 email; tightened Phase 6 SC to require per-vision drivers breakdown on QuoteResultPanel; removed speculative "Quote sharing between SEs" out-of-scope row; Phase 5 grew from 5 to 7 success criteria; v2.0 req count 8 → 10 (Phase 5: 6, Phase 6: 2, Phase 7: 2) |
+| 2026-05-05 | Roadmap created → Phases 5 (PERSIST), 6 (Multi-vision), 7 (ROM); 8/8 v2.0 reqs mapped; ROADMAP.md + STATE.md + REQUIREMENTS.md traceability updated; coarse granularity, 3 phases; Phase 5 PERSIST-01 carries open architecture decision (browser-only vs backend) for discuss step |
+| 2026-05-05 | `/gsd-new-milestone` → milestone v2.0 (Workflow fit) seeded; PROJECT.md updated with Current Milestone section; STATE.md reset for v2; PERSIST-01 + DATA-04 + ROM-01 confirmed in scope; BENCH-01 deferred; REQUIREMENTS.md + ROADMAP.md pending in this run |
 | 2026-05-05 | `/gsd-complete-milestone 1.0` → archives written (`milestones/v1.0-ROADMAP.md`, `milestones/v1.0-REQUIREMENTS.md`); `MILESTONES.md` + `RETROSPECTIVE.md` created; PROJECT.md evolved (v1 reqs → Validated, v2/v3 surfaced); ROADMAP.md collapsed to milestone view; REQUIREMENTS.md `git rm`'d (fresh for v2); tag `v1.0` created |
 | 2026-05-05 | PR #23 merged to `main` (Phase 4, feat/04-build-quality-hardening, merge commit `48a1b5a`); v1.0 functionally complete |
 | 2026-05-05 | `/gsd-ship 4` → PR #23 opened (feat/04-build-quality-hardening → main); 16 commits including WR-01 fix; auto checks all green; no manual UAT (Phase 4 has zero customer-visible UI changes) |
@@ -52,7 +74,8 @@
 | 2026-05-04 | Manager hour-estimator spreadsheets out of scope as training inputs (durable) | Customer deliberate exclusion; data should drive, not crude heuristics |
 | 2026-05-04 | Per-phase research disabled by default in `config.json` | Codebase map + customer feedback already provide richer context than research could; flip on per-phase as needed |
 | 2026-05-04 | YOLO mode + coarse granularity | Single-dev iteration; auto-advance through approval gates that don't need fresh thought |
-| ⏳ pending | Quote persistence: browser-only vs introduce a backend | Decision deferred to v2 milestone discuss-phase |
+| 2026-05-05 | v2.0 split into 3 coarse phases (5: PERSIST, 6: Multi-vision, 7: ROM) | Natural delivery boundaries; coarse granularity matches `config.json`; Phase 6 + 7 depend on Phase 5 schema for save/reopen round-trip |
+| 2026-05-05 | Quote persistence = browser-only via IndexedDB; no backend introduced in v2.0 | Static-SPA-no-backend posture from v1.0 holds. Backend is milestone-sized work not justified by v2.0 evidence. Cross-device sync durably out for v2.0 (REQUIREMENTS.md). Specialist routing unchanged (frontend/ui/test only). Reopens in v3 if real-data ingest or AI Scope-Review forces it. |
 
 ## Blockers
 
@@ -69,5 +92,6 @@
 ## Notes for Future Sessions
 
 - The runtime hook ("no master dataset / 409") is **stale for this repo**. It describes parent-app behavior. Treat it as informational. See memory `project_static_demo_no_backend.md`.
-- Specialist agents for backend/auth/storage **do not apply** to this repo. Use `frontend-specialist`, `ui-ux-specialist`, `test-writer` only.
+- Specialist agents for backend/auth/storage **do not apply** to this repo. Phase 5 discuss step resolved the architecture decision: **browser-only IndexedDB, no backend introduced**. `auth-admin-specialist`, `backend-specialist`, `storage-specialist` remain N/A through v2.0. Use `frontend-specialist`, `ui-ux-specialist`, `test-writer` only. Backend question may reopen in v3 if real-data ingest (DATA-05) or AI Scope-Review (AI-01) forces it.
 - The user prefers plans with concrete code skeletons / exact strings / exact paths (memory `feedback_plan_specificity.md`), and a two-view plan format (memory `feedback_plan_format.md`). Honor both when running `/gsd-plan-phase`.
+- v2.0 phase numbering continues from v1.0: Phase 5 is the first v2.0 phase. Do not restart numbering at 1.
