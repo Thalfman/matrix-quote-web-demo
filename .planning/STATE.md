@@ -15,7 +15,7 @@
 - **Phase:** Phase 5 — Quote Persistence (not started — ready for `/gsd-plan-phase 5`)
 - **Plan:** —
 - **Status:** Roadmap finalized; ready to plan Phase 5
-- **In scope for v2.0:** PERSIST-01..04 (Phase 5 — quote persistence), DATA-04 + DATA-06 (Phase 6 — multi-vision), ROM-01 + ROM-02 (Phase 7 — ROM mode)
+- **In scope for v2.0:** PERSIST-01..06 (Phase 5 — quote persistence + workflow status + version history), DATA-04 + DATA-06 (Phase 6 — multi-vision incl. per-vision drivers breakdown), ROM-01 + ROM-02 (Phase 7 — ROM mode)
 - **Deferred from v2.0:** BENCH-01 (Manager-spreadsheet benchmark — optional, no firm slot)
 - **Last activity:** 2026-05-05 — roadmap created (Phases 5–7); ROADMAP.md + REQUIREMENTS.md traceability filled; 8/8 v2.0 reqs mapped (100% coverage)
 - **Previously shipped:** v1.0 ✅ 2026-05-05 (10/10 v1 requirements complete) — see `.planning/milestones/v1.0-ROADMAP.md` and `.planning/MILESTONES.md`
@@ -24,6 +24,7 @@
 
 | Date | Event |
 |---|---|
+| 2026-05-05 | Ben-feedback alignment pass → added PERSIST-05 (workflow status: draft/sent/won/lost/revised) + PERSIST-06 (version history) verbatim from Ben's 2026-05-01 email; tightened Phase 6 SC to require per-vision drivers breakdown on QuoteResultPanel; removed speculative "Quote sharing between SEs" out-of-scope row; Phase 5 grew from 5 to 7 success criteria; v2.0 req count 8 → 10 (Phase 5: 6, Phase 6: 2, Phase 7: 2) |
 | 2026-05-05 | Roadmap created → Phases 5 (PERSIST), 6 (Multi-vision), 7 (ROM); 8/8 v2.0 reqs mapped; ROADMAP.md + STATE.md + REQUIREMENTS.md traceability updated; coarse granularity, 3 phases; Phase 5 PERSIST-01 carries open architecture decision (browser-only vs backend) for discuss step |
 | 2026-05-05 | `/gsd-new-milestone` → milestone v2.0 (Workflow fit) seeded; PROJECT.md updated with Current Milestone section; STATE.md reset for v2; PERSIST-01 + DATA-04 + ROM-01 confirmed in scope; BENCH-01 deferred; REQUIREMENTS.md + ROADMAP.md pending in this run |
 | 2026-05-05 | `/gsd-complete-milestone 1.0` → archives written (`milestones/v1.0-ROADMAP.md`, `milestones/v1.0-REQUIREMENTS.md`); `MILESTONES.md` + `RETROSPECTIVE.md` created; PROJECT.md evolved (v1 reqs → Validated, v2/v3 surfaced); ROADMAP.md collapsed to milestone view; REQUIREMENTS.md `git rm`'d (fresh for v2); tag `v1.0` created |

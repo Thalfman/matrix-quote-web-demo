@@ -13,8 +13,10 @@ Requirements for the v2.0 milestone. Each maps to exactly one roadmap phase (fil
 - [ ] **PERSIST-02**: User can list their saved quotes with enough metadata to find one (at minimum: name + date + key inputs like sales bucket / vision type).
 - [ ] **PERSIST-03**: User can open a saved quote, edit its inputs, re-estimate, and save the revised version (multi-week revisions).
 - [ ] **PERSIST-04**: User can delete a saved quote.
+- [ ] **PERSIST-05**: User can set and change a workflow status on each saved quote — draft / sent / won / lost / revised — so the quote tracks where it is in the customer conversation. (Ben 2026-05-01: *"status (draft / sent / won / lost / revised)"*.)
+- [ ] **PERSIST-06**: When the user re-saves an edited quote, prior versions remain visible in the quote's history and the user can restore an earlier version back into the form. (Ben 2026-05-01: *"reopened, edited, re-quoted, versioned"*.)
 
-> Architecture sub-decision (browser-only localStorage/IndexedDB vs introduce a backend for the first time) is resolved at the PERSIST phase's discuss step, not at REQ scoping. Either route satisfies the four reqs above; the route changes the phase shape, not the user-facing capability.
+> Architecture sub-decision (browser-only localStorage/IndexedDB vs introduce a backend for the first time) is resolved at the PERSIST phase's discuss step, not at REQ scoping. All six reqs above are route-agnostic; the route changes the phase shape, not the user-facing capability.
 
 ### Multi-vision per project
 
@@ -51,7 +53,6 @@ Explicit exclusions to prevent scope creep.
 | Manager hour-estimator spreadsheets as training inputs | Customer deliberate exclusion (Ben Bertsche 2026-05-01): "I wanted the data to speak more than someone else's take on an estimator tool." May appear later as benchmark comparator (BENCH-01) only. |
 | Synthetic company name dressing | Customer prefers the obvious-fake names; no work to disguise them. |
 | Generic "make it look professional" UI rework | Visual polish is bounded by the non-technical-audience pitch. Not chasing a generic dashboard aesthetic. |
-| Quote sharing between Sales Engineers | Not part of v2.0 workflow fit; sibling concern, deferred indefinitely. |
 | Cross-device quote sync without a backend | If PERSIST chooses the browser-storage route, cross-device sync is durably out for v2.0. If PERSIST chooses the backend route, sync becomes available implicitly — no separate REQ needed. |
 
 ## Traceability
@@ -64,17 +65,19 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERSIST-02 | Phase 5 | Pending |
 | PERSIST-03 | Phase 5 | Pending |
 | PERSIST-04 | Phase 5 | Pending |
+| PERSIST-05 | Phase 5 | Pending |
+| PERSIST-06 | Phase 5 | Pending |
 | DATA-04 | Phase 6 | Pending |
 | DATA-06 | Phase 6 | Pending |
 | ROM-01 | Phase 7 | Pending |
 | ROM-02 | Phase 7 | Pending |
 
 **Coverage:**
-- v2.0 requirements: 8 total
-- Mapped to phases: 8 (Phase 5: 4, Phase 6: 2, Phase 7: 2)
+- v2.0 requirements: 10 total
+- Mapped to phases: 10 (Phase 5: 6, Phase 6: 2, Phase 7: 2)
 - Unmapped: 0
-- Coverage: 8/8 (100%) ✓
+- Coverage: 10/10 (100%) ✓
 
 ---
 *Requirements defined: 2026-05-05*
-*Last updated: 2026-05-05 — roadmap created (Phases 5–7); all 8 v2.0 reqs mapped 100%*
+*Last updated: 2026-05-05 — Ben-feedback alignment pass: added PERSIST-05 (workflow status) + PERSIST-06 (version history) verbatim from his 2026-05-01 email; removed speculative "Quote sharing between SEs" out-of-scope row Ben never raised. 10/10 v2.0 reqs mapped 100%.*

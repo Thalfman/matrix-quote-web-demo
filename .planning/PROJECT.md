@@ -59,9 +59,9 @@ Success looks like:
 **Goal:** Reshape the tool to match Ben's actual quoting workflow — multi-week revisions, multi-vision projects, and a ROM-quote-only path.
 
 **Target features:**
-- **PERSIST-01** — Quote persistence (save / resume across sessions). Headline open sub-decision (browser-only vs introduce a backend) is resolved at the PERSIST phase's discuss step, not at milestone seed.
-- **DATA-04** — Multi-vision per project (schema + ML feature engineering + multi-row UI).
-- **ROM-01** — ROM-quote mode (material-cost-only path for early-stage estimates).
+- **PERSIST-01..06** — Quote persistence (save / list / edit-resave / delete) + workflow status (draft / sent / won / lost / revised, per Ben verbatim) + version history (prior revisions visible and restorable, per Ben verbatim). Headline open sub-decision (browser-only vs introduce a backend) is resolved at the PERSIST phase's discuss step, not at milestone seed.
+- **DATA-04 + DATA-06** — Multi-vision per project (schema + ML feature engineering + multi-row UI + per-vision drivers breakdown on QuoteResultPanel).
+- **ROM-01 + ROM-02** — ROM-quote mode (material-cost-only path for early-stage estimates, visually distinguished as preliminary with a wider confidence band).
 
 **Previously shipped:** v1.0 — Customer-trust fixes (2026-05-05). All 10 v1 requirements complete. See `.planning/MILESTONES.md` and `.planning/milestones/v1.0-ROADMAP.md`.
 
@@ -96,10 +96,10 @@ Success looks like:
 
 REQ-IDs land in `.planning/REQUIREMENTS.md`, created at the end of this `/gsd-new-milestone` run.
 
-In scope for v2.0:
-- **PERSIST-01:** quote persistence (save / resume across sessions). Headline sub-decision — browser-only (localStorage / IndexedDB) vs introduce a backend for the first time — is resolved at the PERSIST phase's discuss step.
-- **DATA-04:** multi-vision per project — schema + ML feature engineering + UI multi-row vision picker.
-- **ROM-01:** ROM-quote mode (material-cost-only path for early-stage estimates).
+In scope for v2.0 (10 reqs across 3 phases):
+- **PERSIST-01..06** (Phase 5): quote persistence — save / list / edit-resave / delete + workflow status (draft / sent / won / lost / revised) + version history (prior revisions visible and restorable). Headline sub-decision — browser-only (localStorage / IndexedDB) vs introduce a backend for the first time — is resolved at the PERSIST phase's discuss step.
+- **DATA-04 + DATA-06** (Phase 6): multi-vision per project — schema + ML feature engineering + UI multi-row vision picker + per-vision drivers breakdown on QuoteResultPanel.
+- **ROM-01 + ROM-02** (Phase 7): ROM-quote mode (material-cost-only path) + visually-distinguished "preliminary" framing with wider confidence band.
 
 Deferred from v2.0:
 - **BENCH-01** (optional, low priority): benchmark vs Manager spreadsheet estimators. Comparator only, not training inputs. Surfaces if/when Ben asks; no firm slot.
@@ -149,4 +149,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Codebase Reality with current state if architecture moved (e.g., introducing a backend for v2)
 
 ---
-*Last updated: 2026-05-05 — v2.0 milestone seeded (PERSIST-01, DATA-04, ROM-01 in scope; BENCH-01 deferred)*
+*Last updated: 2026-05-05 — v2.0 milestone seeded + Ben-feedback alignment pass (PERSIST-01..06, DATA-04 + DATA-06, ROM-01 + ROM-02 in scope; BENCH-01 deferred). Phases 5–7 written. 10/10 v2.0 reqs mapped.*

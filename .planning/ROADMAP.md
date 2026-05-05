@@ -26,8 +26,8 @@ Full milestone: `.planning/milestones/v1.0-ROADMAP.md`
 
 Goal: reshape the tool to match Ben's actual quoting workflow — multi-week revisions, multi-vision projects, and a ROM-quote-only path. Three phases, eight requirements, coarse granularity.
 
-- [ ] **Phase 5: Quote Persistence** — A Sales Engineer can save a quote, find it again later, edit and re-estimate it across weeks, and delete obsolete ones (closes PERSIST-01, PERSIST-02, PERSIST-03, PERSIST-04)
-- [ ] **Phase 6: Multi-vision per project** — A Sales Engineer can quote a project with multiple vision systems and the ML estimate aggregates correctly across all of them (closes DATA-04, DATA-06)
+- [ ] **Phase 5: Quote Persistence** — A Sales Engineer can save a quote, find it again later, edit and re-estimate it across weeks, track its workflow status (draft / sent / won / lost / revised), see prior versions, and delete obsolete ones (closes PERSIST-01, PERSIST-02, PERSIST-03, PERSIST-04, PERSIST-05, PERSIST-06)
+- [ ] **Phase 6: Multi-vision per project** — A Sales Engineer can quote a project with multiple vision systems, see a per-vision drivers breakdown on the result panel, and the ML estimate aggregates correctly across all of them (closes DATA-04, DATA-06)
 - [ ] **Phase 7: ROM-quote mode** — A Sales Engineer can produce a material-cost-only ROM quote that is visually distinguished as preliminary (closes ROM-01, ROM-02)
 
 ### 📋 v3.0 — Manager out of the loop (planned)
@@ -43,15 +43,17 @@ Backlog requirements:
 ## Phase Details
 
 ### Phase 5: Quote Persistence
-**Goal**: A Sales Engineer can save the quote they just produced, find it again later in a "My Quotes" list, edit and re-estimate it across multiple sessions, and delete it when it is no longer relevant — supporting the multi-week customer-conversation revision cycle that Ben described.
+**Goal**: A Sales Engineer can save the quote they just produced, find it again later in a "My Quotes" list, edit and re-estimate it across multiple sessions, track its workflow status as it progresses through the customer conversation, and see prior versions when they revise — supporting the multi-week revision cycle that Ben described and the workflow-tracking shape he asked for verbatim.
 **Depends on**: v1.0 (shipped). No prior v2 phase.
-**Requirements**: PERSIST-01, PERSIST-02, PERSIST-03, PERSIST-04
+**Requirements**: PERSIST-01, PERSIST-02, PERSIST-03, PERSIST-04, PERSIST-05, PERSIST-06
 **Success Criteria** (what must be TRUE):
   1. A Sales Engineer can save a quote from either the Single Quote tool or the Compare tool, give it an identifying name, and see confirmation that it was saved.
   2. A Sales Engineer can open a "My Quotes" list and see every saved quote with at minimum a name, the date it was saved, and the key inputs (sales bucket, vision type, materials cost) needed to recognize which project it represents.
   3. A Sales Engineer can open a saved quote, change any input, re-run the estimate, and save the revised version — and the revised quote is what they see the next time they open it (multi-week revision works end-to-end).
   4. A Sales Engineer can delete a saved quote from the list, and the deletion persists across page reloads.
   5. The persistence behavior survives a full browser refresh and a closed/reopened tab — saving a quote is not just a session-level convenience.
+  6. A Sales Engineer can set and change a workflow status on each saved quote (draft / sent / won / lost / revised), the status persists, and the "My Quotes" list shows status at-a-glance for filtering by stage in the customer conversation.
+  7. When a Sales Engineer re-saves an edited quote, the prior version remains visible in that quote's history and the SE can restore an earlier version back into the form — Ben's "versioned" requirement, observable end-to-end.
 **Plans**: TBD
 **UI hint**: yes
 **Phase notes**:
@@ -67,7 +69,7 @@ Backlog requirements:
 **Success Criteria** (what must be TRUE):
   1. A Sales Engineer can add, edit, and remove multiple vision systems on a single quote via a multi-row vision picker, with at least add/remove of a second and third row demonstrably working.
   2. The ML estimate for a multi-vision quote differs from the same quote with only the first vision row, in a way a human reviewer can confirm reflects the additional vision systems (i.e. the aggregation is real, not a no-op).
-  3. The drivers, range, and confidence rendered on `QuoteResultPanel` describe the full vision set — there is no UI affordance that visibly reads only the first row.
+  3. `QuoteResultPanel` renders a per-vision drivers breakdown — one driver section per vision row in the quote — so the Sales Engineer (and the customer reading the quote) can see how each vision system contributes to the estimate. (Ben 2026-05-01: *"Result panel (per-vision drivers in the breakdown)"*.)
   4. A multi-vision quote saved in Phase 5 reopens with all vision rows intact and produces the same aggregated estimate on re-run.
 **Plans**: TBD
 **UI hint**: yes
