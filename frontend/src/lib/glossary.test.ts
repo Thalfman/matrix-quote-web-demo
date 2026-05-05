@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { BANNED_TOKENS } from "@/test/jargon";
 import { GLOSSARY, lookup, type GlossaryEntry } from "./glossary";
 
 describe("glossary — lookup()", () => {
@@ -60,28 +61,9 @@ describe("glossary — lookup()", () => {
 });
 
 describe("glossary — jargon-guard (cross-cuts DATA-03)", () => {
-  const BANNED = [
-    /\bP10\b/i,
-    /\bP50\b/i,
-    /\bP90\b/i,
-    /\bP10[–-]P90\b/i,
-    /\bpyodide\b/i,
-    /\bgradient[- ]?boost(ing|ed)?\b/i,
-    /\bregression\b/i,
-    /\bensemble\b/i,
-    /\bcategorical\b/i,
-    /\bembedding\b/i,
-    /\btraining data\b/i,
-    /\bconfidence interval(s)?\b/i,
-    /R²/,
-    /\bquantile\b/i,
-    /\bsklearn\b/i,
-    /\bjoblib\b/i,
-  ];
-
   it("no definition contains banned ML jargon", () => {
     for (const [key, entry] of Object.entries(GLOSSARY) as [string, GlossaryEntry][]) {
-      for (const re of BANNED) {
+      for (const re of BANNED_TOKENS) {
         expect(
           entry.definition,
           `Term "${key}" contains banned token ${re}: ${entry.definition}`,
@@ -92,7 +74,7 @@ describe("glossary — jargon-guard (cross-cuts DATA-03)", () => {
 
   it("no banned token in any term key either", () => {
     for (const key of Object.keys(GLOSSARY)) {
-      for (const re of BANNED) {
+      for (const re of BANNED_TOKENS) {
         expect(key, `Key "${key}" contains banned token ${re}`).not.toMatch(re);
       }
     }
