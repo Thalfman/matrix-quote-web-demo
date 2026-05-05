@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 
@@ -17,6 +18,7 @@ import {
 import { useRealProjects } from "@/demo/realProjects";
 import { useModelMetrics } from "@/demo/modelMetrics";
 import { useHotkey } from "@/lib/useHotkey";
+import { useSavedQuote } from "@/hooks/useSavedQuotes";
 import { QuoteForm } from "@/pages/single-quote/QuoteForm";
 import { QuoteResultPanel } from "@/components/quote/QuoteResultPanel";
 import { toUnifiedResult } from "@/demo/quoteAdapter";
@@ -52,6 +54,19 @@ function buildDropdowns(pool: Record<string, unknown>[]) {
 export function ComparisonQuote() {
   const { data: pool } = useRealProjects();
   const { data: metricsData } = useModelMetrics("real");
+
+  // Phase 5 BL-01 / WR-07: read the URL params that signal "this estimate
+  // belongs to an opened-from-list quote" so re-saving appends a new version
+  // (D-05) and lineage is preserved (D-06 restoredFromVersion). Without this,
+  // SaveQuoteButton receives quoteId=undefined and every Save creates a fresh
+  // record, breaking PERSIST-06 end-to-end.
+  const [searchParams] = useSearchParams();
+  const fromQuoteId = searchParams.get("fromQuote") ?? undefined;
+  const restoreVersionParam = searchParams.get("restoreVersion");
+  const restoredFromVersion = restoreVersionParam
+    ? Number(restoreVersionParam)
+    : undefined;
+  const { data: openedQuote } = useSavedQuote(fromQuoteId);
 
   const metricsByTarget = useMemo(
     () =>
@@ -227,6 +242,10 @@ export function ComparisonQuote() {
                 result={result.unified}
                 input={result.formValues}
                 workspace="real"
+                quoteId={fromQuoteId}
+                existingName={openedQuote?.name}
+                status={openedQuote?.status}
+                restoredFromVersion={restoredFromVersion}
               />
             )}
           </aside>

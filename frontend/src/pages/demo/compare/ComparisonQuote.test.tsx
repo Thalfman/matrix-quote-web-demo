@@ -1,9 +1,11 @@
+import "fake-indexeddb/auto";
 import { screen, waitFor, fireEvent, act } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { renderWithProviders } from "@/test/render";
 import type { ProjectRecord } from "@/demo/realProjects";
 import type { PyodideStatus } from "@/demo/pyodideClient";
+import type { SavedQuote } from "@/lib/savedQuoteSchema";
 
 // ---------------------------------------------------------------------------
 // Mock pyodideClient - all exported functions become controlled stubs.
@@ -84,6 +86,33 @@ vi.mock("@/demo/modelMetrics", () => ({
       ],
     },
   }),
+}));
+
+// ---------------------------------------------------------------------------
+// Mock useSavedQuotes — BL-01 / WR-07 integration test asserts
+// saveSavedQuote is called with `args.id` set when ?fromQuote= is in URL.
+// ---------------------------------------------------------------------------
+
+const mockSaveMutateAsync = vi.fn(() =>
+  Promise.resolve({
+    id: "test-quote-id",
+    versions: [{ version: 1 }, { version: 2 }],
+    status: "draft",
+  } as unknown as SavedQuote),
+);
+const mockUseSavedQuote = vi.fn(() => ({
+  data: undefined as SavedQuote | undefined,
+  isLoading: false,
+}));
+
+vi.mock("@/hooks/useSavedQuotes", () => ({
+  useSaveQuote: () => ({ mutateAsync: mockSaveMutateAsync, isPending: false }),
+  useSetStatus: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useSavedQuote: () => mockUseSavedQuote(),
+}));
+
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 // ---------------------------------------------------------------------------
@@ -208,5 +237,158 @@ describe("ComparisonQuote - loading state", () => {
     );
     // Before submit, no hero estimate text present.
     expect(screen.queryByText(/Estimated hours/i)).not.toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// BL-01 + WR-07 integration: re-saving an opened-from-list quote MUST pass
+// `id` to saveSavedQuote so a new version is appended (not a duplicate
+// quote), and `restoredFromVersion` MUST flow through when the URL carries
+// ?restoreVersion=N.
+// ---------------------------------------------------------------------------
+
+describe("ComparisonQuote - BL-01 fromQuote= wires quoteId into Save", () => {
+  beforeEach(() => {
+    mockSaveMutateAsync.mockClear();
+    mockUseSavedQuote.mockReset();
+    mockPredictQuote.mockClear();
+    mockGetFeatureImportances.mockClear();
+  });
+
+  it("saveSavedQuote is called with args.id set when arriving via ?fromQuote= (BL-01)", async () => {
+    // Pretend the user opened /compare/quote?fromQuote=test-quote-id from the
+    // My Quotes list — useSavedQuote returns the existing record so the
+    // dialog can prefill name + status.
+    mockUseSavedQuote.mockReturnValue({
+      data: {
+        id: "test-quote-id",
+        name: "Existing Quote",
+        status: "sent",
+      } as unknown as SavedQuote,
+      isLoading: false,
+    });
+
+    renderWithProviders(<ComparisonQuote />, {
+      route: "/compare/quote?fromQuote=test-quote-id",
+    });
+
+    await waitFor(() => expect(mockEnsureModelsReady).toHaveBeenCalledWith("real"));
+
+    // Run an estimate to surface QuoteResultPanel + the Save button.
+    const submitBtn = await screen.findByRole("button", {
+      name: /regenerate estimate/i,
+    });
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+    await waitFor(() =>
+      expect(screen.getByText(/Estimated hours/i)).toBeInTheDocument(),
+    );
+
+    // Open the Save dialog.
+    const saveTrigger = await screen.findByRole("button", { name: /save quote/i });
+    await act(async () => {
+      fireEvent.click(saveTrigger);
+    });
+
+    // The submit button inside the dialog has aria-label "Save quote" too —
+    // pick the one inside the dialog's <form>.
+    const dialog = await screen.findByRole("dialog");
+    const dialogSaveBtn = dialog.querySelector<HTMLButtonElement>(
+      'button[type="submit"]',
+    );
+    expect(dialogSaveBtn).toBeTruthy();
+    await act(async () => {
+      fireEvent.click(dialogSaveBtn!);
+    });
+
+    await waitFor(() => expect(mockSaveMutateAsync).toHaveBeenCalled());
+    const args = mockSaveMutateAsync.mock.calls[0][0] as { id?: string };
+    // BL-01 contract: id MUST be set so storage layer appends v(N+1) instead
+    // of generating a new uuid + creating a duplicate quote.
+    expect(args.id).toBe("test-quote-id");
+  });
+
+  it("saveSavedQuote receives restoredFromVersion when ?restoreVersion=N is in URL (WR-07)", async () => {
+    mockUseSavedQuote.mockReturnValue({
+      data: {
+        id: "test-quote-id",
+        name: "Existing Quote",
+        status: "draft",
+      } as unknown as SavedQuote,
+      isLoading: false,
+    });
+
+    renderWithProviders(<ComparisonQuote />, {
+      route: "/compare/quote?fromQuote=test-quote-id&restoreVersion=2",
+    });
+
+    await waitFor(() => expect(mockEnsureModelsReady).toHaveBeenCalledWith("real"));
+
+    const submitBtn = await screen.findByRole("button", {
+      name: /regenerate estimate/i,
+    });
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+    await waitFor(() =>
+      expect(screen.getByText(/Estimated hours/i)).toBeInTheDocument(),
+    );
+
+    const saveTrigger = await screen.findByRole("button", { name: /save quote/i });
+    await act(async () => {
+      fireEvent.click(saveTrigger);
+    });
+
+    const dialog = await screen.findByRole("dialog");
+    const dialogSaveBtn = dialog.querySelector<HTMLButtonElement>(
+      'button[type="submit"]',
+    );
+    await act(async () => {
+      fireEvent.click(dialogSaveBtn!);
+    });
+
+    await waitFor(() => expect(mockSaveMutateAsync).toHaveBeenCalled());
+    const args = mockSaveMutateAsync.mock.calls[0][0] as {
+      id?: string;
+      restoredFromVersion?: number;
+    };
+    expect(args.id).toBe("test-quote-id");
+    expect(args.restoredFromVersion).toBe(2);
+  });
+
+  it("saveSavedQuote receives id=undefined when no ?fromQuote= (brand-new save path)", async () => {
+    mockUseSavedQuote.mockReturnValue({ data: undefined, isLoading: false });
+
+    renderWithProviders(<ComparisonQuote />);
+
+    await waitFor(() => expect(mockEnsureModelsReady).toHaveBeenCalledWith("real"));
+
+    const submitBtn = await screen.findByRole("button", {
+      name: /regenerate estimate/i,
+    });
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+    await waitFor(() =>
+      expect(screen.getByText(/Estimated hours/i)).toBeInTheDocument(),
+    );
+
+    const saveTrigger = await screen.findByRole("button", { name: /save quote/i });
+    await act(async () => {
+      fireEvent.click(saveTrigger);
+    });
+
+    const dialog = await screen.findByRole("dialog");
+    const dialogSaveBtn = dialog.querySelector<HTMLButtonElement>(
+      'button[type="submit"]',
+    );
+    await act(async () => {
+      fireEvent.click(dialogSaveBtn!);
+    });
+
+    await waitFor(() => expect(mockSaveMutateAsync).toHaveBeenCalled());
+    const args = mockSaveMutateAsync.mock.calls[0][0] as { id?: string };
+    expect(args.id).toBeUndefined();
   });
 });
