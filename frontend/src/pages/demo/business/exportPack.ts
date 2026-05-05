@@ -1,4 +1,5 @@
 import JSZip from "jszip";
+import * as XLSX from "xlsx";
 
 import { toCsv } from "./csv";
 import type { PortfolioStats } from "./portfolioStats";
@@ -169,4 +170,245 @@ export function downloadBlob(blob: Blob, filename: string): void {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+// ---------------------------------------------------------------------------
+// XLSX workbook builder (CONTEXT D-02 / D-03 / D-04)
+//
+// Produces a four-sheet workbook (Summary / Drivers / Raw / README) that
+// replaces the prior projects.csv + portfolio.json in the insights pack.
+// Pure function: takes the same PortfolioStats input as buildSummaryMarkdown,
+// emits an ArrayBuffer suitable for JSZip.file(..., arrayBuffer).
+//
+// Headers are the canonical plain-English labels in D-04. The README sheet
+// documents every column (D-03). Zero ML jargon — INSIGHTS-02 acceptance.
+// ---------------------------------------------------------------------------
+
+const RAW_HEADERS = [
+  "Project ID",
+  "Project name",
+  "Industry",
+  "System category",
+  "Stations",
+  "Total hours",
+  "Sales bucket",
+  "Complexity",
+  "Peer median (h)",
+  "Peer p10 (h)",
+  "Peer p90 (h)",
+  "Outlier flag",
+] as const;
+
+const OUTLIER_NULL = "—"; // U+2014 EM DASH
+
+function fmtOutlier(direction: "high" | "low" | null): string {
+  if (direction === "high") return "HIGH";
+  if (direction === "low") return "LOW";
+  return OUTLIER_NULL;
+}
+
+function roundOrDash(v: number | null | undefined): number | string {
+  if (v == null || !Number.isFinite(v)) return OUTLIER_NULL;
+  return Math.round(v);
+}
+
+function buildSummarySheet(portfolio: PortfolioStats): XLSX.WorkSheet {
+  const k = portfolio.kpis;
+  const a = portfolio.accuracy;
+  const rows: (string | number)[][] = [
+    ["Metric", "Value", "Notes"],
+    ["Project count", k.projectCount, "Projects in this filtered view."],
+    ["Total hours", Math.round(k.totalHours), "Sum of estimated total hours across the projects."],
+    ["Avg hours", Math.round(k.avgHours), "Mean total hours per project."],
+    ["Median hours", Math.round(k.medianHours), "Middle value of total hours per project."],
+    [
+      "Avg materials cost",
+      k.avgMaterialsCost != null ? Math.round(k.avgMaterialsCost) : OUTLIER_NULL,
+      "Geometric-mean materials cost in U.S. dollars; blank when no projects carry a materials cost.",
+    ],
+    [],
+    ["Accuracy", "", ""],
+    [
+      "Projects with quote+actual",
+      a.projectsWithQuote,
+      "Projects where both a sales quote and billed actual hours are present.",
+    ],
+    [
+      "Portfolio overrun %",
+      a.projectsWithQuote > 0 ? Math.round(a.portfolioOverrunPct * 1000) / 10 : OUTLIER_NULL,
+      "Percent the actual total exceeds the quoted total. Positive = over budget.",
+    ],
+    [
+      "Median overrun %",
+      a.projectsWithQuote > 0 ? Math.round(a.medianOverrunPct * 1000) / 10 : OUTLIER_NULL,
+      "Per-project overrun, middle value. Less sensitive to one large outlier than the portfolio %.",
+    ],
+    [
+      "Total quoted",
+      a.projectsWithQuote > 0 ? Math.round(a.totalQuoted) : OUTLIER_NULL,
+      "Sum of sales-quoted hours across projects with both quote and actual.",
+    ],
+    [
+      "Total actual",
+      a.projectsWithQuote > 0 ? Math.round(a.totalActual) : OUTLIER_NULL,
+      "Sum of billed actual hours across projects with both quote and actual.",
+    ],
+  ];
+  return XLSX.utils.aoa_to_sheet(rows);
+}
+
+function buildDriversSheet(portfolio: PortfolioStats): XLSX.WorkSheet {
+  const meaningful = portfolio.riskCorrelations.filter(
+    (r) => r.n >= 3 && Math.abs(r.correlation) >= 0.1,
+  );
+  const rows: (string | number)[][] = [];
+  rows.push(["Risk factor correlations", "", "", ""]);
+  rows.push(["Factor", "Pearson r", "n", "Reading"]);
+  if (meaningful.length === 0) {
+    rows.push(["Not enough signal to correlate.", "", "", ""]);
+  } else {
+    for (const r of meaningful) {
+      rows.push([r.label, Math.round(r.correlation * 100) / 100, r.n, r.meaning]);
+    }
+  }
+  rows.push([]); // blank separator
+  rows.push(["Hours by industry", "", "", ""]);
+  rows.push(["Industry", "Projects", "Avg hours", "Total hours"]);
+  if (portfolio.industries.length === 0) {
+    rows.push(["No industry breakdown available.", "", "", ""]);
+  } else {
+    for (const i of portfolio.industries) {
+      rows.push([i.industry, i.projectCount, Math.round(i.avgHours), Math.round(i.totalHours)]);
+    }
+  }
+  return XLSX.utils.aoa_to_sheet(rows);
+}
+
+function buildRawSheet(portfolio: PortfolioStats): XLSX.WorkSheet {
+  const rows: (string | number)[][] = [Array.from(RAW_HEADERS)];
+  for (const r of portfolio.ranked) {
+    rows.push([
+      r.project_id,
+      r.project_name,
+      r.industry,
+      r.system_category,
+      r.stations,
+      Math.round(r.total_hours),
+      r.primary_bucket,
+      Math.round(r.complexity),
+      roundOrDash(r.peerMedian),
+      roundOrDash(r.peerP10),
+      roundOrDash(r.peerP90),
+      fmtOutlier(r.outlierDirection),
+    ]);
+  }
+  return XLSX.utils.aoa_to_sheet(rows);
+}
+
+function buildReadmeSheet(): XLSX.WorkSheet {
+  const rows: (string | number)[][] = [];
+  rows.push(["How to read this workbook", "", ""]);
+  rows.push([
+    "This workbook has four tabs. Start on Summary for the headline numbers, Drivers for what's pulling the portfolio, Raw for the per-project list, and this README for column-by-column meaning.",
+    "",
+    "",
+  ]);
+  rows.push([]);
+  rows.push(["Sheet guide", "", ""]);
+  rows.push(["Sheet", "What it shows", "When to use it"]);
+  rows.push([
+    "Summary",
+    "Headline portfolio numbers and accuracy (quote vs actual).",
+    "Open this first. One row per metric.",
+  ]);
+  rows.push([
+    "Drivers",
+    "What's pulling the portfolio: risk-factor correlations and hours by industry.",
+    "Use to see which factors track with overrun and which industries dominate the book.",
+  ]);
+  rows.push([
+    "Raw",
+    "One row per project with peer benchmarks and outlier flag.",
+    "Sort or filter to dig into specific projects.",
+  ]);
+  rows.push([]);
+  rows.push(["Column dictionary (Raw sheet)", "", ""]);
+  rows.push(["Sheet", "Column", "Plain-English meaning"]);
+  rows.push(["Raw", "Project ID", "The unique identifier for the project (used for cross-reference)."]);
+  rows.push(["Raw", "Project name", "Human-readable project name."]);
+  rows.push(["Raw", "Industry", "Customer industry segment (Automotive, Food & Beverage, etc.)."]);
+  rows.push(["Raw", "System category", "Kind of automation system delivered (Assembly, Welding, etc.)."]);
+  rows.push(["Raw", "Stations", "Number of work stations on the system."]);
+  rows.push(["Raw", "Total hours", "Estimated total labor hours for the project."]);
+  rows.push([
+    "Raw",
+    "Sales bucket",
+    "The engineering discipline that owns the most hours on this project (ME, EE, Build, etc.).",
+  ]);
+  rows.push(["Raw", "Complexity", "Overall difficulty rating from 1 (very simple) to 5 (very complex)."]);
+  rows.push([
+    "Raw",
+    "Peer median (h)",
+    "Middle hours value among projects at the same complexity tier (excluding this one).",
+  ]);
+  rows.push([
+    "Raw",
+    "Peer p10 (h)",
+    "Low end of the peer band: 10% of peer projects came in below this hours figure.",
+  ]);
+  rows.push([
+    "Raw",
+    "Peer p90 (h)",
+    "High end of the peer band: 90% of peer projects came in below this hours figure.",
+  ]);
+  rows.push([
+    "Raw",
+    "Outlier flag",
+    "HIGH = total hours sits above the peer band; LOW = below; — = within band or no peers.",
+  ]);
+  rows.push([]);
+  rows.push(["Column dictionary (Summary + Drivers sheets)", "", ""]);
+  rows.push(["Sheet", "Column", "Plain-English meaning"]);
+  rows.push(["Summary", "Metric", "Name of the headline number."]);
+  rows.push(["Summary", "Value", "The number itself (rounded)."]);
+  rows.push(["Summary", "Notes", "What the number means in plain English."]);
+  rows.push([
+    "Drivers",
+    "Pearson r",
+    "A score from -1 to +1 showing how strongly two columns move together. 0 means no relationship.",
+  ]);
+  rows.push(["Drivers", "n", "How many projects went into the score (small n = less reliable)."]);
+  rows.push(["Drivers", "Reading", "Plain-English read-out of the score."]);
+  return XLSX.utils.aoa_to_sheet(rows);
+}
+
+/**
+ * Build the multi-sheet `business-insights.xlsx` workbook (CONTEXT D-03).
+ *
+ * Sheets in order: Summary, Drivers, Raw, README.
+ * Headers are the canonical plain-English labels in CONTEXT D-04.
+ * Zero ML jargon — INSIGHTS-02.
+ *
+ * Returns an ArrayBuffer ready to be added to JSZip via:
+ *
+ *   zip.file("business-insights.xlsx", buildPortfolioWorkbook(...));
+ *
+ * Note on signature: `_datasetLabel` and `_generatedAt` are accepted for
+ * forward compatibility (they may surface as a Summary footer in a future
+ * iteration) but the workbook content does NOT embed them today — Ben
+ * already has the dataset label and generated date in the top-level
+ * README.md and summary.md (CONTEXT D-06 + D-05). Underscored names mark
+ * intentionally-unused params for ESLint / typescript-eslint.
+ */
+export function buildPortfolioWorkbook(
+  portfolio: PortfolioStats,
+  _datasetLabel: string,
+  _generatedAt: Date = new Date(),
+): ArrayBuffer {
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, buildSummarySheet(portfolio), "Summary");
+  XLSX.utils.book_append_sheet(wb, buildDriversSheet(portfolio), "Drivers");
+  XLSX.utils.book_append_sheet(wb, buildRawSheet(portfolio), "Raw");
+  XLSX.utils.book_append_sheet(wb, buildReadmeSheet(), "README");
+  return XLSX.write(wb, { bookType: "xlsx", type: "array" }) as ArrayBuffer;
 }
