@@ -13,16 +13,21 @@
 
 ## Current Position
 
-- **Milestone:** v1.0 — Customer-trust fixes
-- **Phase:** 3 — Insights pack rework ✅ shipped (PR #21, merged 2026-05-04)
-- **Plans created:** 5 (`.planning/phases/03-insights-pack-rework/03-0[1-5]-PLAN.md`)
-- **Plans executed:** 5 (3 waves; INSIGHTS-01 + INSIGHTS-02 closed; Vitest 645/645, typecheck + lint clean, build green)
-- **Stopped at:** PR #21 merged to `main`; Phase 3 UAT items 7–15 deferred (manual browser smoke + UAT proxy require user PC access), automated 6/15 pass, see `03-UAT.md`. Next phase = Phase 4 (Build / quality hardening, no UI, no Phase 2/3 deps).
+- **Milestone:** v1.0 — Customer-trust fixes ✅ all 4 phases complete (2026-05-05)
+- **Phase:** 4 — Build / quality hardening ✅ verified 2026-05-05 on `feat/04-build-quality-hardening`
+- **Plans created:** 4 (`.planning/phases/04-build-quality-hardening/04-0[1-4]-PLAN.md`)
+- **Plans executed:** 4 (2 waves; DATA-01 + DATA-02 + DATA-03 closed; Vitest 648/648, Pytest 7/7, typecheck + lint clean, build green; gsd-verifier 33/33 must-haves PASS)
+- **Stopped at:** Phase 4 shipped — PR #23 (https://github.com/Thalfman/matrix-quote-web-demo/pull/23) opened against `main` from `feat/04-build-quality-hardening` (HEAD = `650a43c`). Awaiting merge. After merge: `/gsd-complete-milestone` to archive v1.0.
 
 ## Recent Activity
 
 | Date | Event |
 |---|---|
+| 2026-05-05 | `/gsd-ship 4` → PR #23 opened (feat/04-build-quality-hardening → main); 16 commits including WR-01 fix; auto checks all green; no manual UAT (Phase 4 has zero customer-visible UI changes) |
+| 2026-05-05 | `/gsd-code-review 4 --fix` → WR-01 resolved in commit `bb880d3` (added synthetic-variant `<BusinessInsightsView>` test case + tightened body assertions); 4 Info findings deferred per `--fix` scope; `04-REVIEW-FIX.md` written (`650a43c`) |
+| 2026-05-05 | `/gsd-execute-phase 4` complete → gsd-verifier PASSED 33/33 must-haves; ROADMAP Phase 4 row marked ✅; v1.0 milestone now 4/4 complete; ready for `/gsd-ship 4` |
+| 2026-05-05 | `/gsd-execute-phase 4` → 13 commits across 2 waves on `feat/04-build-quality-hardening`; DATA-01/02/03 closed; all 4 ROADMAP success criteria verified live (vitest 648/648, pytest 7/7); 1 in-scope Rule-1 deviation (DataProvenanceNote.tsx "training data" → "those past projects") caught by new jargon-guard |
+| 2026-05-05 | `/gsd-code-review 4` → 1 Warning (WR-01: BusinessInsights shim shares render tree) + 4 Info, all non-blocking; written to `04-REVIEW.md` |
 | 2026-05-04 | PR #21 merged to `main` (Phase 3, feat/03-insights-pack-rework, merge commit `fb9a6c0`); ROADMAP Phase 3 row marked ✅ |
 | 2026-05-04 | `/gsd-verify-phase 3` (manual fallback) → 6/15 success-gate items PASS automated; manual smoke items 7–15 BLOCKED (user away from PC); UAT committed `c681e9d` |
 | 2026-05-04 | `/gsd-execute-phase 3` → 13 atomic commits across 2 waves; INSIGHTS-01 + INSIGHTS-02 closed; Vitest 645/645, typecheck/lint/build all green (xlsx chunk-size warning expected) |

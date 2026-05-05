@@ -19,9 +19,9 @@ Goal of this milestone: ship the fixes Ben asked for in the 2026-05-01 review, p
 
 ### DATA (Data correctness and build hygiene)
 
-- [ ] **DATA-01**: `vercel.json:11` cache header points at the correct model paths. Today it caches `/demo-assets/models/` which does not exist; actual paths are `/demo-assets/models_real/` and `/demo-assets/models_synthetic/`. Acceptance: cache rule covers both real and synthetic, dead rule removed.
-- [ ] **DATA-02**: `scripts/build_demo_static.py:163` LFS-pointer guard fails the build loudly when joblibs ship as LFS pointers. Today the guard "silent-skips" — broken builds can deploy. Acceptance: build aborts non-zero with a clear message when a pointer is detected.
-- [ ] **DATA-03**: Jargon guard extends to cover `QuoteResultPanel.tsx` and the Insights pages. Today only `DemoHome` and `DataProvenanceNote` are checked; new copy added in those uncovered surfaces could leak ML jargon to the customer audience.
+- [x] **DATA-01**: `vercel.json:11` cache header points at the correct model paths. Today it caches `/demo-assets/models/` which does not exist; actual paths are `/demo-assets/models_real/` and `/demo-assets/models_synthetic/`. Acceptance: cache rule covers both real and synthetic, dead rule removed.
+- [x] **DATA-02**: `scripts/build_demo_static.py:163` LFS-pointer guard fails the build loudly when joblibs ship as LFS pointers. Today the guard "silent-skips" — broken builds can deploy. Acceptance: build aborts non-zero with a clear message when a pointer is detected.
+- [x] **DATA-03**: Jargon guard extends to cover `QuoteResultPanel.tsx` and the Insights pages. Today only `DemoHome` and `DataProvenanceNote` are checked; new copy added in those uncovered surfaces could leak ML jargon to the customer audience.
 
 ### INSIGHTS (Insights pack rework)
 
@@ -70,9 +70,9 @@ Goal of this milestone: complete the north-star reframe with real-data ingest an
 | UX-03 | 2 | active |
 | INSIGHTS-01 | 3 | active |
 | INSIGHTS-02 | 3 | active |
-| DATA-01 | 4 | active |
-| DATA-02 | 4 | active |
-| DATA-03 | 4 | active |
+| DATA-01 | 4 | complete |
+| DATA-02 | 4 | complete |
+| DATA-03 | 4 | complete |
 | PERSIST-01 | (v2) | deferred |
 | DATA-04 | (v2) | deferred |
 | ROM-01 | (v2) | deferred |
