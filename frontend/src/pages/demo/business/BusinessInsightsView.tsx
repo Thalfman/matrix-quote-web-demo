@@ -22,7 +22,13 @@ import { DisciplineMixByIndustry } from "./DisciplineMixByIndustry";
 import { MaterialVsLabor } from "./MaterialVsLabor";
 import { IndustryDeepDive } from "./IndustryDeepDive";
 import { RiskFactorCorrelation } from "./RiskFactorCorrelation";
-import { buildInsightsPack, downloadBlob, packFilename } from "./exportPack";
+import {
+  buildInsightsPack,
+  buildPortfolioJson,
+  downloadBlob,
+  jsonFilename,
+  packFilename,
+} from "./exportPack";
 
 type Props = {
   records: ProjectRecord[] | undefined;
@@ -238,6 +244,16 @@ export function BusinessInsightsView({
     }
   }, [datasetLabel]);
 
+  // CONTEXT D-07: secondary engineer-side affordance. Synchronous —
+  // buildPortfolioJson is pure JSON.stringify. Disabled during pack build
+  // to avoid any race with the primary handler (D-07).
+  const handleDownloadJson = useCallback((pack: PortfolioStats) => {
+    const now = new Date();
+    const json = buildPortfolioJson(pack);
+    const blob = new Blob([json], { type: "application/json;charset=utf-8;" });
+    downloadBlob(blob, jsonFilename(datasetLabel, now));
+  }, [datasetLabel]);
+
   return (
     <>
       <PageHeader
@@ -328,7 +344,7 @@ export function BusinessInsightsView({
               })}
             </div>
             {portfolio && (
-              <div className="ml-auto pb-2">
+              <div className="ml-auto pb-2 flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => handleDownloadPack(portfolio)}
@@ -340,7 +356,7 @@ export function BusinessInsightsView({
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal",
                     "disabled:opacity-50 disabled:cursor-not-allowed",
                   )}
-                  title="Download a zip with the filtered CSV, raw JSON, and a one-page summary"
+                  title="Download a zip with the spreadsheet (Excel/Numbers/Sheets), the one-page summary, and a README."
                 >
                   <Download size={12} strokeWidth={1.75} aria-hidden="true" />
                   <span className="hidden sm:inline">
@@ -349,6 +365,20 @@ export function BusinessInsightsView({
                   <span className="sm:hidden">
                     {isPackBuilding ? "Building…" : "Pack"}
                   </span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleDownloadJson(portfolio)}
+                  disabled={isPackBuilding}
+                  aria-label="Download raw portfolio JSON for engineers"
+                  className={cn(
+                    "text-xs text-muted hover:text-ink hover:underline",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal rounded-sm",
+                    "disabled:opacity-50 disabled:cursor-not-allowed",
+                  )}
+                  title="Download the full structured portfolio data as a single JSON file."
+                >
+                  Download raw JSON (for engineers)
                 </button>
               </div>
             )}
