@@ -93,13 +93,14 @@ vi.mock("@/demo/modelMetrics", () => ({
 // saveSavedQuote is called with `args.id` set when ?fromQuote= is in URL.
 // ---------------------------------------------------------------------------
 
-const mockSaveMutateAsync = vi.fn(() =>
-  Promise.resolve({
+const mockSaveMutateAsync = vi.fn((args: Record<string, unknown>) => {
+  void args;
+  return Promise.resolve({
     id: "test-quote-id",
     versions: [{ version: 1 }, { version: 2 }],
     status: "draft",
-  } as unknown as SavedQuote),
-);
+  } as unknown as SavedQuote);
+});
 const mockUseSavedQuote = vi.fn(() => ({
   data: undefined as SavedQuote | undefined,
   isLoading: false,
@@ -303,7 +304,9 @@ describe("ComparisonQuote - BL-01 fromQuote= wires quoteId into Save", () => {
     });
 
     await waitFor(() => expect(mockSaveMutateAsync).toHaveBeenCalled());
-    const args = mockSaveMutateAsync.mock.calls[0][0] as { id?: string };
+    const args = mockSaveMutateAsync.mock.calls[0]?.[0] as unknown as {
+      id?: string;
+    };
     // BL-01 contract: id MUST be set so storage layer appends v(N+1) instead
     // of generating a new uuid + creating a duplicate quote.
     expect(args.id).toBe("test-quote-id");
@@ -349,7 +352,7 @@ describe("ComparisonQuote - BL-01 fromQuote= wires quoteId into Save", () => {
     });
 
     await waitFor(() => expect(mockSaveMutateAsync).toHaveBeenCalled());
-    const args = mockSaveMutateAsync.mock.calls[0][0] as {
+    const args = mockSaveMutateAsync.mock.calls[0]![0] as {
       id?: string;
       restoredFromVersion?: number;
     };
@@ -388,7 +391,7 @@ describe("ComparisonQuote - BL-01 fromQuote= wires quoteId into Save", () => {
     });
 
     await waitFor(() => expect(mockSaveMutateAsync).toHaveBeenCalled());
-    const args = mockSaveMutateAsync.mock.calls[0][0] as { id?: string };
+    const args = mockSaveMutateAsync.mock.calls[0]![0] as { id?: string };
     expect(args.id).toBeUndefined();
   });
 });
