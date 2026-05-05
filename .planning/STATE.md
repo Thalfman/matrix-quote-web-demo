@@ -17,12 +17,14 @@
 - **Phase:** 4 — Build / quality hardening ✅ verified 2026-05-05 on `feat/04-build-quality-hardening`
 - **Plans created:** 4 (`.planning/phases/04-build-quality-hardening/04-0[1-4]-PLAN.md`)
 - **Plans executed:** 4 (2 waves; DATA-01 + DATA-02 + DATA-03 closed; Vitest 648/648, Pytest 7/7, typecheck + lint clean, build green; gsd-verifier 33/33 must-haves PASS)
-- **Stopped at:** Phase 4 fully verified on `feat/04-build-quality-hardening` (HEAD = c9059bd post-merge of all 4 plans). Ready for `/gsd-ship 4` (PR creation) and then `/gsd-complete-milestone` to archive v1.0.
+- **Stopped at:** Phase 4 shipped — PR #23 (https://github.com/Thalfman/matrix-quote-web-demo/pull/23) opened against `main` from `feat/04-build-quality-hardening` (HEAD = `650a43c`). Awaiting merge. After merge: `/gsd-complete-milestone` to archive v1.0.
 
 ## Recent Activity
 
 | Date | Event |
 |---|---|
+| 2026-05-05 | `/gsd-ship 4` → PR #23 opened (feat/04-build-quality-hardening → main); 16 commits including WR-01 fix; auto checks all green; no manual UAT (Phase 4 has zero customer-visible UI changes) |
+| 2026-05-05 | `/gsd-code-review 4 --fix` → WR-01 resolved in commit `bb880d3` (added synthetic-variant `<BusinessInsightsView>` test case + tightened body assertions); 4 Info findings deferred per `--fix` scope; `04-REVIEW-FIX.md` written (`650a43c`) |
 | 2026-05-05 | `/gsd-execute-phase 4` complete → gsd-verifier PASSED 33/33 must-haves; ROADMAP Phase 4 row marked ✅; v1.0 milestone now 4/4 complete; ready for `/gsd-ship 4` |
 | 2026-05-05 | `/gsd-execute-phase 4` → 13 commits across 2 waves on `feat/04-build-quality-hardening`; DATA-01/02/03 closed; all 4 ROADMAP success criteria verified live (vitest 648/648, pytest 7/7); 1 in-scope Rule-1 deviation (DataProvenanceNote.tsx "training data" → "those past projects") caught by new jargon-guard |
 | 2026-05-05 | `/gsd-code-review 4` → 1 Warning (WR-01: BusinessInsights shim shares render tree) + 4 Info, all non-blocking; written to `04-REVIEW.md` |
