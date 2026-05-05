@@ -131,6 +131,45 @@ async function db(): Promise<IDBPDatabase> {
 // savedQuoteSchema.ts; kept private to avoid the type-only import widening).
 // ---------------------------------------------------------------------------
 
+/**
+ * Deep structural equality, key-order-insensitive. Used by saveSavedQuote to
+ * decide whether re-saving an opened quote should append a new version (D-05:
+ * "same-input re-save updates updatedAt + status only — no version inflation").
+ *
+ * The previous implementation compared `JSON.stringify(a) !== JSON.stringify(b)`,
+ * which is order-sensitive: `{a:1,b:2}` and `{b:2,a:1}` produce different
+ * strings even though they represent the same value. Today's react-hook-form
+ * insertion order is stable, but a future zod parse step (or any spread that
+ * re-orders keys) would silently inflate the version array on every save.
+ *
+ * Recursive over plain objects and arrays. NaN-aware (NaN !== NaN under ===).
+ */
+function deepEqual(a: unknown, b: unknown): boolean {
+  if (Object.is(a, b)) return true;
+  if (a === null || b === null) return false;
+  if (typeof a !== "object" || typeof b !== "object") return false;
+  if (Array.isArray(a) !== Array.isArray(b)) return false;
+
+  if (Array.isArray(a) && Array.isArray(b)) {
+    if (a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) {
+      if (!deepEqual(a[i], b[i])) return false;
+    }
+    return true;
+  }
+
+  const ao = a as Record<string, unknown>;
+  const bo = b as Record<string, unknown>;
+  const ka = Object.keys(ao);
+  const kb = Object.keys(bo);
+  if (ka.length !== kb.length) return false;
+  for (const k of ka) {
+    if (!Object.prototype.hasOwnProperty.call(bo, k)) return false;
+    if (!deepEqual(ao[k], bo[k])) return false;
+  }
+  return true;
+}
+
 function deriveSalesBucketFromValues(values: QuoteFormValues): string {
   const hasME = values.stations_count > 0 || values.has_controls;
   const hasEE = values.has_robotics || values.servo_axes > 0;
@@ -190,9 +229,13 @@ export async function saveSavedQuote(args: SaveSavedQuoteArgs): Promise<SavedQuo
       throw new Error(`saveSavedQuote: no quote found with id ${args.id}`);
     }
     const lastVersion = existing.versions[existing.versions.length - 1];
+    // D-05: same-input re-save updates updatedAt + status only — no version
+    // inflation. Use a structural deep-equal so reordered keys don't trigger
+    // a spurious "changed" verdict (key-order-sensitive JSON.stringify is
+    // fragile under future zod-parse passes that may sort keys).
     const inputsChanged =
-      JSON.stringify(lastVersion.formValues) !== JSON.stringify(args.formValues) ||
-      JSON.stringify(lastVersion.unifiedResult) !== JSON.stringify(args.unifiedResult);
+      !deepEqual(lastVersion.formValues, args.formValues) ||
+      !deepEqual(lastVersion.unifiedResult, args.unifiedResult);
 
     const versions: QuoteVersion[] = inputsChanged
       ? [

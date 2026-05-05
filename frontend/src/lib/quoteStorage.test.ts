@@ -142,6 +142,36 @@ describe("quoteStorage", () => {
     expect(resaved.versions[0].version).toBe(1);
   });
 
+  it("re-save with REORDERED formValues keys does NOT inflate (key-order-insensitive diff; WR-06)", async () => {
+    const mod = await import("./quoteStorage");
+    const initial = await mod.saveSavedQuote({
+      name: "CharlieReordered",
+      workspace: "real",
+      formValues: makeFormValues({ stations_count: 3 }),
+      unifiedResult: makeUnifiedResult(),
+    });
+    expect(initial.versions).toHaveLength(1);
+
+    // Build a payload with the same values but a permuted insertion order.
+    // Object.fromEntries(...reverse) preserves field values while flipping key order,
+    // which would have triggered a spurious diff under the old JSON.stringify check.
+    const original = makeFormValues({ stations_count: 3 });
+    const reordered = Object.fromEntries(
+      Object.entries(original).reverse(),
+    ) as typeof original;
+
+    const resaved = await mod.saveSavedQuote({
+      id: initial.id,
+      name: "CharlieReordered",
+      workspace: "real",
+      formValues: reordered,
+      unifiedResult: makeUnifiedResult(),
+    });
+
+    expect(resaved.versions).toHaveLength(1);
+    expect(resaved.versions[0].version).toBe(1);
+  });
+
   it("re-save with DIFFERENT formValues appends a new version (D-05)", async () => {
     const mod = await import("./quoteStorage");
     const initial = await mod.saveSavedQuote({
