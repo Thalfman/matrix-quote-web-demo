@@ -31,11 +31,7 @@ import { DeleteQuoteModal } from "@/components/quote/DeleteQuoteModal";
 import { QuoteResultPanel } from "@/components/quote/QuoteResultPanel";
 import { StatusChip } from "@/components/quote/StatusChip";
 import { VersionHistoryList } from "@/components/quote/VersionHistoryList";
-import {
-  useRestoreVersion,
-  useSavedQuote,
-  useSetStatus,
-} from "@/hooks/useSavedQuotes";
+import { useSavedQuote, useSetStatus } from "@/hooks/useSavedQuotes";
 import type { Workspace } from "@/lib/savedQuoteSchema";
 
 // ---------------------------------------------------------------------------
@@ -69,7 +65,6 @@ export function SavedQuotePage() {
   const navigate = useNavigate();
   const { data, isLoading } = useSavedQuote(id);
   const setStatusMutation = useSetStatus();
-  const restoreMutation = useRestoreVersion();
   const [deleteOpen, setDeleteOpen] = useState(false);
 
   // -------------------------------------------------------------------------
@@ -115,12 +110,13 @@ export function SavedQuotePage() {
   const latest = data.versions[data.versions.length - 1];
   const linkHref = quoteToolPath(data.workspace, data.id);
 
-  // D-06: Restore is a fork. The mutation returns the formValues; we navigate
-  // to the Quote tool with both fromQuote and restoreVersion in the URL so
-  // Plan 09's QuoteForm reader rehydrates with that version's inputs and the
-  // next save commits as v(N+1) with restoredFromVersion: N.
-  const handleRestore = async (version: number) => {
-    await restoreMutation.mutateAsync({ id: data.id, version });
+  // D-06: Restore is a fork. We navigate to the Quote tool with both
+  // fromQuote and restoreVersion in the URL; QuoteForm's reader (and the
+  // ComparisonQuote / MachineLearningQuoteTool entry-points) rehydrate
+  // with that version's inputs and the next save commits as v(N+1) with
+  // restoredFromVersion: N. No pre-navigate IDB round-trip — the form
+  // hydration path already reads from IDB.
+  const handleRestore = (version: number) => {
     navigate(quoteToolPath(data.workspace, data.id, version));
   };
 
@@ -191,7 +187,7 @@ export function SavedQuotePage() {
         <aside className="lg:sticky lg:top-6 self-start">
           <VersionHistoryList
             versions={data.versions}
-            onRestore={(version) => void handleRestore(version)}
+            onRestore={handleRestore}
           />
         </aside>
       </div>

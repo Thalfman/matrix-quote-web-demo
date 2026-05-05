@@ -12,7 +12,8 @@
  *  6. "Open in Quote tool" link with href "/ml/quote?fromQuote={id}" when workspace="synthetic".
  *  7. Renders QuoteResultPanel with the latest version's unifiedResult and formValues.
  *  8. Renders VersionHistoryList with all versions.
- *  9. Click Restore on v2 calls useRestoreVersion + navigates to "?fromQuote={id}&restoreVersion=2".
+ *  9. Click Restore on v2 navigates to "?fromQuote={id}&restoreVersion=2" (no
+ *     pre-navigate IDB round-trip — QuoteForm rehydration owns the read).
  * 10. Restore on synthetic workspace navigates to /ml/quote?... with restoreVersion.
  * 11. "Delete quote" button opens DeleteQuoteModal with the quote name.
  * 12. DeleteQuoteModal onDeleted navigates back to "/quotes".
@@ -333,13 +334,12 @@ describe("SavedQuotePage - version history sidebar", () => {
     expect(screen.getAllByRole("listitem")).toHaveLength(2);
   });
 
-  it("Restore on v2 calls useRestoreVersion + navigates to ?fromQuote=&restoreVersion=2 (real)", async () => {
+  it("Restore on v2 navigates to ?fromQuote=&restoreVersion=2 (real) without a pre-navigate IDB round-trip", async () => {
     const v1 = makeVersion({ version: 1 });
     const v2 = makeVersion({
       version: 2,
       savedAt: "2026-05-06T12:00:00.000Z",
     });
-    mockMutateRestore.mockResolvedValueOnce({ formValues: v2.formValues });
     mockUseSavedQuote.mockReturnValueOnce({
       data: makeSavedQuote({ versions: [v1, v2], workspace: "real" }),
       isLoading: false,
@@ -349,16 +349,14 @@ describe("SavedQuotePage - version history sidebar", () => {
     const firstRow = screen.getAllByRole("listitem")[0];
     const restore = within(firstRow).getByRole("button", { name: /Restore/i });
     fireEvent.click(restore);
-    // Wait for the async chain (mutateAsync resolves, then navigate).
     await vi.waitFor(() => {
-      expect(mockMutateRestore).toHaveBeenCalledWith({
-        id: "test-id-123",
-        version: 2,
-      });
       expect(mockNavigate).toHaveBeenCalledWith(
         "/compare/quote?fromQuote=test-id-123&restoreVersion=2",
       );
     });
+    // WR-05: SavedQuotePage no longer pre-fetches via useRestoreVersion;
+    // QuoteForm's hydration path reads the same record on landing.
+    expect(mockMutateRestore).not.toHaveBeenCalled();
   });
 
   it("Restore on synthetic workspace navigates to /ml/quote?fromQuote=&restoreVersion=N", async () => {
@@ -367,7 +365,6 @@ describe("SavedQuotePage - version history sidebar", () => {
       version: 2,
       savedAt: "2026-05-06T12:00:00.000Z",
     });
-    mockMutateRestore.mockResolvedValueOnce({ formValues: v2.formValues });
     mockUseSavedQuote.mockReturnValueOnce({
       data: makeSavedQuote({ versions: [v1, v2], workspace: "synthetic" }),
       isLoading: false,
