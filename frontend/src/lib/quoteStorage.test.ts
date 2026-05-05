@@ -9,6 +9,7 @@
  */
 
 import "fake-indexeddb/auto";
+import { IDBFactory } from "fake-indexeddb";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { quoteFormDefaults, type QuoteFormValues } from "@/pages/single-quote/schema";
@@ -44,24 +45,18 @@ function makeFormValues(over: Partial<QuoteFormValues> = {}): QuoteFormValues {
   };
 }
 
-/** Promise-wraps an IDBOpenDBRequest into a deletion. */
-function deleteDb(name: string): Promise<void> {
-  return new Promise((resolve, reject) => {
-    const req = indexedDB.deleteDatabase(name);
-    req.onsuccess = () => resolve();
-    req.onerror = () => reject(req.error);
-    req.onblocked = () => resolve();
-  });
-}
-
 // ---------------------------------------------------------------------------
 // Suite
 // ---------------------------------------------------------------------------
 
 describe("quoteStorage", () => {
-  beforeEach(async () => {
+  beforeEach(() => {
+    // Swap a fresh in-memory IDB factory + reset the module-level dbPromise
+    // singleton so each test starts from a clean slate. Pattern adapted from
+    // pyodideClient.test.ts:57-100.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (globalThis as any).indexedDB = new IDBFactory();
     vi.resetModules();
-    await deleteDb("matrix-quotes");
   });
   afterEach(() => {
     vi.useRealTimers();
@@ -176,7 +171,9 @@ describe("quoteStorage", () => {
   // ---------------------------------------------------------------------
 
   it("listSavedQuotes() returns records ordered by updatedAt DESC", async () => {
-    vi.useFakeTimers();
+    // Only fake Date — leaving setTimeout / queueMicrotask alone so the
+    // fake-indexeddb async scheduler keeps running.
+    vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-05-05T10:00:00.000Z"));
 
     const mod = await import("./quoteStorage");
@@ -236,7 +233,9 @@ describe("quoteStorage", () => {
   // ---------------------------------------------------------------------
 
   it("setStatus(id, 'won') updates status, bumps updatedAt, leaves versions unchanged", async () => {
-    vi.useFakeTimers();
+    // Only fake Date — leaving setTimeout / queueMicrotask alone so the
+    // fake-indexeddb async scheduler keeps running.
+    vi.useFakeTimers({ toFake: ["Date"] });
     vi.setSystemTime(new Date("2026-05-05T10:00:00.000Z"));
     const mod = await import("./quoteStorage");
     const saved = await mod.saveSavedQuote({
