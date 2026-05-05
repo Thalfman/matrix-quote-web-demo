@@ -178,3 +178,165 @@ describe("jargon-guard (DATA-03 — Phase 4)", () => {
     assertNoBannedTokens("BusinessInsightsView (synthetic)", body);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 5 — D-19 customer-facing surface coverage (Plan 05-09 Task 3).
+//
+// The 9 new surfaces from UI-SPEC §"Jargon-Guard Scope Addition". Each test
+// renders the surface in its meaningful state (open dialog, populated list,
+// non-empty version history) so the scan exercises real chrome, not a
+// loading/empty fallback.
+//
+// NO additions to BANNED_TOKENS — Phase 5 introduces no new ML-risk
+// vocabulary; the current 16-pattern list is sufficient.
+// ---------------------------------------------------------------------------
+
+import { Phase5Fixtures } from "@/test/__fixtures__/phase5";
+import { MyQuotesEmptyState } from "@/pages/quotes/MyQuotesEmptyState";
+import { QuoteRow } from "@/pages/quotes/QuoteRow";
+import { StatusChip } from "@/components/quote/StatusChip";
+import { VersionHistoryList } from "@/components/quote/VersionHistoryList";
+import { DeleteQuoteModal } from "@/components/quote/DeleteQuoteModal";
+import { SaveQuoteDialog } from "@/components/quote/SaveQuoteDialog";
+import { SaveQuoteButton } from "@/components/quote/SaveQuoteButton";
+
+// Plan 05-07 / 05-08 components — when not yet landed, the stubs from Plan
+// 05-09 still render meaningful chrome (the page heading + subhead) so the
+// jargon scan exercises real strings.
+import { MyQuotesPage } from "@/pages/quotes/MyQuotesPage";
+import { SavedQuotePage } from "@/pages/quotes/SavedQuotePage";
+
+describe("jargon-guard (DATA-03 — Phase 5 surface coverage)", () => {
+  it("MyQuotesEmptyState renders no banned ML-jargon tokens", () => {
+    renderWithProviders(<MyQuotesEmptyState />);
+    const body = document.body.textContent ?? "";
+    expect(body, "expected MyQuotesEmptyState chrome to render").toMatch(
+      /no saved quotes yet/i,
+    );
+    assertNoBannedTokens("MyQuotesEmptyState", body);
+  });
+
+  it("QuoteRow renders no banned ML-jargon tokens", () => {
+    renderWithProviders(
+      <QuoteRow
+        quote={Phase5Fixtures.savedQuote}
+        onAdvanceStatus={() => undefined}
+        onRequestDelete={() => undefined}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    // Marker assertion: row's metadata cluster.
+    expect(body, "expected QuoteRow chrome to render").toMatch(
+      /alpha quote/i,
+    );
+    assertNoBannedTokens("QuoteRow", body);
+  });
+
+  it("StatusChip renders no banned ML-jargon tokens (all 5 states)", () => {
+    const STATUS_CYCLE = [
+      "draft",
+      "sent",
+      "won",
+      "lost",
+      "revised",
+    ] as const;
+    renderWithProviders(
+      <div>
+        {STATUS_CYCLE.map((s) => (
+          <StatusChip key={s} status={s} readOnly />
+        ))}
+      </div>,
+    );
+    const body = document.body.textContent ?? "";
+    // Marker assertion: at least one cycle label rendered.
+    expect(body, "expected StatusChip chrome to render").toMatch(/draft/i);
+    expect(body).toMatch(/revised/i);
+    assertNoBannedTokens("StatusChip", body);
+  });
+
+  it("VersionHistoryList renders no banned ML-jargon tokens", () => {
+    renderWithProviders(
+      <VersionHistoryList
+        versions={Phase5Fixtures.savedQuote.versions}
+        onRestore={() => undefined}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    expect(body, "expected VersionHistoryList chrome to render").toMatch(
+      /version history/i,
+    );
+    assertNoBannedTokens("VersionHistoryList", body);
+  });
+
+  it("DeleteQuoteModal (open=true) renders no banned ML-jargon tokens", () => {
+    renderWithProviders(
+      <DeleteQuoteModal
+        open={true}
+        onClose={() => undefined}
+        quoteId={Phase5Fixtures.savedQuote.id}
+        quoteName={Phase5Fixtures.savedQuote.name}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    expect(body, "expected DeleteQuoteModal chrome to render").toMatch(
+      /delete this quote\?/i,
+    );
+    assertNoBannedTokens("DeleteQuoteModal", body);
+  });
+
+  it("SaveQuoteDialog (open=true) renders no banned ML-jargon tokens", () => {
+    renderWithProviders(
+      <SaveQuoteDialog
+        open={true}
+        onClose={() => undefined}
+        payload={{
+          workspace: "real",
+          formValues: Phase5Fixtures.formValues,
+          unifiedResult: Phase5Fixtures.unifiedResult,
+          suggestedName: "ME 800h · Vision · 2026-05-05",
+        }}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    expect(body, "expected SaveQuoteDialog chrome to render").toMatch(
+      /save this quote/i,
+    );
+    assertNoBannedTokens("SaveQuoteDialog", body);
+  });
+
+  it("SaveQuoteButton renders no banned ML-jargon tokens", () => {
+    renderWithProviders(
+      <SaveQuoteButton
+        workspace="real"
+        formValues={Phase5Fixtures.formValues}
+        unifiedResult={Phase5Fixtures.unifiedResult}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    expect(body, "expected SaveQuoteButton chrome to render").toMatch(
+      /save quote/i,
+    );
+    assertNoBannedTokens("SaveQuoteButton", body);
+  });
+
+  it("MyQuotesPage renders no banned ML-jargon tokens", () => {
+    renderWithProviders(<MyQuotesPage />);
+    const body = document.body.textContent ?? "";
+    expect(body, "expected MyQuotesPage chrome to render").toMatch(
+      /my quotes/i,
+    );
+    assertNoBannedTokens("MyQuotesPage", body);
+  });
+
+  it("SavedQuotePage renders no banned ML-jargon tokens", () => {
+    renderWithProviders(<SavedQuotePage />);
+    const body = document.body.textContent ?? "";
+    // Stub renders "Back to My Quotes" anchor copy. Plan 05-08 will replace
+    // with the full detail page; the marker here ensures the page renders
+    // *something* recognizable instead of a blank fallback.
+    expect(body, "expected SavedQuotePage chrome to render").toMatch(
+      /(back to my quotes|version history|status)/i,
+    );
+    assertNoBannedTokens("SavedQuotePage", body);
+  });
+});
