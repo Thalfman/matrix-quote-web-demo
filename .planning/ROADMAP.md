@@ -54,11 +54,19 @@ Backlog requirements:
   5. The persistence behavior survives a full browser refresh and a closed/reopened tab — saving a quote is not just a session-level convenience.
   6. A Sales Engineer can set and change a workflow status on each saved quote (draft / sent / won / lost / revised), the status persists, and the "My Quotes" list shows status at-a-glance for filtering by stage in the customer conversation.
   7. When a Sales Engineer re-saves an edited quote, the prior version remains visible in that quote's history and the SE can restore an earlier version back into the form — Ben's "versioned" requirement, observable end-to-end.
-**Plans**: TBD
+**Plans**: 9 plans
+  - [ ] 05-01-PLAN.md — IndexedDB storage foundation (savedQuoteSchema + quoteStorage + tests; D-01..D-18)
+  - [ ] 05-02-PLAN.md — Status / workspace / sort UI components (StatusChip + WorkspacePill + SortControls)
+  - [ ] 05-03-PLAN.md — VersionHistoryList component (PERSIST-06 sidebar)
+  - [ ] 05-04-PLAN.md — useSavedQuotes hook bundle + cross-tab sync (TanStack Query + BroadcastChannel)
+  - [ ] 05-05-PLAN.md — SaveQuoteDialog + DeleteQuoteModal (the two write-path modals; D-10/D-14/D-17)
+  - [ ] 05-06-PLAN.md — QuoteRow + MyQuotesEmptyState (list-row + empty-state pieces)
+  - [ ] 05-07-PLAN.md — MyQuotesPage (/quotes route — list + sort + delete-flow)
+  - [ ] 05-08-PLAN.md — SavedQuotePage (/quotes/:id detail + edit + version history + restore)
+  - [ ] 05-09-PLAN.md — App wiring + jargon-guard extension (DemoApp routes / DemoLayout sidebar / QuoteResultPanel Save button / QuoteForm fromQuote rehydration / Compare-side Save / D-19 jargon-guard)
 **UI hint**: yes
 **Phase notes**:
-- **OPEN architecture decision (resolved at discuss step):** browser-only (localStorage / IndexedDB) vs introduce a backend for the first time. The four success criteria are route-agnostic — both routes satisfy them. Discuss-step output decides which.
-- If the backend route is chosen, this phase brings the previously-inactive `auth-admin-specialist`, `backend-specialist`, and `storage-specialist` agents into play for the first time on this repo. Today they are documented as not-applicable; that flips here if-and-only-if the discuss step chooses backend.
+- **Architecture decision RESOLVED (2026-05-05 discuss step):** browser-only via IndexedDB (D-01/D-02). Specialist routing unchanged: `frontend-specialist`, `ui-ux-specialist`, `test-writer`. `auth-admin-specialist`, `backend-specialist`, `storage-specialist` remain N/A on this repo. See `.planning/phases/05-quote-persistence/05-CONTEXT.md` for the full 19-decision lock.
 - Customer-trust hygiene from v1.0 (no ML jargon in any user-facing copy) applies to all new UI: list screen, save dialog, delete confirmation, error toasts.
 - The existing `sessionStorage["matrix.singlequote.last"]` recall (mentioned in `.planning/codebase/ARCHITECTURE.md`) is a same-day-patch precursor; this phase replaces it with proper named persistence.
 
@@ -113,7 +121,7 @@ The following requirements are scoped but deferred. They become roadmap phases w
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 5. Quote Persistence | 0/? | Not started | - |
+| 5. Quote Persistence | 0/9 | Plans created | - |
 | 6. Multi-vision per project | 0/? | Not started | - |
 | 7. ROM-quote mode | 0/? | Not started | - |
 
