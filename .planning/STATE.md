@@ -13,16 +13,16 @@
 
 ## Current Position
 
-- **Milestone:** v1.0 — Customer-trust fixes ✅ all 4 phases complete (2026-05-05)
-- **Phase:** 4 — Build / quality hardening ✅ verified 2026-05-05 on `feat/04-build-quality-hardening`
-- **Plans created:** 4 (`.planning/phases/04-build-quality-hardening/04-0[1-4]-PLAN.md`)
-- **Plans executed:** 4 (2 waves; DATA-01 + DATA-02 + DATA-03 closed; Vitest 648/648, Pytest 7/7, typecheck + lint clean, build green; gsd-verifier 33/33 must-haves PASS)
-- **Stopped at:** Phase 4 shipped — PR #23 (https://github.com/Thalfman/matrix-quote-web-demo/pull/23) opened against `main` from `feat/04-build-quality-hardening` (HEAD = `650a43c`). Awaiting merge. After merge: `/gsd-complete-milestone` to archive v1.0.
+- **Milestone:** v1.0 ✅ SHIPPED 2026-05-05 (10/10 v1 requirements complete) — see `.planning/milestones/v1.0-ROADMAP.md`
+- **Next milestone:** v2.0 — Workflow fit (planned, not yet seeded). Headline open decision: `PERSIST-01` browser-only vs introduce a backend.
+- **Stopped at:** v1.0 milestone archived (PR #23 merged in commit `48a1b5a`; REQUIREMENTS.md archived + `git rm`'d; tag `v1.0` created). Ready for `/gsd-new-milestone` to seed v2.
 
 ## Recent Activity
 
 | Date | Event |
 |---|---|
+| 2026-05-05 | `/gsd-complete-milestone 1.0` → archives written (`milestones/v1.0-ROADMAP.md`, `milestones/v1.0-REQUIREMENTS.md`); `MILESTONES.md` + `RETROSPECTIVE.md` created; PROJECT.md evolved (v1 reqs → Validated, v2/v3 surfaced); ROADMAP.md collapsed to milestone view; REQUIREMENTS.md `git rm`'d (fresh for v2); tag `v1.0` created |
+| 2026-05-05 | PR #23 merged to `main` (Phase 4, feat/04-build-quality-hardening, merge commit `48a1b5a`); v1.0 functionally complete |
 | 2026-05-05 | `/gsd-ship 4` → PR #23 opened (feat/04-build-quality-hardening → main); 16 commits including WR-01 fix; auto checks all green; no manual UAT (Phase 4 has zero customer-visible UI changes) |
 | 2026-05-05 | `/gsd-code-review 4 --fix` → WR-01 resolved in commit `bb880d3` (added synthetic-variant `<BusinessInsightsView>` test case + tightened body assertions); 4 Info findings deferred per `--fix` scope; `04-REVIEW-FIX.md` written (`650a43c`) |
 | 2026-05-05 | `/gsd-execute-phase 4` complete → gsd-verifier PASSED 33/33 must-haves; ROADMAP Phase 4 row marked ✅; v1.0 milestone now 4/4 complete; ready for `/gsd-ship 4` |

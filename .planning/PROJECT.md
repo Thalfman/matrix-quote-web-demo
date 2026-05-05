@@ -52,12 +52,16 @@ Success looks like:
 - **Specialist agents:** `frontend-specialist`, `ui-ux-specialist`, `test-writer` apply here. `auth-admin-specialist`, `backend-specialist`, `storage-specialist` describe ownership in the **parent `matrix_quote_app`** and do **not** apply to this repo.
 - **Tests:** Vitest only (frontend). No backend pytest in this repo. Recent gap-fill coverage at commit `ac8aaa844dad26f82` covers Pyodide client cache, feature labels, project hours, jargon guard.
 
+## Current State
+
+**Shipped:** v1.0 — Customer-trust fixes (2026-05-05). All 10 v1 requirements complete. See `.planning/MILESTONES.md` and `.planning/milestones/v1.0-ROADMAP.md`.
+**Next:** v2.0 — Workflow fit (planned). Run `/gsd-new-milestone` to seed phases. Open headline decision: quote persistence — browser-only vs introduce a backend.
+
 ## Requirements
 
-### Validated (existing capabilities — already shipped)
+### Validated (shipped — production-deployed)
 
-These are what the codebase already does. Each maps to a feature already in production on the deployed demo.
-
+**Pre-v1.0 (existing capabilities at project init):**
 - ✓ **Single Quote** — form → ML estimate with drivers + confidence (`frontend/src/demo/.../SingleQuote.tsx`)
 - ✓ **Batch Quotes** — multi-row CSV-style intake → batch estimates
 - ✓ **Compare** — split route from `feat(compare)` `749d787` — paste in a quoted-by-hand number and compare side-by-side with the model's estimate
@@ -65,12 +69,35 @@ These are what the codebase already does. Each maps to a feature already in prod
 - ✓ **Real + Synthetic dual-bundle ML** — both workspaces use the same gradient-boosted model architecture (`feat(demo)` `066e838`, `feat(real-quote)` `acb8358`)
 - ✓ **Shared `QuoteResultPanel`** — uniform output shape (estimate, range, drivers, confidence) across both workspaces (`feat(quote)` `c71a5d7`)
 - ✓ **Two-card home + business-language sweep** — non-technical-audience copy (`style(demo)` `604b997`)
-- ✓ **In-browser ML via Pyodide** — lazy per-dataset load + cache, just-fixed second-dataset deadlock (`feat(pyodide)` `e9914d5`, `bf29426`)
-- ✓ **Jargon guard** — automated test that blocks ML jargon from reaching `DemoHome` and `DataProvenanceNote`
+- ✓ **In-browser ML via Pyodide** — lazy per-dataset load + cache, second-dataset deadlock fix (`feat(pyodide)` `e9914d5`, `bf29426`)
+- ✓ **Jargon guard (initial)** — blocks ML jargon from reaching `DemoHome` and `DataProvenanceNote`
 
-### Active (current milestone — see `.planning/REQUIREMENTS.md`)
+**v1.0 — Customer-trust fixes:**
+- ✓ **BUG-01** Compare ME-hours input accepts comma-formatted numbers without crashing — v1.0 (Phase 1)
+- ✓ **BUG-02** Hours by Sales Bucket shows distinct Total ≠ Avg — v1.0 (Phase 1)
+- ✓ **UX-01** Quote inputs recap on result panel — v1.0 (Phase 1; same-day patch — full persistence is `PERSIST-01` in v2)
+- ✓ **UX-02** Drill-down tooltips on Complexity vs Hours bars — v1.0 (Phase 2)
+- ✓ **UX-03** Glossary tooltips on category labels (System Category, Sales Bucket, Vision Type, etc.) — v1.0 (Phase 2)
+- ✓ **INSIGHTS-01** Insights bundle is XLSX + README; engineer JSON download is opt-in — v1.0 (Phase 3)
+- ✓ **INSIGHTS-02** Every column self-explanatory or documented in bundled README — v1.0 (Phase 3)
+- ✓ **DATA-01** vercel.json cache rules cover both `models_real/*` and `models_synthetic/*`; dead rule removed — v1.0 (Phase 4)
+- ✓ **DATA-02** LFS-pointer guard hard-fails build with locked error format — v1.0 (Phase 4)
+- ✓ **DATA-03** Jargon guard extended to QuoteResultPanel + BusinessInsights + BusinessInsightsView — v1.0 (Phase 4; caught real "training data" leak in `DataProvenanceNote.tsx` → in-scope Rule-1 copy fix)
 
-The 2026-05-01 stakeholder review surfaced bugs, UX gaps, data-correctness gaps, and a strategic reframe. v1 covers customer-trust fixes; v2 covers workflow fit; v3 covers the Manager-out-of-the-loop completion. See REQUIREMENTS.md for the categorized REQ-IDs.
+### Active (next milestone — v2.0 Workflow fit)
+
+Reshape the tool to match Ben's actual quoting workflow (multi-week revisions, multi-vision projects, ROM-quote-only path). REQ-IDs will land in a fresh `.planning/REQUIREMENTS.md` after `/gsd-new-milestone`.
+
+Headline open questions:
+- **PERSIST-01:** browser-only (localStorage / IndexedDB) vs introduce a backend for the first time. Decision deferred to v2 discuss-phase.
+- **DATA-04:** multi-vision per project — schema + ML feature engineering + UI multi-row vision picker.
+- **ROM-01:** ROM-quote mode (material-cost-only path).
+- **BENCH-01** (optional, low priority): benchmark vs Manager spreadsheet estimators.
+
+### Reserved (v3 — Manager out of the loop)
+
+- **DATA-05:** Real-data ingest cycle formalized — backend question may resurface here.
+- **AI-01:** AI Scope-Review tool (Manager question library + LLM gotcha-flagging) — sibling workspace to Single Quote / Batch / Compare / Business Insights.
 
 ### Out of Scope (durable decisions)
 
@@ -88,7 +115,11 @@ The 2026-05-01 stakeholder review surfaced bugs, UX gaps, data-correctness gaps,
 | **Real and Synthetic workspaces share identical model code path.** | The product pitch only works if the two sides are apples-to-apples on output shape. The Real side's lower confidence IS the pitch point. | ✓ Active. Documented in memory `project_demo_audience_and_pitch.md`. |
 | **North-star reframe: "Manager out of the loop".** | Customer-validated 2026-05-01 by Ben Bertsche. Replaces earlier "help SE quote faster" framing. | ✓ Active. Drives milestone v3. |
 | **AI Scope-Review tool deferred to v3.** | Customer asked for it, but it is a sibling tool surface (Manager question library + LLM gotcha-flagging) — wants its own milestone, possibly its own backend conversation. | ✓ Captured. v3 placement in REQUIREMENTS.md. |
-| **Quote persistence — implementation route is an open decision.** | Browser-only (localStorage / IndexedDB) is cheap but loses cross-device sync. A real backend forces auth + deployment. Decision deferred until v2 milestone planning. | ⏳ Pending. Flagged in REQUIREMENTS.md `PERSIST-01`. |
+| **Quote persistence — implementation route is an open decision.** | Browser-only (localStorage / IndexedDB) is cheap but loses cross-device sync. A real backend forces auth + deployment. Decision deferred until v2 milestone planning. | ⏳ Pending. Flagged for v2 (`PERSIST-01`). |
+| **Customer feedback as PRD-express.** Stakeholder review docs in `.planning/feedback/` are ingested directly via `/gsd-plan-phase --prd`, no interpretive layer. | Worked in v1.0 — Ben's 2026-05-01 review drove all 10 requirements with zero re-derivation. | ✓ Validated v1.0. Pattern repeated for future stakeholder reviews. |
+| **Wave-coordinated parallel execution when file scopes are disjoint.** | Phase 4 ran 3 plans across 3 worktrees concurrently with zero merge conflict. Plan-checker triage upstream keeps wave file-disjoint. | ✓ Validated v1.0 (Phase 4). |
+| **Same-day patch where the right answer is bigger.** | UX-01 ships a quote-inputs recap as a same-day patch; full quote persistence is v2's `PERSIST-01`. Keeps milestones closeable. | ✓ Validated v1.0 (Phase 1). |
+| **Jargon-guard scanning of every customer-facing surface is table stakes.** | The non-technical demo audience makes copy a product surface. Phase 4's extended guard caught a real "training data" leak that would have shipped otherwise. | ✓ Validated v1.0 (Phase 4). |
 
 ## Evolution
 
@@ -108,4 +139,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Codebase Reality with current state if architecture moved (e.g., introducing a backend for v2)
 
 ---
-*Last updated: 2026-05-04 after initialization (post codebase map + Bertsche review)*
+*Last updated: 2026-05-05 after v1.0 milestone close (10/10 v1 requirements complete)*
