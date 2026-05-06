@@ -26,7 +26,7 @@ Full milestone: `.planning/milestones/v1.0-ROADMAP.md`
 
 Goal: reshape the tool to match Ben's actual quoting workflow — multi-week revisions, multi-vision projects, and a ROM-quote-only path. Three phases, eight requirements, coarse granularity.
 
-- [ ] **Phase 5: Quote Persistence** — A Sales Engineer can save a quote, find it again later, edit and re-estimate it across weeks, track its workflow status (draft / sent / won / lost / revised), see prior versions, and delete obsolete ones (closes PERSIST-01, PERSIST-02, PERSIST-03, PERSIST-04, PERSIST-05, PERSIST-06)
+- [x] **Phase 5: Quote Persistence** — A Sales Engineer can save a quote, find it again later, edit and re-estimate it across weeks, track its workflow status (draft / sent / won / lost / revised), see prior versions, and delete obsolete ones (closes PERSIST-01, PERSIST-02, PERSIST-03, PERSIST-04, PERSIST-05, PERSIST-06) — **shipped 2026-05-05, PR #24**
 - [ ] **Phase 6: Multi-vision per project** — A Sales Engineer can quote a project with multiple vision systems, see a per-vision drivers breakdown on the result panel, and the ML estimate aggregates correctly across all of them (closes DATA-04, DATA-06)
 - [ ] **Phase 7: ROM-quote mode** — A Sales Engineer can produce a material-cost-only ROM quote that is visually distinguished as preliminary (closes ROM-01, ROM-02)
 
@@ -121,7 +121,7 @@ The following requirements are scoped but deferred. They become roadmap phases w
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 5. Quote Persistence | 0/9 | Plans created | - |
+| 5. Quote Persistence | 9/9 | Shipped — PR #24 (awaiting merge) | 2026-05-05 |
 | 6. Multi-vision per project | 0/? | Not started | - |
 | 7. ROM-quote mode | 0/? | Not started | - |
 
