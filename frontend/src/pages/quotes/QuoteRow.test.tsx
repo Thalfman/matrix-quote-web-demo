@@ -330,6 +330,36 @@ describe("QuoteRow - delete icon click stops propagation", () => {
     fireEvent.click(deleteBtn);
     expect(mockNavigate).not.toHaveBeenCalled();
   });
+
+  it("Enter on the focused delete icon does NOT navigate (keydown stopPropagation)", () => {
+    renderWithProviders(
+      <QuoteRow
+        quote={makeQuote({ name: "Alpha quote" })}
+        onAdvanceStatus={vi.fn()}
+        onRequestDelete={vi.fn()}
+      />,
+    );
+    const deleteBtn = screen.getByRole("button", {
+      name: /Delete quote Alpha quote/i,
+    });
+    fireEvent.keyDown(deleteBtn, { key: "Enter" });
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
+
+  it("Space on the focused delete icon does NOT navigate (keydown stopPropagation)", () => {
+    renderWithProviders(
+      <QuoteRow
+        quote={makeQuote({ name: "Alpha quote" })}
+        onAdvanceStatus={vi.fn()}
+        onRequestDelete={vi.fn()}
+      />,
+    );
+    const deleteBtn = screen.getByRole("button", {
+      name: /Delete quote Alpha quote/i,
+    });
+    fireEvent.keyDown(deleteBtn, { key: " " });
+    expect(mockNavigate).not.toHaveBeenCalled();
+  });
 });
 
 // ---------------------------------------------------------------------------
