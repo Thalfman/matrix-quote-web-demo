@@ -3,7 +3,7 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: — Workflow fit
 status: shipped
-last_updated: "2026-05-05T19:30:00.000Z"
+last_updated: "2026-05-05T20:38:00.000Z"
 last_activity: 2026-05-05
 progress:
   total_phases: 3
@@ -27,9 +27,9 @@ progress:
 - **Repo type:** brownfield, static-only Vite/React SPA on Vercel CDN
 
 - **Milestone:** v2.0 — Workflow fit (started 2026-05-05; roadmap finalized)
-- **Phase:** Phase 5 — Quote Persistence ✅ shipped 2026-05-05 (PR #24, awaiting merge); next is Phase 6 — Multi-vision per project
+- **Phase:** Phase 6 — Multi-vision per project (context gathered 2026-05-05)
 - **Plan:** —
-- **Status:** Phase 5 shipped — PR #24 awaiting merge; ready for `/gsd-discuss-phase 6` or `/gsd-ui-phase 6`
+- **Status:** Phase 6 context gathered — `06-CONTEXT.md` + `06-DISCUSSION-LOG.md` written; user delegated all decisions to agent grounded in Ben Bertsche §U2 verbatim; ready for `/gsd-plan-phase 6`
 - **In scope for v2.0:** PERSIST-01..06 (Phase 5 — quote persistence + workflow status + version history), DATA-04 + DATA-06 (Phase 6 — multi-vision incl. per-vision drivers breakdown), ROM-01 + ROM-02 (Phase 7 — ROM mode)
 - **Deferred from v2.0:** BENCH-01 (Manager-spreadsheet benchmark — optional, no firm slot)
 - **Last activity:** 2026-05-05
@@ -39,6 +39,7 @@ progress:
 
 | Date | Event |
 |---|---|
+| 2026-05-05 | `/gsd-discuss-phase 6` → `06-CONTEXT.md` + `06-DISCUSSION-LOG.md` written; **18 implementation decisions locked (D-01..D-18)**; user delegated entire decision space with directive *"Pick the closest solution to Ben's comment"*; every decision grounded in Ben Bertsche 2026-05-01 §U2 verbatim (`.planning/feedback/2026-05-01-ben-bertsche-review.md:123-133`); headline calls: vision row = `{type: "2D"\|"3D", count, label?}`, **delta-from-baseline TS-side aggregation in new `frontend/src/demo/multiVisionAggregator.ts`** (no `core/` touch, no `_PREDICT_SHIM` change, no retrain), **stacked per-vision cards** in QuoteResultPanel breakdown, **schemaVersion 1 → 2 hard cutover** with `onupgradeneeded` + defensive on-read migrator; Compare tool stays single-row v2 shape; ready for `/gsd-plan-phase 6` |
 | 2026-05-05 | `/gsd-ship 5` → PR #24 opened (feat/05-quote-persistence → main); 57 commits including 8 code-review-fix commits; vitest 890/890, typecheck/lint/build clean; awaiting merge |
 | 2026-05-05 | `/gsd-verify-phase 5` (gsd-verifier) → PASS 7/7 ROADMAP success criteria; 05-VERIFICATION.md written; 4 confirmatory human spot-checks captured (multi-session SC#3/#5, live cross-tab broadcast, visual jargon sweep, D-17 copy) — non-gating |
 | 2026-05-05 | `/gsd-code-review 5 --fix` → 1 BLOCKER + 7 Warnings resolved across 8 atomic commits (BL-01 URL-param wiring, WR-01 focus trap, WR-02 listSavedQuotes safeParse, WR-03 BroadcastChannel sub, WR-04 drop empty bucket, WR-05 unused IDB read, WR-06 deepEqual diff, typecheck narrow); 05-REVIEW.md status: clean; 6 Info deferred |
@@ -81,6 +82,8 @@ progress:
 | 2026-05-04 | YOLO mode + coarse granularity | Single-dev iteration; auto-advance through approval gates that don't need fresh thought |
 | 2026-05-05 | v2.0 split into 3 coarse phases (5: PERSIST, 6: Multi-vision, 7: ROM) | Natural delivery boundaries; coarse granularity matches `config.json`; Phase 6 + 7 depend on Phase 5 schema for save/reopen round-trip |
 | 2026-05-05 | Quote persistence = browser-only via IndexedDB; no backend introduced in v2.0 | Static-SPA-no-backend posture from v1.0 holds. Backend is milestone-sized work not justified by v2.0 evidence. Cross-device sync durably out for v2.0 (REQUIREMENTS.md). Specialist routing unchanged (frontend/ui/test only). Reopens in v3 if real-data ingest or AI Scope-Review forces it. |
+| 2026-05-05 | Multi-vision aggregation = delta-from-baseline, TS-side only (no `core/` touch, no `_PREDICT_SHIM` change, no retrain) | Closest to Ben's *"cameras can all vary in hours required"* + *"first-class data-model evolution; do not patch around it"* without violating ARCHITECTURE.md `core/` read-only constraint. Each row's hours contribution = `(predict with row's vision) − (predict with no vision)`. Aggregated total = baseline + sum(deltas). Per-vision drivers fall out for free. N+1 predict per quote on warm Pyodide is fast enough for 1-3 typical rows. Lives in new `frontend/src/demo/multiVisionAggregator.ts`. Retraining for true per-vision-type features deferred to v3. |
+| 2026-05-05 | Saved-quote schema bump = hard cutover schemaVersion 1 → 2; v1 → v2 single-row migration on read | Phase 5 D-18 reserved the slot. Hard cutover keeps the DB clean and avoids dual-shape readers; defensive on-read migrator covers tabs open across the version bump. Migration: `vision_type: "None"` → `visionRows: []`; `2D\|3D` → `[{type, count: max(1, count)}]`. Legacy keys deleted. |
 
 ## Blockers
 
