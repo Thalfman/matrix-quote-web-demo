@@ -142,8 +142,7 @@ function migrateFormValuesV1ToV2(fv: unknown): unknown {
   if (!fv || typeof fv !== "object") return fv;
   const f = fv as Record<string, unknown>;
   // WR-04: strip legacy keys first so the already-v2 short-circuit cannot
-  // leak them through. eslint-disable for the unused-rename pattern.
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // leak them through. _vt/_vc satisfy the project's argsIgnorePattern: "^_".
   const { vision_type: _vt, vision_systems_count: _vc, ...rest } = f;
   if (Array.isArray(rest.visionRows)) return rest; // already v2 (now without legacy keys)
   const visionType = typeof f.vision_type === "string" ? f.vision_type : "";
