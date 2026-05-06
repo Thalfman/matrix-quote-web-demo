@@ -1,10 +1,18 @@
 import { describe, expect, it, vi } from "vitest";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 import { renderWithProviders } from "@/test/render";
 import { BANNED_TOKENS } from "@/test/jargon";
 import type { ProjectRecord } from "@/demo/realProjects";
 import type { UnifiedQuoteResult } from "@/demo/quoteResult";
-import { quoteFormDefaults, type QuoteFormValues } from "@/pages/single-quote/schema";
+import {
+  quoteFormDefaults,
+  quoteFormSchema,
+  type QuoteFormValues,
+  type VisionRow,
+} from "@/pages/single-quote/schema";
+import { VisionRowsField } from "@/pages/single-quote/VisionRowsField";
 
 // ---------------------------------------------------------------------------
 // Recharts mock — required for jsdom to render BusinessInsights*.
@@ -338,5 +346,107 @@ describe("jargon-guard (DATA-03 — Phase 5 surface coverage)", () => {
       /(back to my quotes|version history|status|loading)/i,
     );
     assertNoBannedTokens("SavedQuotePage", body);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 6 — multi-vision surface coverage (D-17)
+//
+// Covers every customer-facing string introduced by Phase 6:
+//   - VisionRowsField empty/populated states ("Add vision system",
+//     "Remove vision system", "No vision systems on this project.",
+//     "Vision type", "Count")
+//   - QuoteResultPanel "Per-vision contribution" section + per-row labels
+//   - QuoteResultPanel inputs-echo "Vision systems" row + "2D × 2; 3D × 1"
+//
+// NO additions to BANNED_TOKENS — Phase 6 introduces no new ML-risk
+// vocabulary; the existing 16-pattern list catches anything that would slip
+// (e.g. "delta from baseline" via /\bregression\b/ family).
+// ---------------------------------------------------------------------------
+
+// VisionRowsField requires a real form harness so useFieldArray binds to state.
+function VisionRowsHarness({ rows }: { rows: VisionRow[] }) {
+  const form = useForm<QuoteFormValues>({
+    resolver: zodResolver(quoteFormSchema),
+    defaultValues: { ...quoteFormDefaults, visionRows: rows },
+  });
+  return <VisionRowsField control={form.control} />;
+}
+
+const PHASE6_BASE_RESULT: UnifiedQuoteResult = {
+  estimateHours: 250,
+  likelyRangeLow: 200,
+  likelyRangeHigh: 320,
+  overallConfidence: "moderate",
+  perCategory: [],
+  topDrivers: [],
+  supportingMatches: { label: "Most similar training rows", items: [] },
+};
+
+describe("jargon-guard (DATA-03 — Phase 6 surface coverage)", () => {
+  it("VisionRowsField (empty state) renders no banned ML-jargon tokens", () => {
+    const { unmount } = renderWithProviders(<VisionRowsHarness rows={[]} />);
+    const body = document.body.textContent ?? "";
+    expect(body).toMatch(/no vision systems/i);
+    expect(body).toMatch(/add vision system/i);
+    assertNoBannedTokens("VisionRowsField (empty)", body);
+    unmount();
+  });
+
+  it("VisionRowsField (populated) renders no banned ML-jargon tokens", () => {
+    renderWithProviders(
+      <VisionRowsHarness rows={[{ type: "2D", count: 2 }, { type: "3D", count: 1 }]} />,
+    );
+    const body = document.body.textContent ?? "";
+    expect(body).toMatch(/add vision system/i);
+    assertNoBannedTokens("VisionRowsField (populated)", body);
+  });
+
+  it("QuoteResultPanel with perVisionContributions populated renders no banned tokens", () => {
+    const result: UnifiedQuoteResult = {
+      ...PHASE6_BASE_RESULT,
+      perVisionContributions: [
+        {
+          rowIndex: 0,
+          rowLabel: "Vision 1: 2D × 2",
+          hoursDelta: 38,
+          topDrivers: [{ label: "Number of stations", direction: "increases" }],
+        },
+        {
+          rowIndex: 1,
+          rowLabel: "Vision 2: 3D × 1",
+          hoursDelta: 65,
+          topDrivers: [{ label: "Robot count", direction: "increases" }],
+        },
+      ],
+    };
+    renderWithProviders(
+      <QuoteResultPanel
+        result={result}
+        input={{
+          ...quoteFormDefaults,
+          visionRows: [{ type: "2D", count: 2 }, { type: "3D", count: 1 }],
+        }}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    expect(body).toMatch(/per-vision contribution/i);
+    assertNoBannedTokens("QuoteResultPanel (multi-vision)", body);
+  });
+
+  it("QuoteResultPanel inputs-echo 'Vision systems' row renders no banned tokens", () => {
+    renderWithProviders(
+      <QuoteResultPanel
+        result={PHASE6_BASE_RESULT}
+        input={{
+          ...quoteFormDefaults,
+          visionRows: [{ type: "2D", count: 2 }, { type: "3D", count: 1 }],
+        }}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    expect(body).toMatch(/vision systems/i);
+    expect(body).toMatch(/2D × 2/);
+    assertNoBannedTokens("QuoteResultPanel (inputs-echo Phase 6)", body);
   });
 });
