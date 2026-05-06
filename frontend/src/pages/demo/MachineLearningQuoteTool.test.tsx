@@ -1,9 +1,11 @@
+import "fake-indexeddb/auto";
 import { screen, waitFor, fireEvent, act } from "@testing-library/react";
 import { describe, expect, it, vi, beforeEach } from "vitest";
 
 import { renderWithProviders } from "@/test/render";
 import type { ProjectRecord } from "@/demo/realProjects";
 import type { PyodideStatus } from "@/demo/pyodideClient";
+import type { SavedQuote } from "@/lib/savedQuoteSchema";
 
 // ---------------------------------------------------------------------------
 // Mock pyodideClient
@@ -84,6 +86,34 @@ vi.mock("@/demo/modelMetrics", () => ({
       ],
     },
   }),
+}));
+
+// ---------------------------------------------------------------------------
+// Mock useSavedQuotes — P2 regression test asserts saveSavedQuote is called
+// with restoredFromVersion=undefined when ?restoreVersion= is malformed.
+// ---------------------------------------------------------------------------
+
+const mockSaveMutateAsync = vi.fn((args: Record<string, unknown>) => {
+  void args;
+  return Promise.resolve({
+    id: "test-quote-id",
+    versions: [{ version: 1 }, { version: 2 }],
+    status: "draft",
+  } as unknown as SavedQuote);
+});
+const mockUseSavedQuote = vi.fn(() => ({
+  data: undefined as SavedQuote | undefined,
+  isLoading: false,
+}));
+
+vi.mock("@/hooks/useSavedQuotes", () => ({
+  useSaveQuote: () => ({ mutateAsync: mockSaveMutateAsync, isPending: false }),
+  useSetStatus: () => ({ mutateAsync: vi.fn(), isPending: false }),
+  useSavedQuote: () => mockUseSavedQuote(),
+}));
+
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 // ---------------------------------------------------------------------------
@@ -243,5 +273,71 @@ describe("MachineLearningQuoteTool - loading state", () => {
     );
     // Before submit, no hero estimate text present.
     expect(screen.queryByText(/Estimated hours/i)).not.toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// P2 regression: malformed ?restoreVersion= must NOT flow into save payload.
+// Mirrors the ComparisonQuote regression test — same fix, both Quote tools.
+// Without parse hardening, Number("foo") → NaN trips schema validation
+// (z.number().int().min(1)) and surfaces as a generic save-error toast.
+// ---------------------------------------------------------------------------
+
+describe("MachineLearningQuoteTool - P2 malformed restoreVersion does not flow into save", () => {
+  beforeEach(() => {
+    mockSaveMutateAsync.mockClear();
+    mockUseSavedQuote.mockReset();
+    mockPredictQuote.mockClear();
+    mockGetFeatureImportances.mockClear();
+  });
+
+  it("saveSavedQuote receives restoredFromVersion=undefined when ?restoreVersion= is non-integer", async () => {
+    mockUseSavedQuote.mockReturnValue({
+      data: {
+        id: "test-quote-id",
+        name: "Existing Quote",
+        status: "draft",
+      } as unknown as SavedQuote,
+      isLoading: false,
+    });
+
+    renderWithProviders(<MachineLearningQuoteTool />, {
+      route: "/quote-tool?fromQuote=test-quote-id&restoreVersion=foo",
+    });
+
+    await waitFor(() =>
+      expect(mockEnsureModelsReady).toHaveBeenCalledWith("synthetic"),
+    );
+
+    const submitBtn = await screen.findByRole("button", {
+      name: /regenerate estimate/i,
+    });
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+    await waitFor(() =>
+      expect(screen.getByText(/Estimated hours/i)).toBeInTheDocument(),
+    );
+
+    const saveTrigger = await screen.findByRole("button", { name: /save quote/i });
+    await act(async () => {
+      fireEvent.click(saveTrigger);
+    });
+
+    const dialog = await screen.findByRole("dialog");
+    const dialogSaveBtn = dialog.querySelector<HTMLButtonElement>(
+      'button[type="submit"]',
+    );
+    await act(async () => {
+      fireEvent.click(dialogSaveBtn!);
+    });
+
+    await waitFor(() => expect(mockSaveMutateAsync).toHaveBeenCalled());
+    const args = mockSaveMutateAsync.mock.calls[0]![0] as {
+      id?: string;
+      restoredFromVersion?: number;
+    };
+    expect(args.id).toBe("test-quote-id");
+    expect(args.restoredFromVersion).toBeUndefined();
   });
 });

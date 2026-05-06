@@ -1,5 +1,5 @@
 import { screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { renderWithProviders } from "@/test/render";
 import type { UnifiedQuoteResult } from "@/demo/quoteResult";
@@ -8,6 +8,16 @@ import {
   type QuoteFormValues,
 } from "@/pages/single-quote/schema";
 import { QuoteResultPanel } from "./QuoteResultPanel";
+
+// Mock SaveQuoteButton so the Save button render branch is exercised without
+// pulling the SaveQuoteDialog tree into this unit test (Plan 05-09 Task 2 W6).
+vi.mock("@/components/quote/SaveQuoteButton", () => ({
+  SaveQuoteButton: () => (
+    <button type="button" data-testid="save-quote-button-mock">
+      Save quote
+    </button>
+  ),
+}));
 
 function makeFormValues(over: Partial<QuoteFormValues> = {}): QuoteFormValues {
   return { ...quoteFormDefaults, ...over };
@@ -193,6 +203,50 @@ describe("QuoteResultPanel - lower confidence fixture", () => {
   it("renders estimate hours for lower confidence result", () => {
     renderWithProviders(<QuoteResultPanel result={LOWER_CONFIDENCE_RESULT} input={makeFormValues()} />);
     expect(screen.getByText(/900 hrs/i)).toBeInTheDocument();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 5 — Save quote button (Plan 05-09)
+// ---------------------------------------------------------------------------
+
+describe("QuoteResultPanel — Save quote button (Plan 05-09)", () => {
+  it("renders the Save quote button when workspace='real' is provided", () => {
+    renderWithProviders(
+      <QuoteResultPanel
+        result={HIGH_CONFIDENCE_RESULT}
+        input={makeFormValues()}
+        workspace="real"
+      />,
+    );
+    expect(
+      screen.getByRole("button", { name: /save quote/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders the Save quote button when workspace='synthetic' is provided", () => {
+    renderWithProviders(
+      <QuoteResultPanel
+        result={HIGH_CONFIDENCE_RESULT}
+        input={makeFormValues()}
+        workspace="synthetic"
+      />,
+    );
+    expect(
+      screen.getByRole("button", { name: /save quote/i }),
+    ).toBeInTheDocument();
+  });
+
+  it("does NOT render the Save quote button when workspace is omitted", () => {
+    renderWithProviders(
+      <QuoteResultPanel
+        result={HIGH_CONFIDENCE_RESULT}
+        input={makeFormValues()}
+      />,
+    );
+    expect(
+      screen.queryByRole("button", { name: /save quote/i }),
+    ).toBeNull();
   });
 });
 

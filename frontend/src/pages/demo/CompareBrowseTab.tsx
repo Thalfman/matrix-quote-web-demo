@@ -1,7 +1,10 @@
 import { useMemo, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
+import { SaveQuoteButton } from "@/components/quote/SaveQuoteButton";
 import { ProjectRecord, recordToSavedQuote, recordToSummary } from "@/demo/realProjects";
+import type { UnifiedQuoteResult } from "@/demo/quoteResult";
+import { transformToFormValues } from "@/lib/savedQuoteSchema";
 import { QuotesBulkBar } from "@/pages/quotes/QuotesBulkBar";
 import { QuotesFilters } from "@/pages/quotes/QuotesFilters";
 import { QuotesTable } from "@/pages/quotes/QuotesTable";
@@ -86,6 +89,43 @@ export function CompareBrowseTab({ records }: Props) {
         <div className="card p-5">
           <CompareHeader quotes={selectedQuotes} />
         </div>
+
+        {/*
+          Phase 5 D-13: Compare-side save. I1 simplification — the FIRST
+          selected project's record-derived prediction is the saveable shape.
+          `compareInputs.humanQuotedByBucket` is intentionally OMITTED here:
+          the CompareBrowseTab UI does not collect human comparator numbers,
+          and a forced empty object would be misleading schema cruft. D-13's
+          full intent (persist human comparator alongside the model-side
+          fields) is partial; lift `quotedHours` from QuoteForm into a shared
+          context to fully satisfy D-13. Tracked as Phase 5 follow-up.
+        */}
+        {selectedQuotes.length > 0 && (() => {
+          const head = selectedQuotes[0];
+          const formValues = transformToFormValues(head.inputs);
+          const unifiedResult: UnifiedQuoteResult = {
+            estimateHours: head.prediction.total_p50,
+            likelyRangeLow: head.prediction.total_p10,
+            likelyRangeHigh: head.prediction.total_p90,
+            overallConfidence: "high",
+            perCategory: [],
+            topDrivers: [],
+            supportingMatches: {
+              label: "Most similar past projects",
+              items: [],
+            },
+          };
+          return (
+            <div className="flex justify-end">
+              <SaveQuoteButton
+                workspace="real"
+                formValues={formValues}
+                unifiedResult={unifiedResult}
+                variant="compact"
+              />
+            </div>
+          );
+        })()}
 
         <div>
           <div className="eyebrow text-sm text-muted mb-3">Per-bucket hours (actuals)</div>

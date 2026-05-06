@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
@@ -186,5 +186,84 @@ describe("QuoteForm — compare to your quoted hours panel (BUG-01)", () => {
       screen.getByRole("button", { name: /regenerate estimate/i }),
     );
     await waitFor(() => expect(onSubmit).toHaveBeenCalledWith({}));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ?fromQuote rehydration (Plan 05-09 Task 2 — replaces UX-01 sessionStorage recall)
+// ---------------------------------------------------------------------------
+
+import "fake-indexeddb/auto";
+import { saveSavedQuote, type SaveSavedQuoteArgs } from "@/lib/quoteStorage";
+
+describe("QuoteForm — ?fromQuote rehydration", () => {
+  beforeEach(() => {
+    // Reset IDB between tests so each starts with a clean store.
+    indexedDB.deleteDatabase("matrix-quotes");
+  });
+
+  function makeSaveArgs(
+    over: Partial<SaveSavedQuoteArgs> = {},
+  ): SaveSavedQuoteArgs {
+    return {
+      name: "Alpha",
+      workspace: "real",
+      formValues: { ...HARNESS_DEFAULTS, stations_count: 7 },
+      unifiedResult: {
+        estimateHours: 800,
+        likelyRangeLow: 640,
+        likelyRangeHigh: 960,
+        overallConfidence: "high",
+        perCategory: [],
+        topDrivers: [],
+        supportingMatches: { label: "Most similar past projects", items: [] },
+      },
+      ...over,
+    };
+  }
+
+  it("calls form.reset with the saved version's formValues when ?fromQuote=<id> matches an IDB record", async () => {
+    const saved = await saveSavedQuote(makeSaveArgs());
+
+    const { container } = renderWithProviders(<Harness />, {
+      route: `/single-quote?fromQuote=${saved.id}`,
+    });
+
+    await waitFor(
+      () => {
+        const stationsInput = container.querySelector(
+          'input[name="stations_count"]',
+        ) as HTMLInputElement | null;
+        expect(stationsInput?.value).toBe("7");
+      },
+      { timeout: 2000 },
+    );
+  });
+
+  it("falls back to defaults silently when ?fromQuote points at a non-existent id", async () => {
+    const { container } = renderWithProviders(<Harness />, {
+      route: "/single-quote?fromQuote=00000000-0000-4000-8000-000000000000",
+    });
+
+    // Form renders with HARNESS defaults (stations_count=0); no crash.
+    await waitFor(() => {
+      const stationsInput = container.querySelector(
+        'input[name="stations_count"]',
+      ) as HTMLInputElement | null;
+      expect(stationsInput).not.toBeNull();
+    });
+  });
+
+  it("does NOT read from IDB when ?fromQuote query param is absent", async () => {
+    const { container } = renderWithProviders(<Harness />);
+    // The form mounts and renders inputs at the harness defaults; no rehydration.
+    await waitFor(() => {
+      const stationsInput = container.querySelector(
+        'input[name="stations_count"]',
+      ) as HTMLInputElement | null;
+      expect(stationsInput).not.toBeNull();
+      // Default from HARNESS_DEFAULTS / quoteFormDefaults is 0.
+      expect(stationsInput?.value).toBe("0");
+    });
   });
 });

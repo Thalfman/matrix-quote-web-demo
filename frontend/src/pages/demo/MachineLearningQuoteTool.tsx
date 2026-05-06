@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 
@@ -17,6 +18,7 @@ import {
 import { useSyntheticPool } from "@/demo/realProjects";
 import { useModelMetrics } from "@/demo/modelMetrics";
 import { useHotkey } from "@/lib/useHotkey";
+import { useSavedQuote } from "@/hooks/useSavedQuotes";
 import { QuoteForm } from "@/pages/single-quote/QuoteForm";
 import { QuoteResultPanel } from "@/components/quote/QuoteResultPanel";
 import { toUnifiedResult } from "@/demo/quoteAdapter";
@@ -54,6 +56,24 @@ function buildDropdowns(pool: Record<string, unknown>[]) {
 export function MachineLearningQuoteTool() {
   const { data: pool } = useSyntheticPool();
   const { data: metricsData } = useModelMetrics("synthetic");
+
+  // Phase 5 BL-01 / WR-07: read URL params so re-saves of an opened-from-list
+  // quote append a new version (D-05) and lineage is preserved (D-06
+  // restoredFromVersion). Mirrors ComparisonQuote.tsx — same fix, both Quote
+  // tools.
+  const [searchParams] = useSearchParams();
+  const fromQuoteId = searchParams.get("fromQuote") ?? undefined;
+  // Schema requires positive integer (z.number().int().min(1)); coerce
+  // anything else (NaN, decimals, zero, negatives) to undefined so a
+  // malformed URL doesn't surface as a generic save-failure toast.
+  const restoreVersionParam = searchParams.get("restoreVersion");
+  const parsedRestoreVersion =
+    restoreVersionParam !== null ? Number(restoreVersionParam) : NaN;
+  const restoredFromVersion =
+    Number.isInteger(parsedRestoreVersion) && parsedRestoreVersion > 0
+      ? parsedRestoreVersion
+      : undefined;
+  const { data: openedQuote } = useSavedQuote(fromQuoteId);
 
   const metricsByTarget = useMemo(
     () =>
@@ -227,6 +247,11 @@ export function MachineLearningQuoteTool() {
               <QuoteResultPanel
                 result={result.unified}
                 input={result.formValues}
+                workspace="synthetic"
+                quoteId={fromQuoteId}
+                existingName={openedQuote?.name}
+                status={openedQuote?.status}
+                restoredFromVersion={restoredFromVersion}
               />
             )}
           </aside>
