@@ -4,6 +4,22 @@ import { QuoteInput } from "@/api/types";
 
 const requiredString = z.string().trim().min(1, "Required");
 
+export const VISION_TYPES = ["2D", "3D"] as const;
+export type VisionType = (typeof VISION_TYPES)[number];
+
+/**
+ * Phase 6 — multi-vision row shape (D-01).
+ * `count` defaults to 1 per row (D-02). Empty rows array = no vision systems.
+ * `label` is an optional free-text override; bounded at 80 chars to match
+ * savedQuoteNameSchema.max(80) (T-05-03 DoS posture, carry-forward).
+ */
+export const VisionRowSchema = z.object({
+  type: z.enum(VISION_TYPES),
+  count: z.coerce.number().int().min(1),
+  label: z.string().trim().max(80).optional(),
+});
+export type VisionRow = z.infer<typeof VisionRowSchema>;
+
 /**
  * The shape the user fills in. Materials cost is a raw dollar amount;
  * booleans are real booleans. transformToQuoteInput() converts to the
@@ -33,12 +49,11 @@ export const quoteFormSchema = z.object({
   // 03 · controls & automation
   plc_family: requiredString,
   hmi_family: requiredString,
-  vision_type: requiredString,
   panel_count: z.coerce.number().int().min(0),
   servo_axes: z.coerce.number().int().min(0),
   drive_count: z.coerce.number().int().min(0),
   pneumatic_devices: z.coerce.number().int().min(0),
-  vision_systems_count: z.coerce.number().int().min(0),
+  visionRows: z.array(VisionRowSchema),
 
   // 04 · product & process
   product_familiarity_score: z.coerce.number().min(1).max(5),
@@ -85,12 +100,11 @@ export const quoteFormDefaults: QuoteFormValues = {
 
   plc_family: "AB Compact Logix",
   hmi_family: "AB PanelView Plus",
-  vision_type: "None",
   panel_count: 0,
   servo_axes: 0,
   drive_count: 0,
   pneumatic_devices: 0,
-  vision_systems_count: 0,
+  visionRows: [],
 
   product_familiarity_score: 3,
   product_rigidity: 3,
@@ -118,7 +132,6 @@ export function transformToQuoteInput(v: QuoteFormValues): QuoteInput {
     automation_level: v.automation_level,
     plc_family: v.plc_family,
     hmi_family: v.hmi_family,
-    vision_type: v.vision_type,
 
     stations_count: v.stations_count,
     robot_count: v.robot_count,
@@ -148,7 +161,6 @@ export function transformToQuoteInput(v: QuoteFormValues): QuoteInput {
     safety_devices_count: v.safety_devices_count,
     complexity_score_1_5: v.complexity_score_1_5,
     custom_pct: v.custom_pct,
-    vision_systems_count: v.vision_systems_count,
     panel_count: v.panel_count,
     drive_count: v.drive_count,
 
