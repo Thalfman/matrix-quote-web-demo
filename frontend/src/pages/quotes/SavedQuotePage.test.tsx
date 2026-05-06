@@ -73,11 +73,13 @@ vi.mock("@/components/quote/QuoteResultPanel", () => ({
     input,
   }: {
     result: { estimateHours: number };
-    input: { vision_type: string };
+    input: { visionRows: Array<{ type: string; count: number }> };
   }) => (
     <div data-testid="quote-result-panel">
       <span data-testid="result-hours">{result.estimateHours}</span>
-      <span data-testid="input-vision">{input.vision_type}</span>
+      <span data-testid="input-vision">
+        {input.visionRows.map((r) => `${r.type}×${r.count}`).join("+")}
+      </span>
     </div>
   ),
 }));
@@ -99,7 +101,11 @@ const MINIMAL_UNIFIED_RESULT = {
 };
 
 function makeFormValues(over: Partial<QuoteFormValues> = {}): QuoteFormValues {
-  return { ...quoteFormDefaults, vision_type: "Vision", ...over };
+  return {
+    ...quoteFormDefaults,
+    visionRows: [{ type: "2D", count: 1 }],
+    ...over,
+  };
 }
 
 function makeVersion(over: Partial<QuoteVersion> = {}): QuoteVersion {
@@ -116,7 +122,7 @@ function makeVersion(over: Partial<QuoteVersion> = {}): QuoteVersion {
 function makeSavedQuote(over: Partial<SavedQuote> = {}): SavedQuote {
   return {
     id: "test-id-123",
-    schemaVersion: 1,
+    schemaVersion: 2,
     name: "ME 800h · Vision · 2026-05-05",
     workspace: "real",
     status: "draft",
@@ -298,19 +304,19 @@ describe("SavedQuotePage - estimate panel", () => {
   it("renders QuoteResultPanel with the LATEST version's formValues", () => {
     const v1 = makeVersion({
       version: 1,
-      formValues: makeFormValues({ vision_type: "None" }),
+      formValues: makeFormValues({ visionRows: [] }),
     });
     const v2 = makeVersion({
       version: 2,
       savedAt: "2026-05-06T12:00:00.000Z",
-      formValues: makeFormValues({ vision_type: "2D" }),
+      formValues: makeFormValues({ visionRows: [{ type: "2D", count: 1 }] }),
     });
     mockUseSavedQuote.mockReturnValueOnce({
       data: makeSavedQuote({ versions: [v1, v2] }),
       isLoading: false,
     });
     renderWithProviders(<SavedQuotePage />);
-    expect(screen.getByTestId("input-vision").textContent).toBe("2D");
+    expect(screen.getByTestId("input-vision").textContent).toBe("2D×1");
   });
 });
 

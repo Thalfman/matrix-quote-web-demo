@@ -17,7 +17,7 @@ const formValues: QuoteFormValues = {
   system_category: "Machine Tending",
   automation_level: "Robotic",
   stations_count: 4,
-  vision_type: "2D",
+  visionRows: [{ type: "2D", count: 1 }],
 };
 
 const unifiedResult: UnifiedQuoteResult = {
@@ -63,7 +63,7 @@ const unifiedResult: UnifiedQuoteResult = {
 
 const savedQuote: SavedQuote = {
   id: "11111111-1111-4111-8111-111111111111",
-  schemaVersion: 1,
+  schemaVersion: 2,
   name: "Alpha quote",
   workspace: "real",
   status: "draft",

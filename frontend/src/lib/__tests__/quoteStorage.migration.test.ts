@@ -102,27 +102,34 @@ function makeV1Record(over: {
   };
 }
 
+// Helper: read the migrated visionRows array out of a v2 record's first version.
+// Centralizes the unknown-record drilling so individual tests stay readable.
+function getFirstVersionFormValues(rec: unknown): Record<string, unknown> {
+  const r = rec as { versions: Array<{ formValues: Record<string, unknown> }> };
+  return r.versions[0].formValues;
+}
+
 describe("migrateRecordV1ToV2 — pure function", () => {
   it("vision_type \"None\" + count 0 -> visionRows: []", async () => {
     const { migrateRecordV1ToV2 } = await import("../quoteStorage");
     const v1 = makeV1Record({ visionType: "None", visionCount: 0 });
-    const v2 = migrateRecordV1ToV2(v1) as ReturnType<typeof makeV1Record>;
-    expect((v2 as any).schemaVersion).toBe(2);
-    expect((v2 as any).versions[0].formValues.visionRows).toEqual([]);
+    const v2 = migrateRecordV1ToV2(v1) as { schemaVersion: number };
+    expect(v2.schemaVersion).toBe(2);
+    expect(getFirstVersionFormValues(v2).visionRows).toEqual([]);
   });
 
   it("vision_type \"None\" + count 5 (degenerate v1) -> visionRows: []", async () => {
     const { migrateRecordV1ToV2 } = await import("../quoteStorage");
     const v1 = makeV1Record({ visionType: "None", visionCount: 5 });
     const v2 = migrateRecordV1ToV2(v1);
-    expect((v2 as any).versions[0].formValues.visionRows).toEqual([]);
+    expect(getFirstVersionFormValues(v2).visionRows).toEqual([]);
   });
 
   it("vision_type \"2D\" + count 2 -> visionRows: [{type:\"2D\", count:2}]", async () => {
     const { migrateRecordV1ToV2 } = await import("../quoteStorage");
     const v1 = makeV1Record({ visionType: "2D", visionCount: 2 });
     const v2 = migrateRecordV1ToV2(v1);
-    expect((v2 as any).versions[0].formValues.visionRows).toEqual([
+    expect(getFirstVersionFormValues(v2).visionRows).toEqual([
       { type: "2D", count: 2 },
     ]);
   });
@@ -131,7 +138,7 @@ describe("migrateRecordV1ToV2 — pure function", () => {
     const { migrateRecordV1ToV2 } = await import("../quoteStorage");
     const v1 = makeV1Record({ visionType: "3D", visionCount: 0 });
     const v2 = migrateRecordV1ToV2(v1);
-    expect((v2 as any).versions[0].formValues.visionRows).toEqual([
+    expect(getFirstVersionFormValues(v2).visionRows).toEqual([
       { type: "3D", count: 1 },
     ]);
   });
@@ -140,7 +147,7 @@ describe("migrateRecordV1ToV2 — pure function", () => {
     const { migrateRecordV1ToV2 } = await import("../quoteStorage");
     const v1 = makeV1Record({ visionType: "2D", visionCount: 1 });
     const v2 = migrateRecordV1ToV2(v1);
-    const fv = (v2 as any).versions[0].formValues;
+    const fv = getFirstVersionFormValues(v2);
     expect(fv).not.toHaveProperty("vision_type");
     expect(fv).not.toHaveProperty("vision_systems_count");
   });

@@ -74,7 +74,6 @@ export function CompareFindSimilarTab({ records }: Props) {
       automation_level: dropdowns.automation_level[0] ?? "",
       plc_family: dropdowns.plc_family[0] ?? quoteFormDefaults.plc_family,
       hmi_family: dropdowns.hmi_family[0] ?? quoteFormDefaults.hmi_family,
-      vision_type: dropdowns.vision_type[0] ?? quoteFormDefaults.vision_type,
     },
     mode: "onBlur",
   });

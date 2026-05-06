@@ -132,6 +132,14 @@ export function transformToQuoteInput(v: QuoteFormValues): QuoteInput {
     automation_level: v.automation_level,
     plc_family: v.plc_family,
     hmi_family: v.hmi_family,
+    // Phase 6 D-04/D-06: QuoteInput still types vision_type as required and
+    // vision_systems_count as optional (parent app's openapi shape, fixed by
+    // the trained joblibs). The multi-vision aggregator overlays both per-row
+    // for each predict call; the baseline call uses these defaults verbatim.
+    // Page handlers also populate `inputForMatching` from visionRows for
+    // similar-projects matching (D-04).
+    vision_type: "None",
+    vision_systems_count: 0,
 
     stations_count: v.stations_count,
     robot_count: v.robot_count,

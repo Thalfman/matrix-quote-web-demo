@@ -105,7 +105,7 @@ function makeVersion(over: Partial<QuoteVersion> = {}): QuoteVersion {
 function makeSavedQuote(over: Partial<SavedQuote> = {}): SavedQuote {
   return {
     id: "11111111-1111-4111-8111-111111111111",
-    schemaVersion: 1,
+    schemaVersion: 2,
     name: "Test quote",
     workspace: "real",
     status: "draft",
@@ -128,7 +128,7 @@ describe("savedQuoteSchema — happy path + rejections", () => {
     const out = savedQuoteSchema.parse(makeSavedQuote());
     expect(out.name).toBe("Test quote");
     expect(out.versions).toHaveLength(1);
-    expect(out.schemaVersion).toBe(1);
+    expect(out.schemaVersion).toBe(2);
   });
 
   it("rejects empty name (min 1)", () => {
@@ -151,9 +151,9 @@ describe("savedQuoteSchema — happy path + rejections", () => {
     ).toThrow();
   });
 
-  it("rejects schemaVersion ≠ 1 (literal forward-compat guard)", () => {
+  it("rejects schemaVersion ≠ 2 (literal forward-compat guard)", () => {
     expect(() =>
-      savedQuoteSchema.parse(makeSavedQuote({ schemaVersion: 2 as never })),
+      savedQuoteSchema.parse(makeSavedQuote({ schemaVersion: 3 as never })),
     ).toThrow();
   });
 
@@ -188,6 +188,11 @@ describe("transformToFormValues — inverse of transformToQuoteInput", () => {
   });
 
   it("round-trips a fully-populated form (non-default values)", () => {
+    // NOTE: visionRows are NOT round-trippable through the QuoteInput
+    // boundary in Phase 6 — transformToQuoteInput sets vision_type:"None"
+    // (the aggregator overlays per-call values), and transformToFormValues
+    // reads from input.vision_type which will read "None" → []. So this
+    // test deliberately uses an empty visionRows array on the input side.
     const populated = makeFormValues({
       industry_segment: "Automotive",
       system_category: "Machine Tending",
@@ -199,7 +204,7 @@ describe("transformToFormValues — inverse of transformToQuoteInput", () => {
       retrofit: true,
       duplicate: false,
       is_product_deformable: true,
-      vision_type: "Vision",
+      visionRows: [],
       estimated_materials_cost: 50000,
     });
     const wire = transformToQuoteInput(populated);
@@ -254,18 +259,18 @@ describe("buildAutoSuggestedName", () => {
       has_robotics: false,
       servo_axes: 0,
       has_controls: true,
-      vision_type: "Vision",
+      visionRows: [{ type: "2D", count: 1 }],
     });
-    expect(buildAutoSuggestedName(values, 800)).toBe("ME 800h · Vision · 2026-05-05");
+    expect(buildAutoSuggestedName(values, 800)).toBe("ME 800h · 2D×1 · 2026-05-05");
   });
 
-  it("formats 'No vision' when vision_type is 'None'", () => {
+  it("formats 'No vision' when visionRows is empty", () => {
     const values = makeFormValues({
       stations_count: 0,
       has_controls: false,
       has_robotics: true,
       servo_axes: 1,
-      vision_type: "None",
+      visionRows: [],
     });
     expect(buildAutoSuggestedName(values, 240)).toBe("EE 240h · No vision · 2026-05-05");
   });
@@ -276,18 +281,24 @@ describe("buildAutoSuggestedName", () => {
       has_controls: true,
       has_robotics: true,
       servo_axes: 2,
-      vision_type: "Vision",
+      visionRows: [{ type: "2D", count: 1 }],
     });
     expect(buildAutoSuggestedName(values, 1200)).toBe(
-      "ME+EE 1,200h · Vision · 2026-05-05",
+      "ME+EE 1,200h · 2D×1 · 2026-05-05",
     );
   });
 
   it("truncates to 80 chars when vision label is huge", () => {
+    // Many-row visionRows → long combined label that should trigger
+    // the truncation branch.
+    const visionRows = Array.from({ length: 10 }, () => ({
+      type: "2D" as const,
+      count: 9999,
+    }));
     const values = makeFormValues({
       has_controls: true,
       stations_count: 1,
-      vision_type: "x".repeat(120),
+      visionRows,
     });
     const out = buildAutoSuggestedName(values, 100);
     expect(out.length).toBeLessThanOrEqual(80);
