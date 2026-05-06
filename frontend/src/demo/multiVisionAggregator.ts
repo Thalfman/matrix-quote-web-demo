@@ -84,12 +84,20 @@ export async function aggregateMultiVisionEstimate(
 
   // 2. Per-row calls (warm Pyodide cache makes these cheap; Promise.all because
   //    predictQuote awaits internally — the JS event loop can interleave).
+  //    WR-05: wrap each call so a per-row failure surfaces which row dropped
+  //    rather than a bare "Prediction failed" toast. Failure semantics are
+  //    unchanged (still all-or-nothing — Promise.all rejects on first error).
   const perRowPreds = await Promise.all(
-    rows.map((row) =>
+    rows.map((row, idx) =>
       predictQuote(
         { ...baselineNonVision, vision_type: row.type, vision_systems_count: row.count },
         dataset,
-      ),
+      ).catch((err: unknown) => {
+        const cause = err instanceof Error ? err.message : String(err);
+        throw new Error(
+          `vision row ${idx + 1} (${row.type} × ${row.count}): ${cause}`,
+        );
+      }),
     ),
   );
 
