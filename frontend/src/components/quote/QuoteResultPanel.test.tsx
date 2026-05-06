@@ -375,17 +375,18 @@ describe("QuoteResultPanel — glossary tooltips on recap row labels (UX-03)", (
     expect(btn).toBeInTheDocument();
   });
 
-  it("renders HelpCircle for all 7 row labels that match glossary terms", () => {
+  it("renders HelpCircle for all 6 row labels that match glossary terms", () => {
     renderWithProviders(
       <QuoteResultPanel result={HIGH_CONFIDENCE_RESULT} input={makeFormValues()} />,
     );
+    // Phase 6 D-11: "Vision Type" entry removed from the inputs-echo MAP
+    // because the row label changed to "Vision systems" (driven by visionRows).
     const labels = [
       "Industry Segment",
       "System Category",
       "Automation Level",
       "PLC Family",
       "HMI Family",
-      "Vision Type",
       "Complexity (1–5)",
     ];
     for (const t of labels) {

@@ -105,7 +105,7 @@ function makeVersion(over: Partial<QuoteVersion> = {}): QuoteVersion {
 function makeSavedQuote(over: Partial<SavedQuote> = {}): SavedQuote {
   return {
     id: "11111111-1111-4111-8111-111111111111",
-    schemaVersion: 1,
+    schemaVersion: 2,
     name: "Test quote",
     workspace: "real",
     status: "draft",
@@ -128,7 +128,7 @@ describe("savedQuoteSchema — happy path + rejections", () => {
     const out = savedQuoteSchema.parse(makeSavedQuote());
     expect(out.name).toBe("Test quote");
     expect(out.versions).toHaveLength(1);
-    expect(out.schemaVersion).toBe(1);
+    expect(out.schemaVersion).toBe(2);
   });
 
   it("rejects empty name (min 1)", () => {
@@ -151,9 +151,9 @@ describe("savedQuoteSchema — happy path + rejections", () => {
     ).toThrow();
   });
 
-  it("rejects schemaVersion ≠ 1 (literal forward-compat guard)", () => {
+  it("rejects schemaVersion ≠ 2 (literal forward-compat guard)", () => {
     expect(() =>
-      savedQuoteSchema.parse(makeSavedQuote({ schemaVersion: 2 as never })),
+      savedQuoteSchema.parse(makeSavedQuote({ schemaVersion: 3 as never })),
     ).toThrow();
   });
 
@@ -188,6 +188,12 @@ describe("transformToFormValues — inverse of transformToQuoteInput", () => {
   });
 
   it("round-trips a fully-populated form (non-default values)", () => {
+    // Phase-6 fix: transformToQuoteInput now surfaces visionRows[0] into the
+    // wire payload, and transformToFormValues recovers it as a single-row
+    // visionRows. The full multi-vision shape (N>1 rows) collapses to row 0
+    // through the QuoteInput boundary — that lossy collapse is by design (the
+    // wire format is single-vision; the multi-vision aggregator handles N>1
+    // out-of-band per call). Single-row inputs DO round-trip cleanly.
     const populated = makeFormValues({
       industry_segment: "Automotive",
       system_category: "Machine Tending",
@@ -199,10 +205,12 @@ describe("transformToFormValues — inverse of transformToQuoteInput", () => {
       retrofit: true,
       duplicate: false,
       is_product_deformable: true,
-      vision_type: "Vision",
+      visionRows: [{ type: "Cognex 2D", count: 2 }],
       estimated_materials_cost: 50000,
     });
     const wire = transformToQuoteInput(populated);
+    expect(wire.vision_type).toBe("Cognex 2D");
+    expect(wire.vision_systems_count).toBe(2);
     const back = transformToFormValues(wire);
     // log1p / expm1 introduces sub-microscopic floating-point drift; compare
     // the cost within tolerance and the rest field-for-field.
@@ -210,6 +218,31 @@ describe("transformToFormValues — inverse of transformToQuoteInput", () => {
     const { estimated_materials_cost: popCost, ...popRest } = populated;
     expect(backRest).toEqual(popRest);
     expect(backCost).toBeCloseTo(popCost, 6);
+  });
+
+  it("multi-row visionRows collapses to row 0 across the wire boundary", () => {
+    const populated = makeFormValues({
+      visionRows: [
+        { type: "Cognex 2D", count: 2 },
+        { type: "3D Vision", count: 1 },
+      ],
+    });
+    const wire = transformToQuoteInput(populated);
+    // Wire format takes row 0's type and the SUM of counts (so similarity
+    // matching against single-vision historicals stays directionally honest).
+    expect(wire.vision_type).toBe("Cognex 2D");
+    expect(wire.vision_systems_count).toBe(3);
+    // Inverse recovers a single-row visionRows array.
+    const back = transformToFormValues(wire);
+    expect(back.visionRows).toEqual([{ type: "Cognex 2D", count: 3 }]);
+  });
+
+  it("empty visionRows wires to vision_type:'None' / count:0 and inverses to []", () => {
+    const empty = makeFormValues({ visionRows: [] });
+    const wire = transformToQuoteInput(empty);
+    expect(wire.vision_type).toBe("None");
+    expect(wire.vision_systems_count).toBe(0);
+    expect(transformToFormValues(wire).visionRows).toEqual([]);
   });
 
   it("inverse-maps log_quoted_materials_cost back to estimated_materials_cost (within 1e-6)", () => {
@@ -254,18 +287,18 @@ describe("buildAutoSuggestedName", () => {
       has_robotics: false,
       servo_axes: 0,
       has_controls: true,
-      vision_type: "Vision",
+      visionRows: [{ type: "Cognex 2D", count: 1 }],
     });
-    expect(buildAutoSuggestedName(values, 800)).toBe("ME 800h · Vision · 2026-05-05");
+    expect(buildAutoSuggestedName(values, 800)).toBe("ME 800h · Cognex 2D×1 · 2026-05-05");
   });
 
-  it("formats 'No vision' when vision_type is 'None'", () => {
+  it("formats 'No vision' when visionRows is empty", () => {
     const values = makeFormValues({
       stations_count: 0,
       has_controls: false,
       has_robotics: true,
       servo_axes: 1,
-      vision_type: "None",
+      visionRows: [],
     });
     expect(buildAutoSuggestedName(values, 240)).toBe("EE 240h · No vision · 2026-05-05");
   });
@@ -276,18 +309,24 @@ describe("buildAutoSuggestedName", () => {
       has_controls: true,
       has_robotics: true,
       servo_axes: 2,
-      vision_type: "Vision",
+      visionRows: [{ type: "Cognex 2D", count: 1 }],
     });
     expect(buildAutoSuggestedName(values, 1200)).toBe(
-      "ME+EE 1,200h · Vision · 2026-05-05",
+      "ME+EE 1,200h · Cognex 2D×1 · 2026-05-05",
     );
   });
 
   it("truncates to 80 chars when vision label is huge", () => {
+    // Many-row visionRows → long combined label that should trigger
+    // the truncation branch.
+    const visionRows = Array.from({ length: 10 }, () => ({
+      type: "Cognex 2D",
+      count: 9999,
+    }));
     const values = makeFormValues({
       has_controls: true,
       stations_count: 1,
-      vision_type: "x".repeat(120),
+      visionRows,
     });
     const out = buildAutoSuggestedName(values, 100);
     expect(out.length).toBeLessThanOrEqual(80);

@@ -5,14 +5,13 @@ import { useSearchParams } from "react-router-dom";
 import { toast } from "sonner";
 import { AlertTriangle } from "lucide-react";
 
+import type { QuoteInput } from "@/api/types";
 import { DataProvenanceNote } from "@/components/DataProvenanceNote";
 import { PageHeader } from "@/components/PageHeader";
 import { PyodideLoader } from "@/components/PyodideLoader";
 import {
   ensurePyodideReady,
   ensureModelsReady,
-  predictQuote,
-  getFeatureImportances,
   subscribe,
 } from "@/demo/pyodideClient";
 import { useRealProjects } from "@/demo/realProjects";
@@ -21,7 +20,7 @@ import { useHotkey } from "@/lib/useHotkey";
 import { useSavedQuote } from "@/hooks/useSavedQuotes";
 import { QuoteForm } from "@/pages/single-quote/QuoteForm";
 import { QuoteResultPanel } from "@/components/quote/QuoteResultPanel";
-import { toUnifiedResult } from "@/demo/quoteAdapter";
+import { aggregateMultiVisionEstimate } from "@/demo/multiVisionAggregator";
 import type { UnifiedQuoteResult } from "@/demo/quoteResult";
 import {
   quoteFormDefaults,
@@ -132,36 +131,23 @@ export function ComparisonQuote() {
     setSubmitting(true);
     try {
       const formValues = form.getValues();
-      const input = transformToQuoteInput(formValues);
-      const [prediction, importances] = await Promise.all([
-        predictQuote(input, "real"),
-        getFeatureImportances("real"),
-      ]);
-
-      // predictQuote returns QuotePrediction (ops-keyed). The adapter expects
-      // per-target { p10, p50, p90 } keyed by target name (e.g. "me10_actual_hours").
-      // Build that map from ops (e.g. "me10") back to target name.
-      const predByTarget: Record<string, { p10: number; p50: number; p90: number }> = {};
-      for (const [opKey, opPred] of Object.entries(prediction.ops)) {
-        const target = `${opKey}_actual_hours`;
-        predByTarget[target] = {
-          p10: opPred.p10,
-          p50: opPred.p50,
-          p90: opPred.p90,
-        };
-      }
-
-      setResult({
-        unified: toUnifiedResult({
-          input,
-          prediction: predByTarget,
-          importances,
-          metrics: metricsByTarget,
-          supportingPool: pool,
-          supportingLabel: "Most similar past projects",
-        }),
+      // D-04: legacy-compat shadow input for similar-projects matching.
+      // visionRows[0]?.type and sum(row.count) keep nearestNeighbor distance honest while the model
+      // remains single-vision-aware. A true vision-set similarity metric is deferred to v3.
+      const inputForMatching: QuoteInput = {
+        ...transformToQuoteInput(formValues),
+        vision_type: formValues.visionRows[0]?.type ?? "None",
+        vision_systems_count: formValues.visionRows.reduce((s, r) => s + r.count, 0),
+      };
+      const { result } = await aggregateMultiVisionEstimate({
         formValues,
+        dataset: "real",
+        metrics: metricsByTarget,
+        supportingPool: pool,
+        supportingLabel: "Most similar past projects",
+        inputForMatching,
       });
+      setResult({ unified: result, formValues });
       requestAnimationFrame(() => {
         document
           .getElementById("quote-results")

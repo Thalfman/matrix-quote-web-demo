@@ -20,8 +20,8 @@ Requirements for the v2.0 milestone. Each maps to exactly one roadmap phase (fil
 
 ### Multi-vision per project
 
-- [ ] **DATA-04**: User can add / edit / remove multiple vision systems on a single project quote (multi-row vision picker).
-- [ ] **DATA-06**: The ML estimate aggregates correctly across all vision systems present on the quote — drivers, range, and confidence reflect the full vision set, not just the first row.
+- [x] **DATA-04**: User can add / edit / remove multiple vision systems on a single project quote (multi-row vision picker).
+- [x] **DATA-06**: The ML estimate aggregates correctly across all vision systems present on the quote — drivers, range, and confidence reflect the full vision set, not just the first row.
 
 > DATA-05 is intentionally skipped here because PROJECT.md reserves it for the v3 "real-data ingest cycle formalized" requirement.
 
@@ -67,8 +67,8 @@ Which phases cover which requirements. Updated during roadmap creation.
 | PERSIST-04 | Phase 5 | Pending |
 | PERSIST-05 | Phase 5 | Pending |
 | PERSIST-06 | Phase 5 | Pending |
-| DATA-04 | Phase 6 | Pending |
-| DATA-06 | Phase 6 | Pending |
+| DATA-04 | Phase 6 | Complete |
+| DATA-06 | Phase 6 | Complete |
 | ROM-01 | Phase 7 | Pending |
 | ROM-02 | Phase 7 | Pending |
 

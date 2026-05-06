@@ -179,7 +179,7 @@ describe("SaveQuoteButton — payload forwarding", () => {
     renderWithProviders(
       <SaveQuoteButton
         workspace="real"
-        formValues={makeFormValues({ vision_type: "2D" })}
+        formValues={makeFormValues({ visionRows: [{ type: "2D", count: 1 }] })}
         unifiedResult={FIXTURE_RESULT}
       />,
     );

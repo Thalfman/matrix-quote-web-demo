@@ -51,7 +51,9 @@ const dropdownsData = {
   automation_level: ["Robotic"],
   plc_family: ["AB Compact Logix"],
   hmi_family: ["AB PanelView Plus"],
-  vision_type: ["None"],
+  // Match the trained model's actual vision_type vocabulary so the picker
+  // surfaces real categories, not the placeholder "2D" / "3D" literals.
+  vision_type: ["None", "Cognex 2D", "3D Vision", "Keyence IV3"],
 };
 
 const readyGetMock = async (url: string) => {
@@ -315,5 +317,85 @@ describe("SingleQuote", () => {
     await waitFor(() =>
       expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Could not generate PDF"),
     );
+  });
+
+  // ---------------------------------------------------------------------------
+  // Phase 6 regression: visionRows MUST surface in the production wire payload
+  //
+  // Pre-fix bug: transformToQuoteInput hard-coded vision_type:"None" /
+  // vision_systems_count:0, on the assumption that every call site would
+  // overlay per-row values. The multi-vision aggregator (demo paths) does that
+  // overlay; SingleQuote's production paths (POST /quote/single,
+  // useSaveScenario, downloadAdHocPdf) do not. Without this regression test
+  // the dropped-rows bug recurs whenever the wire-format defaults shift.
+  // ---------------------------------------------------------------------------
+
+  it("populated visionRows surfaces vision_type + vision_systems_count in the /quote/single payload", async () => {
+    mockPost.mockResolvedValue({ data: explainedResponse });
+
+    const { container } = await renderAndWaitForForm();
+
+    // The picker uses dropdownsData.vision_type minus "None" as its options;
+    // clicking Add inserts the first option ("Cognex 2D") with count:1.
+    const addBtn = await screen.findByRole("button", { name: /add vision system/i });
+    fireEvent.click(addBtn);
+    fireEvent.click(addBtn);
+    // Bump the second row's count from 1 -> 3.
+    const counts = container.querySelectorAll<HTMLInputElement>(
+      'input[name="visionRows.1.count"]',
+    );
+    expect(counts.length).toBe(1);
+    fireEvent.change(counts[0], { target: { value: "3" } });
+    fireEvent.blur(counts[0]);
+
+    submitForm(container);
+
+    await waitFor(() => expect(mockPost).toHaveBeenCalledTimes(1));
+    const [url, payload] = mockPost.mock.calls[0];
+    expect(url).toBe("/quote/single");
+    // Wire payload MUST carry the first row's type and the SUM of counts.
+    // Pre-fix this was always vision_type:"None" / vision_systems_count:0.
+    expect(payload).toMatchObject({
+      vision_type: "Cognex 2D",
+      vision_systems_count: 4, // row 0 (count 1) + row 1 (count 3)
+    });
+  });
+
+  it("empty visionRows wires vision_type:'None' and vision_systems_count:0", async () => {
+    mockPost.mockResolvedValue({ data: explainedResponse });
+
+    const { container } = await renderAndWaitForForm();
+    submitForm(container);
+
+    await waitFor(() => expect(mockPost).toHaveBeenCalledTimes(1));
+    const [, payload] = mockPost.mock.calls[0];
+    expect(payload).toMatchObject({
+      vision_type: "None",
+      vision_systems_count: 0,
+    });
+  });
+
+  it("visionRows surface in the downloadAdHocPdf body (PDF export path)", async () => {
+    localStorage.setItem("matrix.displayName", "Test User");
+    mockPost.mockResolvedValue({ data: explainedResponse });
+    mockDownloadAdHocPdf.mockResolvedValue(undefined);
+    vi.spyOn(window, "prompt").mockReturnValueOnce("My Project");
+
+    const { container } = await renderAndWaitForForm();
+
+    // Add a row before the result is generated so the export path inherits it.
+    const addBtn = await screen.findByRole("button", { name: /add vision system/i });
+    fireEvent.click(addBtn);
+    submitForm(container);
+    await screen.findByText(/ESTIMATED HOURS/i);
+    const exportBtn = await screen.findByRole("button", { name: /export pdf/i });
+    fireEvent.click(exportBtn);
+
+    await waitFor(() => expect(mockDownloadAdHocPdf).toHaveBeenCalledTimes(1));
+    const callArg = mockDownloadAdHocPdf.mock.calls[0][0];
+    expect(callArg.inputs).toMatchObject({
+      vision_type: "Cognex 2D",
+      vision_systems_count: 1,
+    });
   });
 });

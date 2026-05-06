@@ -111,7 +111,7 @@ export const quoteVersionSchema = z.object({
 /** A persisted saved quote. Keyed by id (UUID v4). */
 export const savedQuoteSchema = z.object({
   id: z.string().uuid(),
-  schemaVersion: z.literal(1),
+  schemaVersion: z.literal(2),
   name: savedQuoteNameSchema,
   workspace: z.enum(["real", "synthetic"]),
   status: z.enum(STATUS_CYCLE),
@@ -148,7 +148,23 @@ export function transformToFormValues(input: QuoteInput): QuoteFormValues {
     automation_level: input.automation_level,
     plc_family: input.plc_family,
     hmi_family: input.hmi_family,
-    vision_type: input.vision_type,
+
+    // Mirror migrateFormValuesV1ToV2: any non-empty / non-"None" vision_type
+    // surfaces as a single visionRow so saved quotes from the trained model's
+    // full vocabulary ("Cognex 2D", "3D Vision", "Keyence IV3", ...) round-trip
+    // intact instead of being silently discarded by a hard-coded "2D"/"3D"
+    // allowlist.
+    visionRows:
+      typeof input.vision_type === "string" &&
+      input.vision_type.trim() !== "" &&
+      input.vision_type !== "None"
+        ? [
+            {
+              type: input.vision_type,
+              count: Math.max(1, Number(input.vision_systems_count ?? 0)),
+            },
+          ]
+        : [],
 
     stations_count: input.stations_count ?? 0,
     robot_count: input.robot_count ?? 0,
@@ -178,7 +194,6 @@ export function transformToFormValues(input: QuoteInput): QuoteFormValues {
     safety_devices_count: input.safety_devices_count ?? 0,
     complexity_score_1_5: input.complexity_score_1_5 ?? 3,
     custom_pct: input.custom_pct ?? 50,
-    vision_systems_count: input.vision_systems_count ?? 0,
     panel_count: input.panel_count ?? 0,
     drive_count: input.drive_count ?? 0,
 
@@ -224,14 +239,15 @@ export function buildAutoSuggestedName(
   const bucket = deriveSalesBucket(values);
   const hours = `${Math.round(estimatedHours).toLocaleString("en-US")}h`;
   const visionLabel =
-    !values.vision_type || values.vision_type === "None"
+    !values.visionRows || values.visionRows.length === 0
       ? "No vision"
-      : values.vision_type;
+      : values.visionRows
+          .map((r) => `${r.type}×${r.count}`)
+          .join("+");
   const date = new Date().toISOString().slice(0, 10);
   const candidate = `${bucket} ${hours} · ${visionLabel} · ${date}`;
   if (candidate.length <= 80) return candidate;
 
-  // Truncate the visionLabel segment first, leaving the date intact.
   const overrun = candidate.length - 80;
   const truncatedLen = Math.max(0, visionLabel.length - overrun - 1);
   const truncatedVision = visionLabel.slice(0, truncatedLen) + "…";

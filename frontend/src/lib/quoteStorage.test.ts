@@ -73,7 +73,7 @@ describe("quoteStorage", () => {
     expect(list).toEqual([]);
   });
 
-  it("saveSavedQuote({...args}) creates v1 SavedQuote with UUID id and schemaVersion 1", async () => {
+  it("saveSavedQuote({...args}) creates SavedQuote with UUID id and schemaVersion 2", async () => {
     const mod = await import("./quoteStorage");
     const out = await mod.saveSavedQuote({
       name: "Alpha",
@@ -82,7 +82,7 @@ describe("quoteStorage", () => {
       unifiedResult: makeUnifiedResult(),
     });
     expect(out.id).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i);
-    expect(out.schemaVersion).toBe(1);
+    expect(out.schemaVersion).toBe(2);
     expect(out.status).toBe("draft");
     expect(out.workspace).toBe("real");
     expect(out.versions).toHaveLength(1);
@@ -501,15 +501,17 @@ describe("quoteStorage", () => {
 
   it("getSavedQuote rejects records with schemaVersion in the future (T-05-05)", async () => {
     // Inject a future-version record bypassing the public API to simulate a
-    // foreign tab having written a Phase 6 / Phase 7 record we cannot read.
+    // foreign tab having written a Phase 7+ record we cannot read.
+    // Phase 6 bumped the DB schema to v2; use schemaVersion 99 to simulate
+    // a record from a future phase the migrator does not know about.
     const mod = await import("./quoteStorage");
     await mod.ensureDbReady();
     // Reach into the same DB through a parallel openDB call to inject.
     const { openDB } = await import("idb");
-    const db = await openDB("matrix-quotes", 1);
+    const db = await openDB("matrix-quotes", 2);
     await db.put("quotes", {
       id: "11111111-1111-4111-8111-111111111111",
-      schemaVersion: 2,
+      schemaVersion: 99,
       name: "Future",
       workspace: "real",
       status: "draft",
@@ -544,13 +546,13 @@ describe("quoteStorage", () => {
       formValues: makeFormValues(),
       unifiedResult: makeUnifiedResult(),
     });
-    // Inject one malformed record (schemaVersion: 2 — Phase 6/7 future).
+    // Inject one malformed record (schemaVersion: 99 — Phase 7+ future).
     const { openDB } = await import("idb");
-    const db = await openDB("matrix-quotes", 1);
+    const db = await openDB("matrix-quotes", 2);
     await db.put("quotes", {
       id: "22222222-2222-4222-8222-222222222222",
-      schemaVersion: 2,
-      name: "Future Phase 6",
+      schemaVersion: 99,
+      name: "Future Phase 7+",
       workspace: "real",
       status: "draft",
       createdAt: "2026-05-05T12:00:00.000Z",

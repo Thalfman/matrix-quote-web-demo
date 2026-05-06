@@ -74,7 +74,6 @@ export function CompareFindSimilarTab({ records }: Props) {
       automation_level: dropdowns.automation_level[0] ?? "",
       plc_family: dropdowns.plc_family[0] ?? quoteFormDefaults.plc_family,
       hmi_family: dropdowns.hmi_family[0] ?? quoteFormDefaults.hmi_family,
-      vision_type: dropdowns.vision_type[0] ?? quoteFormDefaults.vision_type,
     },
     mode: "onBlur",
   });
@@ -82,7 +81,16 @@ export function CompareFindSimilarTab({ records }: Props) {
   const handleSubmit = () => {
     if (!manifest) return;
     const values = form.getValues();
-    const input = transformToQuoteInput(values);
+    // D-04: legacy-compat shadow input for similar-projects matching.
+    // visionRows[0]?.type and sum(row.count) keep nearestNeighbor distance
+    // honest while the model remains single-vision-aware. Mirrors the same
+    // overlay applied in MachineLearningQuoteTool.tsx and ComparisonQuote.tsx.
+    // A true vision-set similarity metric is deferred to v3.
+    const input: QuoteInput = {
+      ...transformToQuoteInput(values),
+      vision_type: values.visionRows[0]?.type ?? "None",
+      vision_systems_count: values.visionRows.reduce((s, r) => s + r.count, 0),
+    };
     const scored = nearestK(input, records, manifest.feature_stats, 3);
     const matched = scored.map(({ record }, i) => recordToSavedQuote(record, i));
     setUserAnchor(anchorFromInput(input));

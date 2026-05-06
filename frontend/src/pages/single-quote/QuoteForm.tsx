@@ -14,6 +14,8 @@ import { Tooltip, TooltipProvider } from "@/components/Tooltip";
 import { parseQuotedHours } from "@/lib/parseQuotedHours";
 
 import { QuoteFormValues, SALES_BUCKETS } from "./schema";
+import { VisionRowsField } from "./VisionRowsField";
+import { VISION_TYPE_NONE } from "./schema";
 
 type Props = {
   dropdowns: DropdownOptions | undefined;
@@ -178,9 +180,6 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
           <Field label="HMI family" glossaryTerm="HMI Family">
             <Select options={opts("hmi_family", ["AB PanelView Plus", "Siemens Comfort Panel"])} {...register("hmi_family")} />
           </Field>
-          <Field label="Vision type" glossaryTerm="Vision Type">
-            <Select options={opts("vision_type", ["None", "2D", "3D"])} {...register("vision_type")} />
-          </Field>
           <Field label="Panel count">
             <Input type="number" min={0} step={1} {...register("panel_count")} />
           </Field>
@@ -193,9 +192,17 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
           <Field label="Pneumatic devices">
             <Input type="number" min={0} step={1} {...register("pneumatic_devices")} />
           </Field>
-          <Field label="Vision systems count">
-            <Input type="number" min={0} step={1} {...register("vision_systems_count")} />
-          </Field>
+        </div>
+
+        {/* Vision picker (Phase 6 D-02) — replaces the two flat fields. */}
+        <div className="mt-4">
+          <div className="eyebrow text-[10px] text-muted mb-2">Vision systems</div>
+          <VisionRowsField
+            control={control}
+            visionTypeOptions={
+              dropdowns?.vision_type?.filter((v) => v !== VISION_TYPE_NONE) ?? []
+            }
+          />
         </div>
       </Section>
 

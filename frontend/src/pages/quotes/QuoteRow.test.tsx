@@ -76,7 +76,7 @@ function makeVersion(over: Partial<QuoteVersion> = {}): QuoteVersion {
 function makeQuote(over: Partial<SavedQuote> = {}): SavedQuote {
   return {
     id: "11111111-1111-4111-8111-111111111111",
-    schemaVersion: 1,
+    schemaVersion: 2,
     name: "Alpha quote",
     workspace: "real",
     status: "draft",

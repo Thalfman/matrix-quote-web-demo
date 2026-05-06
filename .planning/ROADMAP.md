@@ -27,7 +27,7 @@ Full milestone: `.planning/milestones/v1.0-ROADMAP.md`
 Goal: reshape the tool to match Ben's actual quoting workflow — multi-week revisions, multi-vision projects, and a ROM-quote-only path. Three phases, eight requirements, coarse granularity.
 
 - [x] **Phase 5: Quote Persistence** — A Sales Engineer can save a quote, find it again later, edit and re-estimate it across weeks, track its workflow status (draft / sent / won / lost / revised), see prior versions, and delete obsolete ones (closes PERSIST-01, PERSIST-02, PERSIST-03, PERSIST-04, PERSIST-05, PERSIST-06) — **shipped 2026-05-05, PR #24**
-- [ ] **Phase 6: Multi-vision per project** — A Sales Engineer can quote a project with multiple vision systems, see a per-vision drivers breakdown on the result panel, and the ML estimate aggregates correctly across all of them (closes DATA-04, DATA-06)
+- [x] **Phase 6: Multi-vision per project** — A Sales Engineer can quote a project with multiple vision systems, see a per-vision drivers breakdown on the result panel, and the ML estimate aggregates correctly across all of them (closes DATA-04, DATA-06) — **completed 2026-05-05**
 - [ ] **Phase 7: ROM-quote mode** — A Sales Engineer can produce a material-cost-only ROM quote that is visually distinguished as preliminary (closes ROM-01, ROM-02)
 
 ### 📋 v3.0 — Manager out of the loop (planned)
@@ -79,7 +79,11 @@ Backlog requirements:
   2. The ML estimate for a multi-vision quote differs from the same quote with only the first vision row, in a way a human reviewer can confirm reflects the additional vision systems (i.e. the aggregation is real, not a no-op).
   3. `QuoteResultPanel` renders a per-vision drivers breakdown — one driver section per vision row in the quote — so the Sales Engineer (and the customer reading the quote) can see how each vision system contributes to the estimate. (Ben 2026-05-01: *"Result panel (per-vision drivers in the breakdown)"*.)
   4. A multi-vision quote saved in Phase 5 reopens with all vision rows intact and produces the same aggregated estimate on re-run.
-**Plans**: TBD
+**Plans**: 4 plans
+  - [x] 06-01-PLAN.md — Schema bump + IndexedDB v1->v2 migration (D-01/D-04 schema/D-12/D-13/D-14/D-15 persistence)
+  - [x] 06-02-PLAN.md — TS multi-vision aggregator + UnifiedQuoteResult.perVisionContributions (D-05/D-06/D-07/D-08)
+  - [x] 06-03-PLAN.md — Form picker (VisionRowsField, useFieldArray) + QuoteForm Section 03 swap (D-01 UI/D-02/D-03/D-04 form)
+  - [x] 06-04-PLAN.md — Result panel + page-handler wiring + jargon-guard ext + round-trip (D-09/D-10/D-11/D-15/D-17 + D-06 wiring)
 **UI hint**: yes
 **Phase notes**:
 - DATA-06 is the correctness invariant of DATA-04 (aggregation must be right), not a separate user surface — they live in one phase together.
@@ -121,8 +125,8 @@ The following requirements are scoped but deferred. They become roadmap phases w
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 5. Quote Persistence | 9/9 | Shipped — PR #24 (awaiting merge) | 2026-05-05 |
-| 6. Multi-vision per project | 0/? | Not started | - |
+| 5. Quote Persistence | 9/9 | Shipped — PR #24 (merged) | 2026-05-05 |
+| 6. Multi-vision per project | 4/4 | Verified — DATA-04 + DATA-06 closed | 2026-05-05 |
 | 7. ROM-quote mode | 0/? | Not started | - |
 
 ---

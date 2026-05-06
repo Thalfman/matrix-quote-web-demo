@@ -120,6 +120,43 @@ export function QuoteResultPanel({
         </ul>
       </div>
 
+      {/* Per-vision contribution (Phase 6 D-09 / D-10 — between top drivers
+          and per-category breakdown). Hidden when no vision rows. */}
+      {result.perVisionContributions && result.perVisionContributions.length > 0 && (
+        <div className="card p-5">
+          <div className="eyebrow text-xs text-muted mb-3">
+            Per-vision contribution
+          </div>
+          <div className="space-y-3">
+            {result.perVisionContributions.map((pvc) => (
+              <div key={pvc.rowIndex} className="space-y-1 text-sm">
+                <div className="flex items-baseline justify-between gap-3">
+                  <span className="text-ink">{pvc.rowLabel}</span>
+                  <span className="text-muted tnum shrink-0">
+                    {pvc.hoursDelta >= 0 ? "+" : ""}
+                    {fmtHrs(pvc.hoursDelta)} hrs
+                  </span>
+                </div>
+                {pvc.topDrivers.length > 0 && (
+                  <ul className="text-[12px] text-muted space-y-0.5">
+                    {pvc.topDrivers.map((d, i) => (
+                      <li key={i} className="flex items-center gap-1.5">
+                        {d.direction === "increases" ? (
+                          <TrendingUp size={12} className="text-amber" aria-hidden="true" />
+                        ) : (
+                          <TrendingDown size={12} className="text-teal" aria-hidden="true" />
+                        )}
+                        {d.label}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Per-category breakdown */}
       <div className="card p-5">
         <div className="eyebrow text-xs text-muted mb-3">Hours by work category</div>
@@ -232,12 +269,11 @@ const SECTIONS: ReadonlyArray<{
     rows: [
       ["PLC family", (v) => v.plc_family || "—"],
       ["HMI family", (v) => v.hmi_family || "—"],
-      ["Vision type", (v) => v.vision_type || "—"],
+      ["Vision systems", (v) => formatVisionSystems(v.visionRows)],
       ["Panel count", (v) => fmtCount(v.panel_count)],
       ["Servo axes", (v) => fmtCount(v.servo_axes)],
       ["Drive count", (v) => fmtCount(v.drive_count)],
       ["Pneumatic devices", (v) => fmtCount(v.pneumatic_devices)],
-      ["Vision systems count", (v) => fmtCount(v.vision_systems_count)],
     ],
   },
   {
@@ -280,7 +316,6 @@ function recapLabelToGlossaryTerm(label: string): string | null {
     "Automation level": "Automation Level",
     "PLC family": "PLC Family",
     "HMI family": "HMI Family",
-    "Vision type": "Vision Type",
     "Overall complexity (1–5)": "Complexity (1–5)",
   };
   const candidate = MAP[label];
@@ -331,6 +366,15 @@ function yesNo(b: boolean): string {
 }
 function fmtCount(n: number): string {
   return Number.isFinite(n) ? n.toLocaleString() : "—";
+}
+/**
+ * Format multi-vision rows for the inputs-echo block (D-11). Empty rows render
+ * as the em-dash "—"; non-empty rows render as `"2D × 2; 3D × 1"`. Plain
+ * counts and the multiplication sign — no jargon.
+ */
+function formatVisionSystems(rows: QuoteFormValues["visionRows"]): string {
+  if (!rows || rows.length === 0) return "—";
+  return rows.map((r) => `${r.type} × ${fmtCount(r.count)}`).join("; ");
 }
 function fmtDecimal(n: number): string {
   return Number.isFinite(n)

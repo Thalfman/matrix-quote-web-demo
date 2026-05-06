@@ -95,7 +95,7 @@ function makeSavedQuote(over: Partial<SavedQuote> = {}): SavedQuote {
   const now = "2026-05-05T12:00:00.000Z";
   return {
     id: "11111111-1111-4111-8111-111111111111",
-    schemaVersion: 1,
+    schemaVersion: 2,
     name: "Test Quote",
     workspace: "real",
     status: "draft",
