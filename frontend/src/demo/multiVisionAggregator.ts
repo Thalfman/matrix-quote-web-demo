@@ -13,7 +13,7 @@
  * NO core/ change, NO _PREDICT_SHIM change, NO retraining (D-06).
  * Pure TypeScript orchestrator over predictQuote + getFeatureImportances.
  */
-import type { QuoteInput, QuotePrediction } from "@/api/types";
+import type { Confidence, QuoteInput, QuotePrediction } from "@/api/types";
 import { predictQuote, getFeatureImportances, type Dataset } from "@/demo/pyodideClient";
 import { toUnifiedResult } from "@/demo/quoteAdapter";
 import type { PerVisionContribution, UnifiedQuoteResult } from "@/demo/quoteResult";
@@ -126,8 +126,24 @@ export async function aggregateMultiVisionEstimate(
     formInput: baselineInput,
   });
 
+  // 6. WR-03 / D-07: pin overallConfidence to the worst case observed across
+  //    baseline + per-row predicts. toUnifiedResult derives confidence from
+  //    model R^2, which doesn't see the per-call OpPrediction.confidence
+  //    field. A per-row predict carrying confidence:"low" must surface as
+  //    "lower" on the aggregated result panel even if the RSS half-widths
+  //    happen to be tight.
+  const aggregatedOverallConfidence = minOverallConfidence(
+    result.overallConfidence,
+    baselinePred,
+    perRowPreds,
+  );
+
   return {
-    result: { ...result, perVisionContributions },
+    result: {
+      ...result,
+      overallConfidence: aggregatedOverallConfidence,
+      perVisionContributions,
+    },
     perVisionContributions,
   };
 }
@@ -135,6 +151,53 @@ export async function aggregateMultiVisionEstimate(
 // ---------------------------------------------------------------------------
 // Private helpers
 // ---------------------------------------------------------------------------
+
+/**
+ * UI confidence vocabulary on UnifiedQuoteResult differs from the model's
+ * OpPrediction.confidence ("high" | "medium" | "low" — see
+ * frontend/src/api/types.ts:48). Map medium -> moderate, low -> lower.
+ */
+type UiConfidence = "high" | "moderate" | "lower";
+
+const UI_CONFIDENCE_RANK: Record<UiConfidence, number> = {
+  high: 2,
+  moderate: 1,
+  lower: 0,
+};
+
+function modelConfidenceToUi(c: Confidence): UiConfidence {
+  if (c === "high") return "high";
+  if (c === "medium") return "moderate";
+  return "lower";
+}
+
+/**
+ * WR-03 / D-07: Aggregated overall confidence = min across the adapter's
+ * R^2-driven rollup AND every per-op confidence on baseline + per-row
+ * predicts. Worst-case posture — a single per-row predict carrying
+ * confidence:"low" must surface as "lower" on the aggregated result even
+ * if the RSS half-widths happen to be tight.
+ */
+function minOverallConfidence(
+  adapterRolledUp: UiConfidence,
+  baseline: QuotePrediction,
+  perRow: QuotePrediction[],
+): UiConfidence {
+  let worstRank = UI_CONFIDENCE_RANK[adapterRolledUp];
+  let worst: UiConfidence = adapterRolledUp;
+  const consider = (c: Confidence): void => {
+    const ui = modelConfidenceToUi(c);
+    if (UI_CONFIDENCE_RANK[ui] < worstRank) {
+      worstRank = UI_CONFIDENCE_RANK[ui];
+      worst = ui;
+    }
+  };
+  for (const op of Object.values(baseline.ops)) consider(op.confidence);
+  for (const pr of perRow) {
+    for (const op of Object.values(pr.ops)) consider(op.confidence);
+  }
+  return worst;
+}
 
 type PredByTarget = Record<string, { p10: number; p50: number; p90: number }>;
 

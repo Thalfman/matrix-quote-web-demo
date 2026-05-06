@@ -46,33 +46,41 @@ beforeEach(() => {
 // Factories
 // ---------------------------------------------------------------------------
 
-function makeOp(p50: number, halfWidth = 10): OpPrediction {
+function makeOp(
+  p50: number,
+  halfWidth = 10,
+  confidence: OpPrediction["confidence"] = "high",
+): OpPrediction {
   return {
     p50,
     p10: Math.max(0, p50 - halfWidth),
     p90: p50 + halfWidth,
     std: halfWidth / 2,
     rel_width: halfWidth / Math.max(1, p50),
-    confidence: "high",
+    confidence,
   };
 }
 
-function makePred(totalP50: number, halfWidth = 10): QuotePrediction {
+function makePred(
+  totalP50: number,
+  halfWidth = 10,
+  confidence: OpPrediction["confidence"] = "high",
+): QuotePrediction {
   // 12 ops; we'll spread totalP50 across me10 and ee20 for testing.
   // Most ops zero so deltas are easy to reason about.
   const ops: Record<string, OpPrediction> = {
-    me10: makeOp(totalP50 * 0.6, halfWidth),
-    ee20: makeOp(totalP50 * 0.4, halfWidth),
-    me15: makeOp(0, 0),
-    me230: makeOp(0, 0),
-    rb30: makeOp(0, 0),
-    cp50: makeOp(0, 0),
-    bld100: makeOp(0, 0),
-    shp150: makeOp(0, 0),
-    inst160: makeOp(0, 0),
-    trv180: makeOp(0, 0),
-    doc190: makeOp(0, 0),
-    pm200: makeOp(0, 0),
+    me10: makeOp(totalP50 * 0.6, halfWidth, confidence),
+    ee20: makeOp(totalP50 * 0.4, halfWidth, confidence),
+    me15: makeOp(0, 0, confidence),
+    me230: makeOp(0, 0, confidence),
+    rb30: makeOp(0, 0, confidence),
+    cp50: makeOp(0, 0, confidence),
+    bld100: makeOp(0, 0, confidence),
+    shp150: makeOp(0, 0, confidence),
+    inst160: makeOp(0, 0, confidence),
+    trv180: makeOp(0, 0, confidence),
+    doc190: makeOp(0, 0, confidence),
+    pm200: makeOp(0, 0, confidence),
   };
   return {
     ops,
@@ -323,5 +331,51 @@ describe("aggregateMultiVisionEstimate", () => {
     expect(callB.input).toBe(inputForMatching);
     expect(callB.input.vision_type).toBe("2D");
     expect(callB.input.vision_systems_count).toBe(2);
+  });
+
+  it("WR-03 / D-07: aggregated overallConfidence is the worst case across baseline + per-row predicts", async () => {
+    // Baseline carries "high" everywhere; one per-row predict carries "low"
+    // ("lower" in UI vocab). The aggregated rollup must surface "lower" even
+    // though RSS half-widths are tight and toUnifiedResult's R^2-driven path
+    // would otherwise pick "lower" only because metrics={} (zero R^2).
+    vi.mocked(predictQuote)
+      .mockResolvedValueOnce(makePred(100, 10, "high"))
+      .mockResolvedValueOnce(makePred(120, 10, "high"))
+      .mockResolvedValueOnce(makePred(110, 10, "low"));
+    const out = await aggregateMultiVisionEstimate({
+      formValues: makeFormValues({
+        visionRows: [
+          { type: "2D", count: 1 },
+          { type: "3D", count: 1 },
+        ],
+      }),
+      dataset: "synthetic",
+      metrics: {},
+      supportingPool: [],
+      supportingLabel: "x",
+    });
+    expect(out.result.overallConfidence).toBe("lower");
+
+    // Inverse case: every predict is "high" — the adapter's rollup would
+    // otherwise dictate the result. Confirm the min-confidence overlay
+    // doesn't degrade a fully-high run.
+    vi.mocked(predictQuote)
+      .mockReset()
+      .mockResolvedValueOnce(makePred(100, 10, "high"))
+      .mockResolvedValueOnce(makePred(120, 10, "high"));
+    const out2 = await aggregateMultiVisionEstimate({
+      formValues: makeFormValues({ visionRows: [{ type: "2D", count: 1 }] }),
+      dataset: "synthetic",
+      metrics: {
+        // Inject a high-R^2 metric for the dominant target so the adapter
+        // rollup also returns "high"; the aggregator's overlay should NOT
+        // worsen that result.
+        me10_actual_hours: { target: "me10_actual_hours", rows: 100, mae: 1, r2: 0.9 },
+        ee20_actual_hours: { target: "ee20_actual_hours", rows: 100, mae: 1, r2: 0.9 },
+      },
+      supportingPool: [],
+      supportingLabel: "x",
+    });
+    expect(out2.result.overallConfidence).toBe("high");
   });
 });
