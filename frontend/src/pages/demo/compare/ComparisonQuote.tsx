@@ -62,10 +62,16 @@ export function ComparisonQuote() {
   // record, breaking PERSIST-06 end-to-end.
   const [searchParams] = useSearchParams();
   const fromQuoteId = searchParams.get("fromQuote") ?? undefined;
+  // Schema requires positive integer (z.number().int().min(1)); coerce
+  // anything else (NaN, decimals, zero, negatives) to undefined so a
+  // malformed URL doesn't surface as a generic save-failure toast.
   const restoreVersionParam = searchParams.get("restoreVersion");
-  const restoredFromVersion = restoreVersionParam
-    ? Number(restoreVersionParam)
-    : undefined;
+  const parsedRestoreVersion =
+    restoreVersionParam !== null ? Number(restoreVersionParam) : NaN;
+  const restoredFromVersion =
+    Number.isInteger(parsedRestoreVersion) && parsedRestoreVersion > 0
+      ? parsedRestoreVersion
+      : undefined;
   const { data: openedQuote } = useSavedQuote(fromQuoteId);
 
   const metricsByTarget = useMemo(

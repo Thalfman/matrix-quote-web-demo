@@ -62,6 +62,16 @@ export function QuoteRow({
     onRequestDelete(quote.id, quote.name);
   };
 
+  // Without this, Enter/Space on the focused delete button bubbles up to the
+  // row's onKeyDown and triggers navigation before the button's native click
+  // fires — keyboard users would be sent to /quotes/:id instead of opening
+  // the delete flow.
+  const handleDeleteKeyDown = (e: KeyboardEvent<HTMLButtonElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.stopPropagation();
+    }
+  };
+
   // Inner wrapper around StatusChip swallows row-level click so the chip
   // advances state instead of navigating. StatusChip itself already stops
   // propagation on click, but the keydown path (Enter / Space on focused chip)
@@ -109,6 +119,7 @@ export function QuoteRow({
       <button
         type="button"
         onClick={handleDeleteClick}
+        onKeyDown={handleDeleteKeyDown}
         aria-label={`Delete quote ${quote.name}`}
         className={cn(
           "p-2 rounded-sm text-muted hover:text-danger hover:bg-danger/5",

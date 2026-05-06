@@ -360,6 +360,56 @@ describe("ComparisonQuote - BL-01 fromQuote= wires quoteId into Save", () => {
     expect(args.restoredFromVersion).toBe(2);
   });
 
+  it("saveSavedQuote receives restoredFromVersion=undefined when ?restoreVersion= is non-integer (P2 fix)", async () => {
+    // Without parse hardening, Number("foo") → NaN flows through to schema
+    // validation and the user sees a misleading generic save-error toast.
+    mockUseSavedQuote.mockReturnValue({
+      data: {
+        id: "test-quote-id",
+        name: "Existing Quote",
+        status: "draft",
+      } as unknown as SavedQuote,
+      isLoading: false,
+    });
+
+    renderWithProviders(<ComparisonQuote />, {
+      route: "/compare/quote?fromQuote=test-quote-id&restoreVersion=foo",
+    });
+
+    await waitFor(() => expect(mockEnsureModelsReady).toHaveBeenCalledWith("real"));
+
+    const submitBtn = await screen.findByRole("button", {
+      name: /regenerate estimate/i,
+    });
+    await act(async () => {
+      fireEvent.click(submitBtn);
+    });
+    await waitFor(() =>
+      expect(screen.getByText(/Estimated hours/i)).toBeInTheDocument(),
+    );
+
+    const saveTrigger = await screen.findByRole("button", { name: /save quote/i });
+    await act(async () => {
+      fireEvent.click(saveTrigger);
+    });
+
+    const dialog = await screen.findByRole("dialog");
+    const dialogSaveBtn = dialog.querySelector<HTMLButtonElement>(
+      'button[type="submit"]',
+    );
+    await act(async () => {
+      fireEvent.click(dialogSaveBtn!);
+    });
+
+    await waitFor(() => expect(mockSaveMutateAsync).toHaveBeenCalled());
+    const args = mockSaveMutateAsync.mock.calls[0]![0] as {
+      id?: string;
+      restoredFromVersion?: number;
+    };
+    expect(args.id).toBe("test-quote-id");
+    expect(args.restoredFromVersion).toBeUndefined();
+  });
+
   it("saveSavedQuote receives id=undefined when no ?fromQuote= (brand-new save path)", async () => {
     mockUseSavedQuote.mockReturnValue({ data: undefined, isLoading: false });
 
