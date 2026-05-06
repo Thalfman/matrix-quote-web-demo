@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: — Workflow fit
 status: in_progress
-last_updated: "2026-05-05T21:55:00.000Z"
+last_updated: "2026-05-05T23:30:00.000Z"
 last_activity: 2026-05-05
 progress:
   total_phases: 3
-  completed_phases: 1
+  completed_phases: 2
   total_plans: 13
-  completed_plans: 9
-  percent: 33
+  completed_plans: 13
+  percent: 67
 ---
 
 # STATE
@@ -23,13 +23,13 @@ progress:
 - **Project code:** MQW
 - **Project title:** Matrix Quote Web
 - **Path:** `C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo`
-- **Branch:** `main`
+- **Branch:** `feat/06-multi-vision`
 - **Repo type:** brownfield, static-only Vite/React SPA on Vercel CDN
 
 - **Milestone:** v2.0 — Workflow fit (started 2026-05-05; roadmap finalized)
-- **Phase:** Phase 6 — Multi-vision per project (planned 2026-05-05)
-- **Plan:** 4 plans across 3 waves (06-01 schema/migration → 06-02 aggregator + 06-03 form picker → 06-04 wiring + result panel + jargon-guard + round-trip)
-- **Status:** Phase 6 planned — 4 PLAN.md files written + verified by gsd-plan-checker (PASSED iteration 2); blockers resolved (D-04 legacy-compat shadow input contract threaded through 06-02 → 06-04); all 18 CONTEXT.md decisions traceable; DATA-04 + DATA-06 covered; ready for `/gsd-execute-phase 6`
+- **Phase:** Phase 6 — Multi-vision per project (executed + verified 2026-05-05)
+- **Plan:** 4 plans across 3 waves complete (06-01 schema/migration ✅ → 06-02 aggregator ✅ + 06-03 form picker ✅ → 06-04 wiring + result panel + jargon-guard + round-trip ✅)
+- **Status:** Phase 6 verified — gsd-verifier PASSED 4/4 success criteria; gsd-code-review found 1 BLOCKER + 5 WARNINGs, all resolved in 6 atomic fix commits; whole-repo gates green (typecheck clean, vitest 937/937 / 101 files, lint clean, build succeeds); architectural invariants honored (no `core/` touch, no `_PREDICT_SHIM` change); 4 human spot-checks captured in `06-VERIFICATION.md` for pre-demo confirmation (non-gating); ready for `/gsd-ship 6`
 - **In scope for v2.0:** PERSIST-01..06 (Phase 5 — quote persistence + workflow status + version history), DATA-04 + DATA-06 (Phase 6 — multi-vision incl. per-vision drivers breakdown), ROM-01 + ROM-02 (Phase 7 — ROM mode)
 - **Deferred from v2.0:** BENCH-01 (Manager-spreadsheet benchmark — optional, no firm slot)
 - **Last activity:** 2026-05-05
@@ -39,6 +39,7 @@ progress:
 
 | Date | Event |
 |---|---|
+| 2026-05-05 | `/gsd-execute-phase 6` → all 4 plans (06-01..06-04) executed across 3 waves on `feat/06-multi-vision`; 22 atomic feature/test/docs commits + 6 review-fix commits + 1 lint-cleanup commit (29 total since plan-phase HEAD); gsd-code-review found 1 BLOCKER + 5 WARNINGs (BL-01 missed D-04 wire-up in CompareFindSimilarTab, WR-01..05 spec violations) → gsd-code-fixer resolved all in 6 atomic commits with 2 added regression tests; gsd-verifier PASSED 4/4 ROADMAP success criteria; final state — typecheck clean, vitest 937/937 (+47 tests over Phase 5 baseline), lint clean, build succeeds, no `core/` touch, no `_PREDICT_SHIM` change; v2.0 milestone now 67% complete (2 of 3 phases) |
 | 2026-05-05 | `/gsd-plan-phase 6` → 4 plans (06-01..06-04) across 3 waves authored; `06-PATTERNS.md` written by gsd-pattern-mapper (14 file targets mapped to analogs); gsd-plan-checker iteration 1 → 2 BLOCKERS + 4 WARNINGS (D-04 shadow input dropped + 06-04 internal contradiction); planner revision pass restored `AggregatorArgs.inputForMatching` contract through 06-02 → 06-04; gsd-plan-checker iteration 2 → **VERIFICATION PASSED**; all 18 CONTEXT.md decisions traced; DATA-04 + DATA-06 covered; ready for `/gsd-execute-phase 6` |
 | 2026-05-05 | `/gsd-discuss-phase 6` → `06-CONTEXT.md` + `06-DISCUSSION-LOG.md` written; **18 implementation decisions locked (D-01..D-18)**; user delegated entire decision space with directive *"Pick the closest solution to Ben's comment"*; every decision grounded in Ben Bertsche 2026-05-01 §U2 verbatim (`.planning/feedback/2026-05-01-ben-bertsche-review.md:123-133`); headline calls: vision row = `{type: "2D"\|"3D", count, label?}`, **delta-from-baseline TS-side aggregation in new `frontend/src/demo/multiVisionAggregator.ts`** (no `core/` touch, no `_PREDICT_SHIM` change, no retrain), **stacked per-vision cards** in QuoteResultPanel breakdown, **schemaVersion 1 → 2 hard cutover** with `onupgradeneeded` + defensive on-read migrator; Compare tool stays single-row v2 shape; ready for `/gsd-plan-phase 6` |
 | 2026-05-05 | `/gsd-ship 5` → PR #24 opened (feat/05-quote-persistence → main); 57 commits including 8 code-review-fix commits; vitest 890/890, typecheck/lint/build clean; awaiting merge |
