@@ -85,8 +85,8 @@ describe("Phase 6 round-trip (Success Criterion #4 + D-15)", () => {
   it("multi-vision quote: save -> reopen preserves visionRows verbatim", async () => {
     const { saveSavedQuote, getSavedQuote } = await import("@/lib/quoteStorage");
     const visionRows = [
-      { type: "2D" as const, count: 2 },
-      { type: "3D" as const, count: 1 },
+      { type: "Cognex 2D", count: 2 },
+      { type: "3D Vision", count: 1 },
     ];
     const formValues = makeFormValues({ visionRows });
 
@@ -123,8 +123,8 @@ describe("Phase 6 round-trip (Success Criterion #4 + D-15)", () => {
   it("multi-vision quote: save -> reopen -> re-run produces same aggregated p50", async () => {
     const { saveSavedQuote, getSavedQuote } = await import("@/lib/quoteStorage");
     const visionRows = [
-      { type: "2D" as const, count: 2 },
-      { type: "3D" as const, count: 1 },
+      { type: "Cognex 2D", count: 2 },
+      { type: "3D Vision", count: 1 },
     ];
     const formValues = makeFormValues({ visionRows });
 

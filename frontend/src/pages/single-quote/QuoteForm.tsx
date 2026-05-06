@@ -15,6 +15,7 @@ import { parseQuotedHours } from "@/lib/parseQuotedHours";
 
 import { QuoteFormValues, SALES_BUCKETS } from "./schema";
 import { VisionRowsField } from "./VisionRowsField";
+import { VISION_TYPE_NONE } from "./schema";
 
 type Props = {
   dropdowns: DropdownOptions | undefined;
@@ -196,7 +197,12 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
         {/* Vision picker (Phase 6 D-02) — replaces the two flat fields. */}
         <div className="mt-4">
           <div className="eyebrow text-[10px] text-muted mb-2">Vision systems</div>
-          <VisionRowsField control={control} />
+          <VisionRowsField
+            control={control}
+            visionTypeOptions={
+              dropdowns?.vision_type?.filter((v) => v !== VISION_TYPE_NONE) ?? []
+            }
+          />
         </div>
       </Section>
 

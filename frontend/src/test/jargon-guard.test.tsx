@@ -370,7 +370,12 @@ function VisionRowsHarness({ rows }: { rows: VisionRow[] }) {
     resolver: zodResolver(quoteFormSchema),
     defaultValues: { ...quoteFormDefaults, visionRows: rows },
   });
-  return <VisionRowsField control={form.control} />;
+  return (
+    <VisionRowsField
+      control={form.control}
+      visionTypeOptions={["Cognex 2D", "3D Vision", "Keyence IV3"]}
+    />
+  );
 }
 
 const PHASE6_BASE_RESULT: UnifiedQuoteResult = {
@@ -395,7 +400,7 @@ describe("jargon-guard (DATA-03 — Phase 6 surface coverage)", () => {
 
   it("VisionRowsField (populated) renders no banned ML-jargon tokens", () => {
     renderWithProviders(
-      <VisionRowsHarness rows={[{ type: "2D", count: 2 }, { type: "3D", count: 1 }]} />,
+      <VisionRowsHarness rows={[{ type: "Cognex 2D", count: 2 }, { type: "3D Vision", count: 1 }]} />,
     );
     const body = document.body.textContent ?? "";
     expect(body).toMatch(/add vision system/i);
@@ -408,13 +413,13 @@ describe("jargon-guard (DATA-03 — Phase 6 surface coverage)", () => {
       perVisionContributions: [
         {
           rowIndex: 0,
-          rowLabel: "Vision 1: 2D × 2",
+          rowLabel: "Vision 1: Cognex 2D × 2",
           hoursDelta: 38,
           topDrivers: [{ label: "Number of stations", direction: "increases" }],
         },
         {
           rowIndex: 1,
-          rowLabel: "Vision 2: 3D × 1",
+          rowLabel: "Vision 2: 3D Vision × 1",
           hoursDelta: 65,
           topDrivers: [{ label: "Robot count", direction: "increases" }],
         },
@@ -425,7 +430,7 @@ describe("jargon-guard (DATA-03 — Phase 6 surface coverage)", () => {
         result={result}
         input={{
           ...quoteFormDefaults,
-          visionRows: [{ type: "2D", count: 2 }, { type: "3D", count: 1 }],
+          visionRows: [{ type: "Cognex 2D", count: 2 }, { type: "3D Vision", count: 1 }],
         }}
       />,
     );
@@ -440,13 +445,13 @@ describe("jargon-guard (DATA-03 — Phase 6 surface coverage)", () => {
         result={PHASE6_BASE_RESULT}
         input={{
           ...quoteFormDefaults,
-          visionRows: [{ type: "2D", count: 2 }, { type: "3D", count: 1 }],
+          visionRows: [{ type: "Cognex 2D", count: 2 }, { type: "3D Vision", count: 1 }],
         }}
       />,
     );
     const body = document.body.textContent ?? "";
     expect(body).toMatch(/vision systems/i);
-    expect(body).toMatch(/2D × 2/);
+    expect(body).toMatch(/Cognex 2D × 2/);
     assertNoBannedTokens("QuoteResultPanel (inputs-echo Phase 6)", body);
   });
 });

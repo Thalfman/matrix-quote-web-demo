@@ -18,23 +18,34 @@ import { Input } from "@/components/Input";
 import { Select } from "@/components/Select";
 
 import {
-  VISION_TYPES,
   type QuoteFormValues,
   type VisionRow,
 } from "./schema";
 
+/**
+ * `visionTypeOptions` is the dropdown vocabulary derived from the trained
+ * model's vision_type categories (see /catalog/dropdowns or the demo-mode
+ * buildDropdowns analog). The "None" sentinel is filtered out upstream — the
+ * empty visionRows array IS the no-vision UI state. If options is empty, the
+ * picker renders the empty state and disables Add.
+ */
 export function VisionRowsField({
   control,
+  visionTypeOptions,
 }: {
   control: Control<QuoteFormValues>;
+  visionTypeOptions: string[];
 }) {
   const { fields, append, remove } = useFieldArray<QuoteFormValues, "visionRows">({
     control,
     name: "visionRows",
   });
 
+  const defaultType = visionTypeOptions[0];
+
   const handleAdd = () => {
-    const newRow: VisionRow = { type: "2D", count: 1 };
+    if (!defaultType) return;
+    const newRow: VisionRow = { type: defaultType, count: 1 };
     append(newRow);
   };
 
@@ -56,7 +67,7 @@ export function VisionRowsField({
               control={control}
               name={`visionRows.${i}.type`}
               render={({ field }) => (
-                <Select options={[...VISION_TYPES]} {...field} />
+                <Select options={visionTypeOptions} {...field} />
               )}
             />
           </Field>
@@ -94,7 +105,8 @@ export function VisionRowsField({
       <button
         type="button"
         onClick={handleAdd}
-        className="inline-flex items-center gap-1.5 text-xs eyebrow text-teal hover:text-tealDark"
+        disabled={!defaultType}
+        className="inline-flex items-center gap-1.5 text-xs eyebrow text-teal hover:text-tealDark disabled:text-muted disabled:hover:text-muted disabled:cursor-not-allowed"
       >
         <Plus size={14} aria-hidden="true" />
         Add vision system

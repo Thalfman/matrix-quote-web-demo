@@ -125,27 +125,40 @@ describe("migrateRecordV1ToV2 — pure function", () => {
     expect(getFirstVersionFormValues(v2).visionRows).toEqual([]);
   });
 
-  it("vision_type \"2D\" + count 2 -> visionRows: [{type:\"2D\", count:2}]", async () => {
+  it("vision_type \"Cognex 2D\" + count 2 -> visionRows: [{type:\"Cognex 2D\", count:2}]", async () => {
     const { migrateRecordV1ToV2 } = await import("../quoteStorage");
-    const v1 = makeV1Record({ visionType: "2D", visionCount: 2 });
+    const v1 = makeV1Record({ visionType: "Cognex 2D", visionCount: 2 });
     const v2 = migrateRecordV1ToV2(v1);
     expect(getFirstVersionFormValues(v2).visionRows).toEqual([
-      { type: "2D", count: 2 },
+      { type: "Cognex 2D", count: 2 },
     ]);
   });
 
-  it("vision_type \"3D\" + count 0 -> visionRows clamps count to 1", async () => {
+  it("vision_type \"3D Vision\" + count 0 -> visionRows clamps count to 1", async () => {
     const { migrateRecordV1ToV2 } = await import("../quoteStorage");
-    const v1 = makeV1Record({ visionType: "3D", visionCount: 0 });
+    const v1 = makeV1Record({ visionType: "3D Vision", visionCount: 0 });
     const v2 = migrateRecordV1ToV2(v1);
     expect(getFirstVersionFormValues(v2).visionRows).toEqual([
-      { type: "3D", count: 1 },
+      { type: "3D Vision", count: 1 },
+    ]);
+  });
+
+  it("preserves arbitrary trained-model categories (e.g. \"Keyence IV3\")", async () => {
+    // Regression: prior allowlist was vision_type === "2D" || === "3D" — any
+    // other value silently became visionRows: [], dropping saved quotes whose
+    // vision_type came from the trained model's actual vocabulary
+    // ("Cognex 2D", "3D Vision", "Cognex Insight", "Keyence IV3", ...).
+    const { migrateRecordV1ToV2 } = await import("../quoteStorage");
+    const v1 = makeV1Record({ visionType: "Keyence IV3", visionCount: 3 });
+    const v2 = migrateRecordV1ToV2(v1);
+    expect(getFirstVersionFormValues(v2).visionRows).toEqual([
+      { type: "Keyence IV3", count: 3 },
     ]);
   });
 
   it("strips legacy vision_type and vision_systems_count keys after migration", async () => {
     const { migrateRecordV1ToV2 } = await import("../quoteStorage");
-    const v1 = makeV1Record({ visionType: "2D", visionCount: 1 });
+    const v1 = makeV1Record({ visionType: "Cognex 2D", visionCount: 1 });
     const v2 = migrateRecordV1ToV2(v1);
     const fv = getFirstVersionFormValues(v2);
     expect(fv).not.toHaveProperty("vision_type");
@@ -168,8 +181,8 @@ describe("migrateRecordV1ToV2 — pure function", () => {
           statusAtTime: "draft" as const,
           formValues: {
             // Already-v2 visionRows alongside leftover v1 keys:
-            visionRows: [{ type: "2D", count: 3 }],
-            vision_type: "3D",         // leftover, must be stripped
+            visionRows: [{ type: "Cognex 2D", count: 3 }],
+            vision_type: "3D Vision",  // leftover, must be stripped
             vision_systems_count: 99,  // leftover, must be stripped
             // ... rest of the form (minimal sample is fine):
             industry_segment: "Aerospace",
@@ -192,14 +205,14 @@ describe("migrateRecordV1ToV2 — pure function", () => {
     expect(fv).not.toHaveProperty("vision_systems_count");
     // Pre-existing visionRows are preserved verbatim — the function does NOT
     // re-derive from the legacy keys when visionRows is already present.
-    expect(fv.visionRows).toEqual([{ type: "2D", count: 3 }]);
+    expect(fv.visionRows).toEqual([{ type: "Cognex 2D", count: 3 }]);
   });
 
   it("is idempotent on already-v2 records", async () => {
     const { migrateRecordV1ToV2 } = await import("../quoteStorage");
     const v2Record = {
       schemaVersion: 2,
-      versions: [{ formValues: { visionRows: [{ type: "2D", count: 1 }] } }],
+      versions: [{ formValues: { visionRows: [{ type: "Cognex 2D", count: 1 }] } }],
     };
     const out = migrateRecordV1ToV2(v2Record);
     expect(out).toBe(v2Record); // identity short-circuit
@@ -223,7 +236,7 @@ describe("migrateRecordV1ToV2 — defensive on-read in getSavedQuote / listSaved
     await ensureDbReady();
     const idb = await import("idb");
     const handle = await idb.openDB(QUOTE_DB_NAME, 2);
-    const v1 = makeV1Record({ visionType: "2D", visionCount: 3, id: "22222222-2222-2222-2222-222222222222" });
+    const v1 = makeV1Record({ visionType: "Cognex 2D", visionCount: 3, id: "22222222-2222-2222-2222-222222222222" });
     await handle.put(QUOTE_STORE_NAME, v1);
     handle.close();
 
@@ -232,7 +245,7 @@ describe("migrateRecordV1ToV2 — defensive on-read in getSavedQuote / listSaved
     expect(found, "v1 record must surface as a v2 quote").toBeDefined();
     expect(found!.schemaVersion).toBe(2);
     expect(found!.versions[0].formValues.visionRows).toEqual([
-      { type: "2D", count: 3 },
+      { type: "Cognex 2D", count: 3 },
     ]);
   });
 
@@ -243,7 +256,7 @@ describe("migrateRecordV1ToV2 — defensive on-read in getSavedQuote / listSaved
     await ensureDbReady();
     const idb = await import("idb");
     const handle = await idb.openDB(QUOTE_DB_NAME, 2);
-    const v1 = makeV1Record({ visionType: "3D", visionCount: 1, id: "33333333-3333-3333-3333-333333333333" });
+    const v1 = makeV1Record({ visionType: "3D Vision", visionCount: 1, id: "33333333-3333-3333-3333-333333333333" });
     await handle.put(QUOTE_STORE_NAME, v1);
     handle.close();
 
@@ -251,7 +264,7 @@ describe("migrateRecordV1ToV2 — defensive on-read in getSavedQuote / listSaved
     expect(got).not.toBeNull();
     expect(got!.schemaVersion).toBe(2);
     expect(got!.versions[0].formValues.visionRows).toEqual([
-      { type: "3D", count: 1 },
+      { type: "3D Vision", count: 1 },
     ]);
   });
 });
@@ -272,7 +285,7 @@ describe("onupgradeneeded cursor walk", () => {
     });
     await v1Handle.put(
       QUOTE_STORE_NAME,
-      makeV1Record({ visionType: "2D", visionCount: 2, id: "44444444-4444-4444-4444-444444444444" }),
+      makeV1Record({ visionType: "Cognex 2D", visionCount: 2, id: "44444444-4444-4444-4444-444444444444" }),
     );
     await v1Handle.put(
       QUOTE_STORE_NAME,
@@ -292,7 +305,7 @@ describe("onupgradeneeded cursor walk", () => {
     const b = await v2Handle.get(QUOTE_STORE_NAME, "55555555-5555-5555-5555-555555555555");
     v2Handle.close();
     expect(a.schemaVersion).toBe(2);
-    expect(a.versions[0].formValues.visionRows).toEqual([{ type: "2D", count: 2 }]);
+    expect(a.versions[0].formValues.visionRows).toEqual([{ type: "Cognex 2D", count: 2 }]);
     expect(a.versions[0].formValues).not.toHaveProperty("vision_type");
     expect(b.schemaVersion).toBe(2);
     expect(b.versions[0].formValues.visionRows).toEqual([]);

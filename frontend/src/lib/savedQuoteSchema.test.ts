@@ -188,11 +188,12 @@ describe("transformToFormValues — inverse of transformToQuoteInput", () => {
   });
 
   it("round-trips a fully-populated form (non-default values)", () => {
-    // NOTE: visionRows are NOT round-trippable through the QuoteInput
-    // boundary in Phase 6 — transformToQuoteInput sets vision_type:"None"
-    // (the aggregator overlays per-call values), and transformToFormValues
-    // reads from input.vision_type which will read "None" → []. So this
-    // test deliberately uses an empty visionRows array on the input side.
+    // Phase-6 fix: transformToQuoteInput now surfaces visionRows[0] into the
+    // wire payload, and transformToFormValues recovers it as a single-row
+    // visionRows. The full multi-vision shape (N>1 rows) collapses to row 0
+    // through the QuoteInput boundary — that lossy collapse is by design (the
+    // wire format is single-vision; the multi-vision aggregator handles N>1
+    // out-of-band per call). Single-row inputs DO round-trip cleanly.
     const populated = makeFormValues({
       industry_segment: "Automotive",
       system_category: "Machine Tending",
@@ -204,10 +205,12 @@ describe("transformToFormValues — inverse of transformToQuoteInput", () => {
       retrofit: true,
       duplicate: false,
       is_product_deformable: true,
-      visionRows: [],
+      visionRows: [{ type: "Cognex 2D", count: 2 }],
       estimated_materials_cost: 50000,
     });
     const wire = transformToQuoteInput(populated);
+    expect(wire.vision_type).toBe("Cognex 2D");
+    expect(wire.vision_systems_count).toBe(2);
     const back = transformToFormValues(wire);
     // log1p / expm1 introduces sub-microscopic floating-point drift; compare
     // the cost within tolerance and the rest field-for-field.
@@ -215,6 +218,31 @@ describe("transformToFormValues — inverse of transformToQuoteInput", () => {
     const { estimated_materials_cost: popCost, ...popRest } = populated;
     expect(backRest).toEqual(popRest);
     expect(backCost).toBeCloseTo(popCost, 6);
+  });
+
+  it("multi-row visionRows collapses to row 0 across the wire boundary", () => {
+    const populated = makeFormValues({
+      visionRows: [
+        { type: "Cognex 2D", count: 2 },
+        { type: "3D Vision", count: 1 },
+      ],
+    });
+    const wire = transformToQuoteInput(populated);
+    // Wire format takes row 0's type and the SUM of counts (so similarity
+    // matching against single-vision historicals stays directionally honest).
+    expect(wire.vision_type).toBe("Cognex 2D");
+    expect(wire.vision_systems_count).toBe(3);
+    // Inverse recovers a single-row visionRows array.
+    const back = transformToFormValues(wire);
+    expect(back.visionRows).toEqual([{ type: "Cognex 2D", count: 3 }]);
+  });
+
+  it("empty visionRows wires to vision_type:'None' / count:0 and inverses to []", () => {
+    const empty = makeFormValues({ visionRows: [] });
+    const wire = transformToQuoteInput(empty);
+    expect(wire.vision_type).toBe("None");
+    expect(wire.vision_systems_count).toBe(0);
+    expect(transformToFormValues(wire).visionRows).toEqual([]);
   });
 
   it("inverse-maps log_quoted_materials_cost back to estimated_materials_cost (within 1e-6)", () => {
@@ -259,9 +287,9 @@ describe("buildAutoSuggestedName", () => {
       has_robotics: false,
       servo_axes: 0,
       has_controls: true,
-      visionRows: [{ type: "2D", count: 1 }],
+      visionRows: [{ type: "Cognex 2D", count: 1 }],
     });
-    expect(buildAutoSuggestedName(values, 800)).toBe("ME 800h · 2D×1 · 2026-05-05");
+    expect(buildAutoSuggestedName(values, 800)).toBe("ME 800h · Cognex 2D×1 · 2026-05-05");
   });
 
   it("formats 'No vision' when visionRows is empty", () => {
@@ -281,10 +309,10 @@ describe("buildAutoSuggestedName", () => {
       has_controls: true,
       has_robotics: true,
       servo_axes: 2,
-      visionRows: [{ type: "2D", count: 1 }],
+      visionRows: [{ type: "Cognex 2D", count: 1 }],
     });
     expect(buildAutoSuggestedName(values, 1200)).toBe(
-      "ME+EE 1,200h · 2D×1 · 2026-05-05",
+      "ME+EE 1,200h · Cognex 2D×1 · 2026-05-05",
     );
   });
 
@@ -292,7 +320,7 @@ describe("buildAutoSuggestedName", () => {
     // Many-row visionRows → long combined label that should trigger
     // the truncation branch.
     const visionRows = Array.from({ length: 10 }, () => ({
-      type: "2D" as const,
+      type: "Cognex 2D",
       count: 9999,
     }));
     const values = makeFormValues({

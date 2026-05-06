@@ -5,10 +5,12 @@
  *
  * Covers (Plan 06-03 success criteria):
  *  1. Empty state ("No vision systems on this project." + Add button, no Remove buttons)
- *  2. Add appends a row with default { type: "2D", count: 1 } (asserted on form state)
+ *  2. Add appends a row with default { type: visionTypeOptions[0], count: 1 } (asserted on form state)
  *  3. Pre-populated rows render one Remove per row; Remove drops by index
  *  4. Add+Add+Remove leaves exactly 1 row
  *  5. Pre-populated row 0 type Select reflects the visionRows[0].type default
+ *  6. Empty visionTypeOptions disables the Add button (no row can be added
+ *     without a model-vocabulary value to insert)
  */
 import { describe, expect, it } from "vitest";
 import { fireEvent, screen } from "@testing-library/react";
@@ -25,13 +27,17 @@ import {
   type VisionRow,
 } from "../schema";
 
+const DEFAULT_OPTIONS = ["Cognex 2D", "3D Vision", "Keyence IV3"];
+
 // Real useForm harness so useFieldArray actually mutates state under the test.
 function Harness({
   defaultRows,
   exposeForm,
+  options = DEFAULT_OPTIONS,
 }: {
   defaultRows?: VisionRow[];
   exposeForm?: (form: UseFormReturn<QuoteFormValues>) => void;
+  options?: string[];
 }) {
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(quoteFormSchema),
@@ -39,7 +45,7 @@ function Harness({
     mode: "onChange",
   });
   exposeForm?.(form);
-  return <VisionRowsField control={form.control} />;
+  return <VisionRowsField control={form.control} visionTypeOptions={options} />;
 }
 
 describe("VisionRowsField", () => {
@@ -56,7 +62,7 @@ describe("VisionRowsField", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("Add appends a new row with default { type: '2D', count: 1 }", () => {
+  it("Add appends a new row using the first visionTypeOptions value as the default", () => {
     let formRef: UseFormReturn<QuoteFormValues> | null = null;
     renderWithProviders(
       <Harness
@@ -75,9 +81,10 @@ describe("VisionRowsField", () => {
     expect(
       screen.getAllByRole("button", { name: /remove vision system/i }),
     ).toHaveLength(1);
-    // Form state has one row at the schema-correct default.
+    // Form state has one row whose type is the first option from the
+    // dropdown vocabulary (data-driven, not hard-coded "2D").
     expect(formRef!.getValues("visionRows")).toEqual([
-      { type: "2D", count: 1 },
+      { type: "Cognex 2D", count: 1 },
     ]);
   });
 
@@ -86,8 +93,8 @@ describe("VisionRowsField", () => {
     renderWithProviders(
       <Harness
         defaultRows={[
-          { type: "2D", count: 2 },
-          { type: "3D", count: 1 },
+          { type: "Cognex 2D", count: 2 },
+          { type: "3D Vision", count: 1 },
         ]}
         exposeForm={(f) => {
           formRef = f;
@@ -105,7 +112,7 @@ describe("VisionRowsField", () => {
       screen.getAllByRole("button", { name: /remove vision system/i }),
     ).toHaveLength(1);
     expect(formRef!.getValues("visionRows")).toEqual([
-      { type: "3D", count: 1 },
+      { type: "3D Vision", count: 1 },
     ]);
   });
 
@@ -131,9 +138,18 @@ describe("VisionRowsField", () => {
   });
 
   it("type Select on row 0 reflects the visionRows[0].type default", () => {
-    renderWithProviders(<Harness defaultRows={[{ type: "3D", count: 5 }]} />);
+    renderWithProviders(<Harness defaultRows={[{ type: "3D Vision", count: 5 }]} />);
     // The Select renders inside Field("Vision type"). Find by role+accessible name.
     const select = screen.getByRole("combobox") as HTMLSelectElement;
-    expect(select.value).toBe("3D");
+    expect(select.value).toBe("3D Vision");
+  });
+
+  it("Add button is disabled when visionTypeOptions is empty", () => {
+    // Defensive UX: if /catalog/dropdowns hasn't loaded (or returns no
+    // vision_type vocabulary), the Add button must not insert a row with an
+    // empty / arbitrary string — the picker disables itself instead.
+    renderWithProviders(<Harness defaultRows={[]} options={[]} />);
+    const add = screen.getByRole("button", { name: /add vision system/i });
+    expect(add).toBeDisabled();
   });
 });

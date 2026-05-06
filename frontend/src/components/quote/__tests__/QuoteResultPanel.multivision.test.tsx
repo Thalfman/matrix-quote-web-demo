@@ -48,21 +48,21 @@ const BASE_RESULT: UnifiedQuoteResult = {
 describe("QuoteResultPanel — multi-vision render (Phase 6 D-09/D-10/D-11)", () => {
   it("renders 'Per-vision contribution' heading + row labels when perVisionContributions populated", () => {
     const visionRows: VisionRow[] = [
-      { type: "2D", count: 2 },
-      { type: "3D", count: 1 },
+      { type: "Cognex 2D", count: 2 },
+      { type: "3D Vision", count: 1 },
     ];
     const result: UnifiedQuoteResult = {
       ...BASE_RESULT,
       perVisionContributions: [
         {
           rowIndex: 0,
-          rowLabel: "Vision 1: 2D × 2",
+          rowLabel: "Vision 1: Cognex 2D × 2",
           hoursDelta: 38,
           topDrivers: [{ label: "Number of stations", direction: "increases" }],
         },
         {
           rowIndex: 1,
-          rowLabel: "Vision 2: 3D × 1",
+          rowLabel: "Vision 2: 3D Vision × 1",
           hoursDelta: 65,
           topDrivers: [{ label: "Robot count", direction: "increases" }],
         },
@@ -70,8 +70,8 @@ describe("QuoteResultPanel — multi-vision render (Phase 6 D-09/D-10/D-11)", ()
     };
     renderWithProviders(<QuoteResultPanel result={result} input={fv({ visionRows })} />);
     expect(screen.getByText("Per-vision contribution")).toBeInTheDocument();
-    expect(screen.getByText("Vision 1: 2D × 2")).toBeInTheDocument();
-    expect(screen.getByText("Vision 2: 3D × 1")).toBeInTheDocument();
+    expect(screen.getByText("Vision 1: Cognex 2D × 2")).toBeInTheDocument();
+    expect(screen.getByText("Vision 2: 3D Vision × 1")).toBeInTheDocument();
   });
 
   it("hours delta sign — positive renders with '+', negative without", () => {
@@ -80,13 +80,13 @@ describe("QuoteResultPanel — multi-vision render (Phase 6 D-09/D-10/D-11)", ()
       perVisionContributions: [
         {
           rowIndex: 0,
-          rowLabel: "Vision 1: 2D × 1",
+          rowLabel: "Vision 1: Cognex 2D × 1",
           hoursDelta: 30,
           topDrivers: [],
         },
         {
           rowIndex: 1,
-          rowLabel: "Vision 2: 3D × 1",
+          rowLabel: "Vision 2: 3D Vision × 1",
           hoursDelta: -15,
           topDrivers: [],
         },
@@ -95,7 +95,7 @@ describe("QuoteResultPanel — multi-vision render (Phase 6 D-09/D-10/D-11)", ()
     renderWithProviders(
       <QuoteResultPanel
         result={result}
-        input={fv({ visionRows: [{ type: "2D", count: 1 }, { type: "3D", count: 1 }] })}
+        input={fv({ visionRows: [{ type: "Cognex 2D", count: 1 }, { type: "3D Vision", count: 1 }] })}
       />,
     );
     expect(screen.getByText(/^\+30 hrs$/)).toBeInTheDocument();
@@ -118,14 +118,14 @@ describe("QuoteResultPanel — multi-vision render (Phase 6 D-09/D-10/D-11)", ()
     expect(visionSystemsLabel.parentElement?.parentElement?.textContent).toContain("—");
     unmount();
 
-    // Populated rows render "2D × 2; 3D × 1".
+    // Populated rows render "Cognex 2D × 2; 3D Vision × 1".
     renderWithProviders(
       <QuoteResultPanel
         result={BASE_RESULT}
-        input={fv({ visionRows: [{ type: "2D", count: 2 }, { type: "3D", count: 1 }] })}
+        input={fv({ visionRows: [{ type: "Cognex 2D", count: 2 }, { type: "3D Vision", count: 1 }] })}
       />,
     );
-    expect(screen.getByText("2D × 2; 3D × 1")).toBeInTheDocument();
+    expect(screen.getByText("Cognex 2D × 2; 3D Vision × 1")).toBeInTheDocument();
   });
 
   it("does not render banned ML jargon (sanity check)", () => {
@@ -134,7 +134,7 @@ describe("QuoteResultPanel — multi-vision render (Phase 6 D-09/D-10/D-11)", ()
       perVisionContributions: [
         {
           rowIndex: 0,
-          rowLabel: "Vision 1: 2D × 2",
+          rowLabel: "Vision 1: Cognex 2D × 2",
           hoursDelta: 38,
           topDrivers: [{ label: "Number of stations", direction: "increases" }],
         },
@@ -143,7 +143,7 @@ describe("QuoteResultPanel — multi-vision render (Phase 6 D-09/D-10/D-11)", ()
     renderWithProviders(
       <QuoteResultPanel
         result={result}
-        input={fv({ visionRows: [{ type: "2D", count: 2 }] })}
+        input={fv({ visionRows: [{ type: "Cognex 2D", count: 2 }] })}
       />,
     );
     const body = document.body.textContent ?? "";

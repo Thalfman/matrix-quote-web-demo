@@ -120,12 +120,12 @@ describe("aggregateMultiVisionEstimate", () => {
     expect(out.result.estimateHours).toBeCloseTo(100, 0);
   });
 
-  it("single row 2D x 1 -> baseline + 1 per-row call; result equals perRow total", async () => {
+  it("single row Cognex 2D x 1 -> baseline + 1 per-row call; result equals perRow total", async () => {
     vi.mocked(predictQuote)
       .mockResolvedValueOnce(makePred(100)) // baseline
       .mockResolvedValueOnce(makePred(130)); // perRow
     const out = await aggregateMultiVisionEstimate({
-      formValues: makeFormValues({ visionRows: [{ type: "2D", count: 1 }] }),
+      formValues: makeFormValues({ visionRows: [{ type: "Cognex 2D", count: 1 }] }),
       dataset: "synthetic",
       metrics: {},
       supportingPool: [],
@@ -150,9 +150,9 @@ describe("aggregateMultiVisionEstimate", () => {
     const out = await aggregateMultiVisionEstimate({
       formValues: makeFormValues({
         visionRows: [
-          { type: "2D", count: 1 },
-          { type: "3D", count: 1 },
-          { type: "2D", count: 2 },
+          { type: "Cognex 2D", count: 1 },
+          { type: "3D Vision", count: 1 },
+          { type: "Cognex 2D", count: 2 },
         ],
       }),
       dataset: "synthetic",
@@ -181,7 +181,7 @@ describe("aggregateMultiVisionEstimate", () => {
       .mockResolvedValueOnce(makePred(100, 10))   // baseline halfWidth 10
       .mockResolvedValueOnce(makePred(130, 30));  // perRow halfWidth 30 -> deltaHi 20 per op
     const out = await aggregateMultiVisionEstimate({
-      formValues: makeFormValues({ visionRows: [{ type: "2D", count: 1 }] }),
+      formValues: makeFormValues({ visionRows: [{ type: "Cognex 2D", count: 1 }] }),
       dataset: "synthetic",
       metrics: {},
       supportingPool: [],
@@ -204,8 +204,8 @@ describe("aggregateMultiVisionEstimate", () => {
     const out = await aggregateMultiVisionEstimate({
       formValues: makeFormValues({
         visionRows: [
-          { type: "2D", count: 1 },
-          { type: "3D", count: 1 },
+          { type: "Cognex 2D", count: 1 },
+          { type: "3D Vision", count: 1 },
         ],
       }),
       dataset: "synthetic",
@@ -231,8 +231,8 @@ describe("aggregateMultiVisionEstimate", () => {
     await aggregateMultiVisionEstimate({
       formValues: makeFormValues({
         visionRows: [
-          { type: "2D", count: 2 },
-          { type: "3D", count: 1 },
+          { type: "Cognex 2D", count: 2 },
+          { type: "3D Vision", count: 1 },
         ],
       }),
       dataset: "real",
@@ -244,10 +244,10 @@ describe("aggregateMultiVisionEstimate", () => {
     expect(calls).toHaveLength(3);
     // Call 0: baseline {"None", 0}.
     expect(calls[0][0]).toMatchObject({ vision_type: "None", vision_systems_count: 0 });
-    // Call 1: row 0 {"2D", 2}.
-    expect(calls[1][0]).toMatchObject({ vision_type: "2D", vision_systems_count: 2 });
-    // Call 2: row 1 {"3D", 1}.
-    expect(calls[2][0]).toMatchObject({ vision_type: "3D", vision_systems_count: 1 });
+    // Call 1: row 0 {"Cognex 2D", 2}.
+    expect(calls[1][0]).toMatchObject({ vision_type: "Cognex 2D", vision_systems_count: 2 });
+    // Call 2: row 1 {"3D Vision", 1}.
+    expect(calls[2][0]).toMatchObject({ vision_type: "3D Vision", vision_systems_count: 1 });
     // Dataset threaded correctly:
     calls.forEach((c) => expect(c[1]).toBe("real"));
   });
@@ -260,8 +260,8 @@ describe("aggregateMultiVisionEstimate", () => {
     const out = await aggregateMultiVisionEstimate({
       formValues: makeFormValues({
         visionRows: [
-          { type: "2D", count: 2 },
-          { type: "3D", count: 1, label: "pick-and-place" },
+          { type: "Cognex 2D", count: 2 },
+          { type: "3D Vision", count: 1, label: "pick-and-place" },
         ],
       }),
       dataset: "synthetic",
@@ -269,15 +269,15 @@ describe("aggregateMultiVisionEstimate", () => {
       supportingPool: [],
       supportingLabel: "x",
     });
-    expect(out.perVisionContributions[0].rowLabel).toBe("Vision 1: 2D × 2");
-    expect(out.perVisionContributions[1].rowLabel).toBe("Vision 2 — pick-and-place: 3D × 1");
+    expect(out.perVisionContributions[0].rowLabel).toBe("Vision 1: Cognex 2D × 2");
+    expect(out.perVisionContributions[1].rowLabel).toBe("Vision 2 — pick-and-place: 3D Vision × 1");
   });
 
   it("does not mutate formValues.visionRows", async () => {
     vi.mocked(predictQuote)
       .mockResolvedValueOnce(makePred(100))
       .mockResolvedValueOnce(makePred(120));
-    const rows = [{ type: "2D" as const, count: 1 }];
+    const rows = [{ type: "Cognex 2D", count: 1 }];
     const fv = makeFormValues({ visionRows: rows });
     await aggregateMultiVisionEstimate({
       formValues: fv,
@@ -296,7 +296,7 @@ describe("aggregateMultiVisionEstimate", () => {
       .mockResolvedValueOnce(makePred(100))
       .mockResolvedValueOnce(makePred(130));
     await aggregateMultiVisionEstimate({
-      formValues: makeFormValues({ visionRows: [{ type: "2D", count: 2 }] }),
+      formValues: makeFormValues({ visionRows: [{ type: "Cognex 2D", count: 2 }] }),
       dataset: "synthetic",
       metrics: {},
       supportingPool: [],
@@ -316,11 +316,11 @@ describe("aggregateMultiVisionEstimate", () => {
       automation_level: "Semi-auto",
       plc_family: "AB Compact Logix",
       hmi_family: "AB PanelView Plus",
-      vision_type: "2D",
+      vision_type: "Cognex 2D",
       vision_systems_count: 2,
     };
     await aggregateMultiVisionEstimate({
-      formValues: makeFormValues({ visionRows: [{ type: "2D", count: 2 }] }),
+      formValues: makeFormValues({ visionRows: [{ type: "Cognex 2D", count: 2 }] }),
       dataset: "synthetic",
       metrics: {},
       supportingPool: [],
@@ -329,7 +329,7 @@ describe("aggregateMultiVisionEstimate", () => {
     });
     const callB = vi.mocked(toUnifiedResult).mock.calls[0][0];
     expect(callB.input).toBe(inputForMatching);
-    expect(callB.input.vision_type).toBe("2D");
+    expect(callB.input.vision_type).toBe("Cognex 2D");
     expect(callB.input.vision_systems_count).toBe(2);
   });
 
@@ -345,8 +345,8 @@ describe("aggregateMultiVisionEstimate", () => {
     const out = await aggregateMultiVisionEstimate({
       formValues: makeFormValues({
         visionRows: [
-          { type: "2D", count: 1 },
-          { type: "3D", count: 1 },
+          { type: "Cognex 2D", count: 1 },
+          { type: "3D Vision", count: 1 },
         ],
       }),
       dataset: "synthetic",
@@ -364,7 +364,7 @@ describe("aggregateMultiVisionEstimate", () => {
       .mockResolvedValueOnce(makePred(100, 10, "high"))
       .mockResolvedValueOnce(makePred(120, 10, "high"));
     const out2 = await aggregateMultiVisionEstimate({
-      formValues: makeFormValues({ visionRows: [{ type: "2D", count: 1 }] }),
+      formValues: makeFormValues({ visionRows: [{ type: "Cognex 2D", count: 1 }] }),
       dataset: "synthetic",
       metrics: {
         // Inject a high-R^2 metric for the dominant target so the adapter

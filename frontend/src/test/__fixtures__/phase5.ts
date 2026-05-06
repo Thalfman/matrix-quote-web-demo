@@ -17,7 +17,7 @@ const formValues: QuoteFormValues = {
   system_category: "Machine Tending",
   automation_level: "Robotic",
   stations_count: 4,
-  visionRows: [{ type: "2D", count: 1 }],
+  visionRows: [{ type: "Cognex 2D", count: 1 }],
 };
 
 const unifiedResult: UnifiedQuoteResult = {
@@ -89,7 +89,7 @@ const savedQuote: SavedQuote = {
     },
   ],
   salesBucket: "ME",
-  visionLabel: "2D",
+  visionLabel: "Cognex 2D",
   materialsCost: 245000,
 };
 

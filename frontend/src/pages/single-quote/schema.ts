@@ -4,17 +4,28 @@ import { QuoteInput } from "@/api/types";
 
 const requiredString = z.string().trim().min(1, "Required");
 
-export const VISION_TYPES = ["2D", "3D"] as const;
-export type VisionType = (typeof VISION_TYPES)[number];
+/**
+ * Sentinel value the trained model uses for the no-vision case. Empty
+ * `visionRows` is the canonical UI state for "no vision systems"; this
+ * constant is only kept for the wire-format coercion in transformToQuoteInput
+ * and as a filter-out marker on the dropdown options the picker exposes.
+ */
+export const VISION_TYPE_NONE = "None";
 
 /**
  * Phase 6 — multi-vision row shape (D-01).
  * `count` defaults to 1 per row (D-02). Empty rows array = no vision systems.
  * `label` is an optional free-text override; bounded at 80 chars to match
  * savedQuoteNameSchema.max(80) (T-05-03 DoS posture, carry-forward).
+ *
+ * `type` is a free-form non-empty string rather than a hard-coded enum so the
+ * picker stays aligned with the trained model's actual vision_type vocabulary
+ * (data-driven via /catalog/dropdowns, e.g. "Cognex 2D", "3D Vision",
+ * "Keyence IV3"). Hard-coding "2D" / "3D" produced unknown one-hot categories
+ * at predict time and lost saved data on migration.
  */
 export const VisionRowSchema = z.object({
-  type: z.enum(VISION_TYPES),
+  type: z.string().trim().min(1, "Required"),
   count: z.coerce.number().int().min(1),
   label: z.string().trim().max(80).optional(),
 });
@@ -126,20 +137,25 @@ export const quoteFormDefaults: QuoteFormValues = {
 };
 
 export function transformToQuoteInput(v: QuoteFormValues): QuoteInput {
+  // Phase 6 wire-format default: surface the FIRST visionRow so naive callers
+  // (production SingleQuote / scenario-save / PDF paths) do not silently drop
+  // multi-vision data. Callers that need a per-row split (the multi-vision
+  // aggregator and the demo-tab handlers) explicitly override these two fields
+  // per call — that override stays correct regardless of this default. Empty
+  // visionRows collapses to the trained model's "None" sentinel, matching the
+  // historical single-vision wire shape.
+  const rows = v.visionRows ?? [];
+  const firstVisionType = rows[0]?.type ?? VISION_TYPE_NONE;
+  const visionSystemsCount = rows.reduce((sum, row) => sum + row.count, 0);
+
   return {
     industry_segment: v.industry_segment,
     system_category: v.system_category,
     automation_level: v.automation_level,
     plc_family: v.plc_family,
     hmi_family: v.hmi_family,
-    // Phase 6 D-04/D-06: QuoteInput still types vision_type as required and
-    // vision_systems_count as optional (parent app's openapi shape, fixed by
-    // the trained joblibs). The multi-vision aggregator overlays both per-row
-    // for each predict call; the baseline call uses these defaults verbatim.
-    // Page handlers also populate `inputForMatching` from visionRows for
-    // similar-projects matching (D-04).
-    vision_type: "None",
-    vision_systems_count: 0,
+    vision_type: firstVisionType,
+    vision_systems_count: visionSystemsCount,
 
     stations_count: v.stations_count,
     robot_count: v.robot_count,

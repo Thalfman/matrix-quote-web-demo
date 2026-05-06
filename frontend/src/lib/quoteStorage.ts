@@ -124,11 +124,16 @@ export function migrateRecordV1ToV2(rec: unknown): unknown {
 }
 
 /**
- * Per-version formValues migration (D-13 verbatim).
- *   - vision_type === "None" && count === 0  -> visionRows: []
- *   - vision_type === "None" && count > 0    -> visionRows: []  (degenerate v1)
- *   - vision_type === ""                     -> visionRows: []  (empty string carry)
- *   - vision_type === "2D" | "3D"            -> [{type, count: Math.max(1, count)}]
+ * Per-version formValues migration (D-13).
+ *   - vision_type === "None"   -> visionRows: []  (degenerate v1 with count > 0 also collapses)
+ *   - vision_type === ""       -> visionRows: []  (empty string carry)
+ *   - any other non-empty type -> [{type, count: Math.max(1, count)}]
+ *
+ * Migration must preserve the trained model's full vision_type vocabulary
+ * (e.g. "Cognex 2D", "3D Vision", "Keyence IV3"), not just a hard-coded
+ * "2D"/"3D" allowlist — the prior allowlist silently dropped every real-world
+ * saved quote whose vision_type didn't match those two literal strings.
+ *
  * Strips the legacy keys after rewriting (clean cutover).
  *
  * WR-04: legacy keys are stripped regardless of whether the input is v1 or
@@ -145,15 +150,15 @@ function migrateFormValuesV1ToV2(fv: unknown): unknown {
   // leak them through. _vt/_vc satisfy the project's argsIgnorePattern: "^_".
   const { vision_type: _vt, vision_systems_count: _vc, ...rest } = f;
   if (Array.isArray(rest.visionRows)) return rest; // already v2 (now without legacy keys)
-  const visionType = typeof f.vision_type === "string" ? f.vision_type : "";
+  const visionType = typeof f.vision_type === "string" ? f.vision_type.trim() : "";
   const rawCount = typeof f.vision_systems_count === "number"
     ? f.vision_systems_count
     : Number(f.vision_systems_count ?? 0);
   const count = Number.isFinite(rawCount) ? rawCount : 0;
-  let visionRows: Array<{ type: "2D" | "3D"; count: number }> = [];
-  if (visionType === "2D" || visionType === "3D") {
-    visionRows = [{ type: visionType, count: Math.max(1, count) }];
-  }
+  const visionRows: Array<{ type: string; count: number }> =
+    visionType === "" || visionType === "None"
+      ? []
+      : [{ type: visionType, count: Math.max(1, count) }];
   return { ...rest, visionRows };
 }
 

@@ -149,9 +149,21 @@ export function transformToFormValues(input: QuoteInput): QuoteFormValues {
     plc_family: input.plc_family,
     hmi_family: input.hmi_family,
 
+    // Mirror migrateFormValuesV1ToV2: any non-empty / non-"None" vision_type
+    // surfaces as a single visionRow so saved quotes from the trained model's
+    // full vocabulary ("Cognex 2D", "3D Vision", "Keyence IV3", ...) round-trip
+    // intact instead of being silently discarded by a hard-coded "2D"/"3D"
+    // allowlist.
     visionRows:
-      input.vision_type === "2D" || input.vision_type === "3D"
-        ? [{ type: input.vision_type, count: Math.max(1, Number(input.vision_systems_count ?? 0)) }]
+      typeof input.vision_type === "string" &&
+      input.vision_type.trim() !== "" &&
+      input.vision_type !== "None"
+        ? [
+            {
+              type: input.vision_type,
+              count: Math.max(1, Number(input.vision_systems_count ?? 0)),
+            },
+          ]
         : [],
 
     stations_count: input.stations_count ?? 0,
