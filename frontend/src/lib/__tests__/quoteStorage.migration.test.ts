@@ -152,6 +152,49 @@ describe("migrateRecordV1ToV2 — pure function", () => {
     expect(fv).not.toHaveProperty("vision_systems_count");
   });
 
+  it("WR-04: strips legacy keys even when formValues already carry visionRows (hybrid record)", async () => {
+    // Hand-rolled hybrid record: outer schemaVersion 1 (so the migrator runs)
+    // but versions[0].formValues already has visionRows AND lingering legacy
+    // keys. Pre-fix migrateFormValuesV1ToV2 short-circuited on
+    // Array.isArray(visionRows) without stripping. D-13's clean-cutover
+    // invariant requires legacy keys to be removed regardless.
+    const { migrateRecordV1ToV2 } = await import("../quoteStorage");
+    const hybrid = {
+      ...makeV1Record({ visionType: "None", visionCount: 0 }),
+      versions: [
+        {
+          version: 1,
+          savedAt: "2026-04-01T12:00:00.000Z",
+          statusAtTime: "draft" as const,
+          formValues: {
+            // Already-v2 visionRows alongside leftover v1 keys:
+            visionRows: [{ type: "2D", count: 3 }],
+            vision_type: "3D",         // leftover, must be stripped
+            vision_systems_count: 99,  // leftover, must be stripped
+            // ... rest of the form (minimal sample is fine):
+            industry_segment: "Aerospace",
+          },
+          unifiedResult: {
+            estimateHours: 100,
+            likelyRangeLow: 80,
+            likelyRangeHigh: 120,
+            overallConfidence: "moderate" as const,
+            perCategory: [],
+            topDrivers: [],
+            supportingMatches: { label: "x", items: [] },
+          },
+        },
+      ],
+    };
+    const out = migrateRecordV1ToV2(hybrid);
+    const fv = getFirstVersionFormValues(out);
+    expect(fv).not.toHaveProperty("vision_type");
+    expect(fv).not.toHaveProperty("vision_systems_count");
+    // Pre-existing visionRows are preserved verbatim — the function does NOT
+    // re-derive from the legacy keys when visionRows is already present.
+    expect(fv.visionRows).toEqual([{ type: "2D", count: 3 }]);
+  });
+
   it("is idempotent on already-v2 records", async () => {
     const { migrateRecordV1ToV2 } = await import("../quoteStorage");
     const v2Record = {

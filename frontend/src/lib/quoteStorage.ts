@@ -130,11 +130,22 @@ export function migrateRecordV1ToV2(rec: unknown): unknown {
  *   - vision_type === ""                     -> visionRows: []  (empty string carry)
  *   - vision_type === "2D" | "3D"            -> [{type, count: Math.max(1, count)}]
  * Strips the legacy keys after rewriting (clean cutover).
+ *
+ * WR-04: legacy keys are stripped regardless of whether the input is v1 or
+ * already-v2. Pre-fix the function short-circuited on Array.isArray(visionRows)
+ * without stripping, which left a window where a hand-rolled hybrid record
+ * (visionRows AND lingering vision_type / vision_systems_count keys) leaked
+ * legacy keys downstream. D-13's "clean cutover" lock requires the invariant
+ * "no legacy keys ever appear on a v2 formValues" anywhere in the data flow.
  */
 function migrateFormValuesV1ToV2(fv: unknown): unknown {
   if (!fv || typeof fv !== "object") return fv;
   const f = fv as Record<string, unknown>;
-  if (Array.isArray(f.visionRows)) return fv; // already v2
+  // WR-04: strip legacy keys first so the already-v2 short-circuit cannot
+  // leak them through. eslint-disable for the unused-rename pattern.
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { vision_type: _vt, vision_systems_count: _vc, ...rest } = f;
+  if (Array.isArray(rest.visionRows)) return rest; // already v2 (now without legacy keys)
   const visionType = typeof f.vision_type === "string" ? f.vision_type : "";
   const rawCount = typeof f.vision_systems_count === "number"
     ? f.vision_systems_count
@@ -144,8 +155,6 @@ function migrateFormValuesV1ToV2(fv: unknown): unknown {
   if (visionType === "2D" || visionType === "3D") {
     visionRows = [{ type: visionType, count: Math.max(1, count) }];
   }
-  // Strip legacy keys (D-13: clean cutover).
-  const { vision_type: _vt, vision_systems_count: _vc, ...rest } = f;
   return { ...rest, visionRows };
 }
 
