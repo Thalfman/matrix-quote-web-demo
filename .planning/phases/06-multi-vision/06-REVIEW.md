@@ -1,5 +1,5 @@
 ---
-status: issues_found
+status: clean
 phase: 6
 phase_name: multi-vision
 depth: standard
@@ -8,6 +8,20 @@ counts:
   blocker: 1
   warning: 5
   info: 6
+fix_tracker:
+  BL-01: { status: resolved, commit: 1cd63e2 }
+  WR-01: { status: resolved, commit: 6f2a742 }
+  WR-02: { status: resolved, commit: 6f2a742 }
+  WR-03: { status: resolved, commit: 4d21b01 }
+  WR-04: { status: resolved, commit: 419e7cc }
+  WR-05: { status: resolved, commit: 605c17b }
+  IN-01: { status: open, severity: info, note: dead dropdowns.vision_type computation in 3 pages — out of scope for review-fix }
+  IN-02: { status: open, severity: info, note: pre-Phase-6 NaN-on-restoreVersion silent fallback — out of scope }
+  IN-03: { status: open, severity: info, note: humanFeatureLabel double-cast through unknown — style debt }
+  IN-04: { status: open, severity: info, note: theoretical truncation edge case in auto-name — low priority }
+  IN-05: { status: open, severity: info, note: visionRows ?? [] guard unreachable per zod schema — defense-in-depth code }
+  IN-06: { status: open, severity: info, note: D-04 forwards visionRows[0]?.type only — documented as v3 deferred }
+fixed_at: 2026-05-05
 ---
 
 # Phase 6: Multi-vision per project — Code Review Report
@@ -15,7 +29,7 @@ counts:
 **Reviewed:** 2026-05-05
 **Depth:** standard
 **Files Reviewed:** 27 (10 production + 17 test)
-**Status:** issues_found
+**Status:** clean (1 BLOCKER + 5 WARNINGs resolved 2026-05-05; 6 Info findings remain open as intentional non-blockers)
 
 ## Summary
 
@@ -32,6 +46,8 @@ All vitest 935/935 pass and typecheck/lint/build are clean, so none of the issue
 ## Blockers
 
 ### BL-01: Find-Similar tab ignores `visionRows` when computing nearest-neighbor distance
+
+**Status:** RESOLVED — commit `1cd63e2` (2026-05-05). `handleSubmit` now overlays `vision_type=visionRows[0]?.type ?? "None"` and `vision_systems_count=sum(row.count)` onto the QuoteInput passed to `nearestK`, mirroring `MachineLearningQuoteTool.tsx` and `ComparisonQuote.tsx`.
 
 **File:** `frontend/src/pages/demo/CompareFindSimilarTab.tsx:81-94`
 **Issue:** `handleSubmit` calls `transformToQuoteInput(values)` and feeds the result directly into `nearestK(input, records, manifest.feature_stats, 3)`. Per Plan 06-04's `transformToQuoteInput` change, the returned `QuoteInput` *always* carries `vision_type: "None"` and `vision_systems_count: 0` regardless of `formValues.visionRows`. Because `vision_type` is in `QUOTE_CAT_FIELDS` and `vision_systems_count` is in `QUOTE_NUM_FIELDS` (`frontend/src/demo/realProjects.ts:43-62`), `nearestNeighbor.distance` (`frontend/src/lib/nearestNeighbor.ts:35-49`) penalizes mismatches between the user's input and every historical record on those two axes — so users get distance scores computed against a "no vision" baseline regardless of what they actually entered into `<VisionRowsField>`. Pre-Phase-6, the equivalent Find-Similar code path read `vision_type`/`vision_systems_count` straight from form state (D-04 lock comments document this for the two Quote tabs but Find-Similar was missed).
@@ -61,6 +77,8 @@ A regression test should pin this: create two `ProjectRecord` fixtures differing
 
 ### WR-01: Per-vision drivers use global feature importances, not features that actually shifted
 
+**Status:** RESOLVED — commit `6f2a742` (2026-05-05). Replaced the `globalImportances[dominantTarget].slice(0,2)` lookup with Option A from this finding: drivers are stamped as `vision_type` (one-hot to row's type) and `vision_systems_count` — the only features that demonstrably differ between baseline and per-row inputs. Direction stamped from `hoursDelta` sign. SHAP-style local explanations (Option B) deferred to v3 per CONTEXT.md.
+
 **File:** `frontend/src/demo/multiVisionAggregator.ts:188-231` (`buildPerVisionContributions`)
 **Issue:** For each vision row, the code picks `dominantTarget` (the op key with the largest absolute delta from baseline), then reads `importances[dominantTarget]` and slices the top 2. But `importances` is the *global* feature-importance map for that target — it's the same across baseline and per-row predicts and reflects what generally drives that target, not which features moved between baseline and this specific row's predict. As a result, a 2D vision row could surface "Number of stations" + "Number of robots" as its drivers even though those features are identical between baseline and per-row inputs. The customer reading the Per-vision contribution card would attribute the row's hour delta to features that did not change.
 
@@ -82,6 +100,8 @@ const visionDrivers: Array<{ label: string; direction: typeof direction }> = [
 
 ### WR-02: `buildPerVisionContributions` produces non-deterministic dominantTarget when a row's delta is zero
 
+**Status:** RESOLVED — commit `6f2a742` (2026-05-05). `dominantAbsDelta` initializes at 0 (was -1) and ties broken by lexicographic target name for determinism. When the dominant per-target abs-delta is < `PER_VISION_EPSILON_HOURS` (0.5h), `topDrivers` is empty so a degenerate "this row added 0 hours" card renders without misleading attribution.
+
 **File:** `frontend/src/demo/multiVisionAggregator.ts:200-213`
 **Issue:** When `pr.total_p50 === baselinePred.total_p50` (i.e., the row's predict is identical to baseline), `hoursDelta = 0` and per-op `absDelta = 0` for every op. The loop initializes `dominantAbsDelta = -1`, so the first op key with a baseline match (e.g., `me10`) becomes `dominantTarget` regardless of whether that op actually moved. The drivers are then arbitrarily picked from `importances["me10_actual_hours"]` and stamped with `direction: "increases"` (since `hoursDelta >= 0` includes zero). For a degenerate "this row added 0 hours" case, the user sees a card claiming "Vision 1: 2D × 1 +0 hrs" with two drivers that have nothing to do with the row.
 
@@ -97,6 +117,8 @@ if (Math.abs(dominantAbsDelta) < EPSILON) {
 ```
 
 ### WR-03: D-07 "min confidence across baseline + per-row" rule is never enforced
+
+**Status:** RESOLVED — commit `4d21b01` (2026-05-05). Added `minOverallConfidence` post-rollup overlay (option b): aggregator computes the worst-case confidence across baseline + per-row predicts and pins `result.overallConfidence` to it. Maps model vocab "high|medium|low" -> UI vocab "high|moderate|lower". A per-row predict carrying `confidence:"low"` now surfaces as "lower" on the aggregated result even when RSS half-widths are tight. Regression test added.
 
 **File:** `frontend/src/demo/multiVisionAggregator.ts:143-177` (`buildAggregatedPrediction`)
 **Issue:** D-07 specifies that aggregated per-target confidence must be the minimum across baseline + per-row predicts. The `OpPrediction` payload carries a `confidence: "high" | "moderate" | "lower"` field per op. `buildAggregatedPrediction` reads `p10` / `p50` / `p90` and computes RSS half-widths but never inspects `opBaseline.confidence` or `pr.ops[opKey].confidence`. The aggregated `predByTarget` it returns has no confidence field, and downstream `toUnifiedResult` (in `quoteAdapter.ts`) re-derives confidence from `(p90 - p10) / p50` ratios.
@@ -130,6 +152,8 @@ return {
 
 ### WR-04: `migrateFormValuesV1ToV2` short-circuit leaves legacy keys in place on already-v2 formValues
 
+**Status:** RESOLVED — commit `419e7cc` (2026-05-05). Moved the legacy-key strip BEFORE the already-v2 short-circuit so the function always emits a stripped object. Pre-existing `visionRows` is preserved verbatim (no re-derivation from legacy keys when `visionRows` is already populated). Regression test added for the hybrid-record case.
+
 **File:** `frontend/src/lib/quoteStorage.ts:134-150`
 **Issue:** The function returns `fv` unchanged when `Array.isArray(f.visionRows)` is true (line 137). For a hand-crafted hybrid record where formValues somehow contains *both* `visionRows` AND legacy `vision_type` / `vision_systems_count` keys, the migrator skips the strip step. The downstream zod parse (default strip-unknown behavior on `quoteFormSchema`) covers most cases, but if a future schema change uses `.passthrough()` on the inner formValues, legacy keys leak through.
 
@@ -152,6 +176,8 @@ function migrateFormValuesV1ToV2(fv: unknown): unknown {
 ```
 
 ### WR-05: `Promise.all(rows.map(predictQuote))` rejects loudly with no per-row failure context
+
+**Status:** RESOLVED — commit `605c17b` (2026-05-05). Each `predictQuote` call wrapped in a `.catch` that re-throws with the 1-indexed row number plus type×count shape (e.g., `vision row 2 (3D × 1): <cause>`). Failure semantics unchanged (still all-or-nothing); the toast copy now identifies which row dropped. Partial-success / `Promise.allSettled` restructure left for v3.
 
 **File:** `frontend/src/demo/multiVisionAggregator.ts:87-94`
 **Issue:** If any single per-row predict fails (Pyodide error, model load race, transient resource), `Promise.all` rejects with the first error and the whole `aggregateMultiVisionEstimate` call throws. The caller (`MachineLearningQuoteTool.tsx::handleSubmit` line 158) catches generic `Error.message` and toasts it. The user sees "Prediction failed" with no indication of *which* vision row caused the failure or whether the baseline call succeeded.
