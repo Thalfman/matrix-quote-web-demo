@@ -185,13 +185,38 @@ function buildAggregatedPrediction(
 }
 
 /**
- * For each vision row, find the top-2 features whose contribution magnitude
- * shifted most between baseline and per-row predict (D-08).
+ * Threshold for "this row meaningfully moved the prediction" (in hours).
+ * WR-02: when the dominant per-target delta is below epsilon, the row's
+ * drivers are arbitrary (every feature has effectively zero contribution
+ * shift), so we suppress drivers entirely rather than surface noise.
+ */
+const PER_VISION_EPSILON_HOURS = 0.5;
+
+/**
+ * For each vision row, surface up to 2 drivers describing what shifted
+ * between baseline and per-row predict (D-08).
  *
- * Approach: for each target the row most affects (highest abs(delta_p50)),
- * read the top features from the importances map for that target. Take the
- * top-2 and stamp `direction` based on the sign of the row's delta against
- * baseline (positive delta -> "increases").
+ * WR-01 fix: prior implementation read globalImportances[dominantTarget]
+ * and slice(0,2). Those features are the *generally* dominant drivers of
+ * that target, NOT the features that demonstrably moved between baseline
+ * and per-row input. The only features that DO change between the two
+ * predicts are vision_type and vision_systems_count (the aggregator
+ * overlays them per call). True SHAP-style local explanations would
+ * compute per-input contribution shifts, but getFeatureImportances() is
+ * a global per-dataset cache (no per-input variant exists) and a SHAP
+ * pass is deferred to v3 per CONTEXT.md.
+ *
+ * Behavior:
+ *   - Find the target with the largest abs(perRow.p50 - baseline.p50).
+ *     WR-02: dominantAbsDelta initializes at 0 (not -1) and ties broken
+ *     by lexicographic target name for determinism. When the maximum
+ *     abs-delta is < PER_VISION_EPSILON_HOURS, return topDrivers: []
+ *     so a degenerate "this row added 0 hours" row renders just the
+ *     label and "+0 hrs" with no misleading drivers.
+ *   - Otherwise, surface the two features that actually changed between
+ *     baseline and per-row inputs: vision_type (categorical, one-hot to
+ *     this row's type) and vision_systems_count. Direction is stamped
+ *     from hoursDelta sign.
  */
 function buildPerVisionContributions(args: {
   rows: VisionRow[];
@@ -200,40 +225,65 @@ function buildPerVisionContributions(args: {
   importances: Record<string, Array<[string, number]>>;
   formInput: QuoteInput;
 }): PerVisionContribution[] {
-  const { rows, baselinePred, perRowPreds, importances, formInput } = args;
+  // `importances` is intentionally retained on the args list for forward-compat
+  // with a v3 SHAP-style local-explanation pass. The current Option-A path
+  // (vision_type + vision_systems_count drivers) does not need it; once v3
+  // ships, this helper switches over without a signature break.
+  void args.importances;
+  const { rows, baselinePred, perRowPreds, formInput } = args;
+  const formInputRecord = formInput as unknown as Record<string, unknown>;
+
   return rows.map((row, rowIndex) => {
     const pr = perRowPreds[rowIndex];
     const hoursDelta = pr ? pr.total_p50 - baselinePred.total_p50 : 0;
 
-    // Find the target where this row had the largest absolute delta.
+    // Find the target where this row had the largest absolute per-target delta.
+    // WR-02: dominantAbsDelta initialized at 0 so a row with all-zero deltas
+    // never earns a dominantTarget. Ties broken lexicographically for
+    // deterministic output across re-runs.
     let dominantTarget = "";
-    let dominantAbsDelta = -1;
+    let dominantAbsDelta = 0;
     if (pr) {
       for (const [opKey, opPr] of Object.entries(pr.ops)) {
         const opBase = baselinePred.ops[opKey];
         if (!opBase) continue;
         const absDelta = Math.abs(opPr.p50 - opBase.p50);
-        if (absDelta > dominantAbsDelta) {
+        const target = `${opKey}_actual_hours`;
+        if (
+          absDelta > dominantAbsDelta ||
+          (absDelta === dominantAbsDelta && target < dominantTarget)
+        ) {
           dominantAbsDelta = absDelta;
-          dominantTarget = `${opKey}_actual_hours`;
+          dominantTarget = target;
         }
       }
     }
 
-    const topPairs = importances[dominantTarget] ?? [];
-    const direction: "increases" | "decreases" = hoursDelta >= 0 ? "increases" : "decreases";
-    const formInputRecord = formInput as unknown as Record<string, unknown>;
-    const topDrivers = topPairs.slice(0, 2).map(([rawName]) => ({
-      label: humanFeatureLabel(rawName, formInputRecord).label,
-      direction,
-    }));
-
     const labelSegment = row.label && row.label.trim().length > 0 ? ` — ${row.label.trim()}` : "";
-    return {
-      rowIndex,
-      rowLabel: `Vision ${rowIndex + 1}${labelSegment}: ${row.type} × ${row.count}`,
-      hoursDelta,
-      topDrivers,
-    };
+    const rowLabel = `Vision ${rowIndex + 1}${labelSegment}: ${row.type} × ${row.count}`;
+
+    // WR-02: if the row barely moved the prediction, suppress drivers — any
+    // surfaced feature would be arbitrary noise, not a real explanation.
+    if (dominantAbsDelta < PER_VISION_EPSILON_HOURS) {
+      return { rowIndex, rowLabel, hoursDelta, topDrivers: [] };
+    }
+
+    // WR-01: drivers are the two features that actually changed between
+    // baseline and per-row inputs (vision_type one-hot for this row's type,
+    // and vision_systems_count). Direction stamped from hoursDelta sign.
+    const direction: "increases" | "decreases" = hoursDelta >= 0 ? "increases" : "decreases";
+    const visionTypeFeature = `vision_type_${row.type}`;
+    const topDrivers: Array<{ label: string; direction: "increases" | "decreases" }> = [
+      {
+        label: humanFeatureLabel(visionTypeFeature, formInputRecord).label,
+        direction,
+      },
+      {
+        label: humanFeatureLabel("vision_systems_count", formInputRecord).label,
+        direction,
+      },
+    ];
+
+    return { rowIndex, rowLabel, hoursDelta, topDrivers };
   });
 }
