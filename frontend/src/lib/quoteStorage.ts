@@ -31,7 +31,7 @@ import type { QuoteFormValues } from "@/pages/single-quote/schema";
 
 export const QUOTE_DB_NAME = "matrix-quotes";
 export const QUOTE_STORE_NAME = "quotes";
-export const QUOTE_DB_VERSION = 1;
+export const QUOTE_DB_VERSION = 2;
 export const BROADCAST_CHANNEL_NAME = "matrix-quotes";
 
 // ---------------------------------------------------------------------------
@@ -97,19 +97,82 @@ function broadcast(evt: StorageEvent): void {
 }
 
 // ---------------------------------------------------------------------------
+// v1 -> v2 record migration (Phase 6 D-12 / D-13)
+// ---------------------------------------------------------------------------
+
+/**
+ * Idempotent record migration. Called from onupgradeneeded AND defensively
+ * from getSavedQuote / listSavedQuotes for tabs open during the upgrade
+ * window. Returns the input unchanged if it is already v2 or has no
+ * recognizable schemaVersion (forward-compat — Phase 7 stays parseable).
+ */
+export function migrateRecordV1ToV2(rec: unknown): unknown {
+  if (!rec || typeof rec !== "object") return rec;
+  const r = rec as Record<string, unknown>;
+  if (r.schemaVersion === 2) return rec;
+  if (r.schemaVersion !== 1) return rec; // unknown — leave to upstream resilience
+  const versions = Array.isArray(r.versions) ? r.versions : [];
+  return {
+    ...r,
+    schemaVersion: 2,
+    versions: versions.map((v) => {
+      if (!v || typeof v !== "object") return v;
+      const ver = v as Record<string, unknown>;
+      return { ...ver, formValues: migrateFormValuesV1ToV2(ver.formValues) };
+    }),
+  };
+}
+
+/**
+ * Per-version formValues migration (D-13 verbatim).
+ *   - vision_type === "None" && count === 0  -> visionRows: []
+ *   - vision_type === "None" && count > 0    -> visionRows: []  (degenerate v1)
+ *   - vision_type === ""                     -> visionRows: []  (empty string carry)
+ *   - vision_type === "2D" | "3D"            -> [{type, count: Math.max(1, count)}]
+ * Strips the legacy keys after rewriting (clean cutover).
+ */
+function migrateFormValuesV1ToV2(fv: unknown): unknown {
+  if (!fv || typeof fv !== "object") return fv;
+  const f = fv as Record<string, unknown>;
+  if (Array.isArray(f.visionRows)) return fv; // already v2
+  const visionType = typeof f.vision_type === "string" ? f.vision_type : "";
+  const rawCount = typeof f.vision_systems_count === "number"
+    ? f.vision_systems_count
+    : Number(f.vision_systems_count ?? 0);
+  const count = Number.isFinite(rawCount) ? rawCount : 0;
+  let visionRows: Array<{ type: "2D" | "3D"; count: number }> = [];
+  if (visionType === "2D" || visionType === "3D") {
+    visionRows = [{ type: visionType, count: Math.max(1, count) }];
+  }
+  // Strip legacy keys (D-13: clean cutover).
+  const { vision_type: _vt, vision_systems_count: _vc, ...rest } = f;
+  return { ...rest, visionRows };
+}
+
+// ---------------------------------------------------------------------------
 // Lazy DB bootstrap (mirrors ensurePyodideReady idempotency pattern)
 // ---------------------------------------------------------------------------
 
 export function ensureDbReady(): Promise<void> {
   if (!dbPromise) {
     dbPromise = openDB(QUOTE_DB_NAME, QUOTE_DB_VERSION, {
-      upgrade(db, oldVersion) {
+      async upgrade(db, oldVersion, _newVersion, tx) {
         // schemaVersion bump path: see CONTEXT.md D-18 — Phase 6/7 forward compat.
         if (oldVersion < 1) {
           const store = db.createObjectStore(QUOTE_STORE_NAME, { keyPath: "id" });
           store.createIndex("updatedAt", "updatedAt");
           store.createIndex("status", "status");
           store.createIndex("workspace", "workspace");
+        }
+        if (oldVersion < 2) {
+          // D-13: walk every existing record and rewrite to v2 shape in place.
+          const store = tx.objectStore(QUOTE_STORE_NAME);
+          let cursor = await store.openCursor();
+          while (cursor) {
+            const migrated = migrateRecordV1ToV2(cursor.value);
+            await cursor.update(migrated);
+            cursor = await cursor.continue();
+          }
         }
       },
     }).catch((err: Error) => {
@@ -180,9 +243,8 @@ function deriveSalesBucketFromValues(values: QuoteFormValues): string {
 }
 
 function deriveVisionLabel(values: QuoteFormValues): string {
-  return !values.vision_type || values.vision_type === "None"
-    ? "No vision"
-    : values.vision_type;
+  if (!values.visionRows || values.visionRows.length === 0) return "No vision";
+  return values.visionRows.map((r) => `${r.type}×${r.count}`).join("+");
 }
 
 // ---------------------------------------------------------------------------
@@ -205,7 +267,9 @@ export async function listSavedQuotes(): Promise<SavedQuote[]> {
   await tx.done;
   const validated: SavedQuote[] = [];
   for (const rec of raw) {
-    const parsed = savedQuoteSchema.safeParse(rec);
+    // D-13 defensive on-read migration: covers tabs open across upgrade.
+    const migrated = migrateRecordV1ToV2(rec);
+    const parsed = savedQuoteSchema.safeParse(migrated);
     if (parsed.success) validated.push(parsed.data);
     // else: drop malformed/future-schema record — a row that listSavedQuotes
     // skips can still surface via getSavedQuote, where T-05-05 is enforced
@@ -222,7 +286,9 @@ export async function getSavedQuote(id: string): Promise<SavedQuote | null> {
   const handle = await db();
   const rec = await handle.get(QUOTE_STORE_NAME, id);
   if (!rec) return null;
-  return savedQuoteSchema.parse(rec);
+  // D-13 defensive on-read migration: covers tabs open across upgrade.
+  const migrated = migrateRecordV1ToV2(rec);
+  return savedQuoteSchema.parse(migrated);
 }
 
 /**
@@ -284,7 +350,7 @@ export async function saveSavedQuote(args: SaveSavedQuoteArgs): Promise<SavedQuo
     // Brand-new quote — create v1.
     record = {
       id: crypto.randomUUID(),
-      schemaVersion: 1,
+      schemaVersion: 2,
       name: args.name.trim(),
       workspace: args.workspace,
       status: args.status ?? "draft",
