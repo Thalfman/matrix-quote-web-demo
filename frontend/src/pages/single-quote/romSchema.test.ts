@@ -58,6 +58,24 @@ describe("romFormSchema", () => {
     }
   });
 
+  // Regression: react-hook-form's `valueAsNumber: true` emits NaN when the
+  // user clears the materials-cost input. The schema must surface the
+  // friendly D-16 copy, not Zod's technical "Expected number, received nan".
+  it("rejects NaN (cleared input) with the verbatim D-16 message, not Zod's invalid_type default", () => {
+    const result = romFormSchema.safeParse({
+      industry_segment: "Auto",
+      system_category: "Robotic Cell",
+      automation_level: "Semi-Auto",
+      estimated_materials_cost: NaN,
+    });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      const messages = result.error.issues.map((i) => i.message);
+      expect(messages).toContain("Enter a material cost greater than zero.");
+      expect(messages.join("\n")).not.toMatch(/received nan/i);
+    }
+  });
+
   it("rejects missing industry_segment with a 'Required' message", () => {
     const result = romFormSchema.safeParse({
       // industry_segment intentionally omitted

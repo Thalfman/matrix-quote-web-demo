@@ -40,8 +40,15 @@ export const romFormSchema = z.object({
   system_category: requiredString,
   automation_level: requiredString,
   // D-16 verbatim: "Enter a material cost greater than zero."
+  // `valueAsNumber: true` on the input emits NaN when the field is cleared,
+  // which would surface Zod's technical "Expected number, received nan"
+  // instead of the friendly D-16 copy. Override invalid_type_error so the
+  // blank/cleared path renders the same D-16 message as the 0/negative path.
   estimated_materials_cost: z.coerce
-    .number()
+    .number({
+      invalid_type_error: "Enter a material cost greater than zero.",
+      required_error: "Enter a material cost greater than zero.",
+    })
     .positive("Enter a material cost greater than zero."),
 });
 
