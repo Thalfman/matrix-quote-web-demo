@@ -143,10 +143,22 @@ type RiskFactor = {
   label: string;
   // When true, show the sign-flipped interpretation in the meaning label.
   interpretAsRisk?: boolean;
+  // Optional per-row transform applied to the raw value before correlation.
+  // Used to flip stored `process_uncertainty_score` into the displayed
+  // certainty orientation so the chart bar and meaning text agree.
+  transform?: (v: number) => number;
 };
 
 const RISK_FACTORS: RiskFactor[] = [
-  { factor: "process_uncertainty_score", label: "Process complexity" },
+  // Stored field is `process_uncertainty_score`; surfaced as "Process
+  // certainty" (5 = very certain). Values are pre-flipped (6 - v) so the
+  // returned correlation is between certainty and overrun directly — chart
+  // bar, color, displayed r, and meaning all read in certainty orientation.
+  {
+    factor: "process_uncertainty_score",
+    label: "Process certainty",
+    transform: (v) => 6 - v,
+  },
   { factor: "custom_pct",                label: "Custom content %" },
   { factor: "product_familiarity_score", label: "Product familiarity", interpretAsRisk: true },
   { factor: "has_tricky_packaging",      label: "Tricky packaging" },
@@ -546,16 +558,16 @@ export function buildPortfolio(records: ProjectRecord[]): PortfolioStats {
   const overrunByProject = new Map<string, number>();
   for (const p of accuracyPoints) overrunByProject.set(p.project_id, p.overrunPct);
 
-  const riskCorrelations: RiskCorrelationRow[] = RISK_FACTORS.map(({ factor, label, interpretAsRisk }) => {
+  const riskCorrelations: RiskCorrelationRow[] = RISK_FACTORS.map(({ factor, label, interpretAsRisk, transform }) => {
     const xs: number[] = [];
     const ys: number[] = [];
     for (const r of records) {
       const pid = toStr(r.project_id);
       const over = overrunByProject.get(pid);
       if (over === undefined) continue;
-      const v = toNum(r[factor], NaN);
-      if (!Number.isFinite(v)) continue;
-      xs.push(v);
+      const raw = toNum(r[factor], NaN);
+      if (!Number.isFinite(raw)) continue;
+      xs.push(transform ? transform(raw) : raw);
       ys.push(over);
     }
     const corr = pearson(xs, ys);
