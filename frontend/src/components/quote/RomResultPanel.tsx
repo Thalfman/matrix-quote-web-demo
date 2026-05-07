@@ -61,6 +61,7 @@ export interface RomResultPanelProps {
   quoteId?: string;
   existingName?: string;
   status?: "draft" | "sent" | "won" | "lost" | "revised";
+  restoredFromVersion?: number;
 }
 
 export function RomResultPanel({
@@ -71,6 +72,7 @@ export function RomResultPanel({
   quoteId,
   existingName,
   status,
+  restoredFromVersion,
 }: RomResultPanelProps) {
   const salesBucket = deriveSalesBucket(input);
 
@@ -161,6 +163,7 @@ export function RomResultPanel({
           quoteId={quoteId}
           existingName={existingName}
           status={status}
+          restoredFromVersion={restoredFromVersion}
           mode="rom"
           variant="primary"
         />

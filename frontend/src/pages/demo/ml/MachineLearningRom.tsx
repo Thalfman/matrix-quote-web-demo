@@ -73,9 +73,18 @@ export function MachineLearningRom() {
 
   // D-20: read fromQuote URL param so re-saving an opened ROM quote appends
   // a new version (mirrors ComparisonRom — same Phase 5 BL-01 / WR-07 pattern).
+  // `restoreVersion=N` selects an older version to fork from (D-06 lineage).
   const [searchParams] = useSearchParams();
   const fromQuoteId = searchParams.get("fromQuote") ?? undefined;
+  const restoreVersionParam = searchParams.get("restoreVersion");
+  const parsedRestoreVersion =
+    restoreVersionParam !== null ? Number(restoreVersionParam) : NaN;
+  const restoredFromVersion =
+    Number.isInteger(parsedRestoreVersion) && parsedRestoreVersion > 0
+      ? parsedRestoreVersion
+      : undefined;
   const { data: openedQuote } = useSavedQuote(fromQuoteId);
+  const isRomQuote = openedQuote?.mode === "rom";
 
   const metricsByTarget = useMemo(
     () =>
@@ -119,11 +128,16 @@ export function MachineLearningRom() {
   // D-20: hydrate from saved quote when openedQuote arrives. Only hydrate if
   // the saved quote is mode === "rom" — defensive against forged URLs that
   // would otherwise stuff a full quote's values into the ROM form.
+  // When `restoreVersion=N` is present, hydrate from that specific version
+  // (D-06 fork-on-restore); fall back to latest when N is missing or unmatched.
   useEffect(() => {
     if (!openedQuote) return;
-    if (openedQuote.mode === "rom") {
-      const latest = openedQuote.versions[openedQuote.versions.length - 1];
-      const v = latest.formValues;
+    if (openedQuote.mode === "rom" && openedQuote.versions.length > 0) {
+      const target =
+        (restoredFromVersion !== undefined
+          ? openedQuote.versions.find((vv) => vv.version === restoredFromVersion)
+          : undefined) ?? openedQuote.versions[openedQuote.versions.length - 1];
+      const v = target.formValues;
       form.reset({
         industry_segment: v.industry_segment,
         system_category: v.system_category,
@@ -131,7 +145,7 @@ export function MachineLearningRom() {
         estimated_materials_cost: v.estimated_materials_cost ?? 0,
       });
     }
-  }, [openedQuote, form]);
+  }, [openedQuote, restoredFromVersion, form]);
 
   useEffect(() => {
     const unsub = subscribe((s) => {
@@ -250,9 +264,10 @@ export function MachineLearningRom() {
                 input={result.formValues}
                 rom={result.rom}
                 workspace="synthetic"
-                quoteId={fromQuoteId}
-                existingName={openedQuote?.name}
-                status={openedQuote?.status}
+                quoteId={isRomQuote ? fromQuoteId : undefined}
+                existingName={isRomQuote ? openedQuote?.name : undefined}
+                status={isRomQuote ? openedQuote?.status : undefined}
+                restoredFromVersion={isRomQuote ? restoredFromVersion : undefined}
               />
             )}
           </aside>
