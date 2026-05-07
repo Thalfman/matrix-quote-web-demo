@@ -247,6 +247,33 @@ describe("SingleQuote", () => {
   // was deprecated. The behaviour is now provided by `?fromQuote=<id>`
   // rehydration tested in QuoteForm.test.tsx (Plan 05-09 Task 2).
 
+  it("Save scenario shows toast.error when current form values fail schema parsing", async () => {
+    vi.spyOn(window, "prompt")
+      .mockReturnValueOnce("Scenario with invalid form")
+      .mockReturnValueOnce("Project Name");
+
+    const { container } = await renderWithResult();
+
+    const addBtn = await screen.findByRole("button", { name: /add vision system/i });
+    fireEvent.click(addBtn);
+    const count = container.querySelector<HTMLInputElement>(
+      'input[name="visionRows.0.count"]',
+    );
+    expect(count).not.toBeNull();
+    fireEvent.change(count!, { target: { value: "0" } });
+    fireEvent.blur(count!);
+
+    fireEvent.click(screen.getByRole("button", { name: /save scenario/i }));
+
+    await waitFor(() =>
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Could not save scenario"),
+    );
+    expect(mockPost).not.toHaveBeenCalledWith(
+      "/quotes",
+      expect.anything(),
+    );
+  });
+
   // ---------------------------------------------------------------------------
   // Export PDF (Plan D)
   // ---------------------------------------------------------------------------
@@ -317,6 +344,30 @@ describe("SingleQuote", () => {
     await waitFor(() =>
       expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Could not generate PDF"),
     );
+  });
+
+  it("Export PDF shows toast.error when current form values fail schema parsing", async () => {
+    localStorage.setItem("matrix.displayName", "Test User");
+    mockDownloadAdHocPdf.mockResolvedValue(undefined);
+    vi.spyOn(window, "prompt").mockReturnValueOnce("My Project");
+
+    const { container, exportBtn } = await renderWithResult();
+
+    const addBtn = await screen.findByRole("button", { name: /add vision system/i });
+    fireEvent.click(addBtn);
+    const count = container.querySelector<HTMLInputElement>(
+      'input[name="visionRows.0.count"]',
+    );
+    expect(count).not.toBeNull();
+    fireEvent.change(count!, { target: { value: "0" } });
+    fireEvent.blur(count!);
+
+    fireEvent.click(exportBtn);
+
+    await waitFor(() =>
+      expect(vi.mocked(toast.error)).toHaveBeenCalledWith("Could not generate PDF"),
+    );
+    expect(mockDownloadAdHocPdf).not.toHaveBeenCalled();
   });
 
   // ---------------------------------------------------------------------------
