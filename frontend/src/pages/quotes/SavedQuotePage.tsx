@@ -131,8 +131,17 @@ export function SavedQuotePage() {
   // with that version's inputs and the next save commits as v(N+1) with
   // restoredFromVersion: N. No pre-navigate IDB round-trip — the form
   // hydration path already reads from IDB.
+  //
+  // Route with the selected version's own mode (per-version stamp from D-19),
+  // not the top-level/latest data.mode. A mixed-mode history (v1 full, v2 rom)
+  // would otherwise route v1 restore through the ROM tool and silently drop
+  // its full-quote fields on re-save. Falls back to data.mode when the version
+  // can't be resolved (defensive — shouldn't happen since the caller picks
+  // from the same versions array).
   const handleRestore = (version: number) => {
-    navigate(quoteToolPath(data.workspace, data.id, data.mode, version));
+    const targetVersion = data.versions.find((v) => v.version === version);
+    const targetMode: QuoteMode = targetVersion?.mode ?? data.mode;
+    navigate(quoteToolPath(data.workspace, data.id, targetMode, version));
   };
 
   return (

@@ -387,6 +387,36 @@ describe("SavedQuotePage - version history sidebar", () => {
       );
     });
   });
+
+  it("Restore routes by per-version mode, not the top-level latest mode (mixed-mode history)", async () => {
+    // Mixed-mode history: v1 = full quote, v2 = ROM. Top-level mode is "rom"
+    // (latest stamp). Restoring v1 must route to /compare/quote (full tool),
+    // NOT /compare/rom — otherwise v1's full-quote fields are dropped on re-save.
+    const v1Full = makeVersion({ version: 1, mode: "full" });
+    const v2Rom = makeVersion({
+      version: 2,
+      mode: "rom",
+      savedAt: "2026-05-06T12:00:00.000Z",
+    });
+    mockUseSavedQuote.mockReturnValueOnce({
+      data: makeSavedQuote({
+        versions: [v1Full, v2Rom],
+        workspace: "real",
+        mode: "rom",
+      }),
+      isLoading: false,
+    });
+    renderWithProviders(<SavedQuotePage />);
+    // VersionHistoryList sorts newest-first → second listitem is v1.
+    const v1Row = screen.getAllByRole("listitem")[1];
+    const restore = within(v1Row).getByRole("button", { name: /Restore/i });
+    fireEvent.click(restore);
+    await vi.waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        "/compare/quote?fromQuote=test-id-123&restoreVersion=1",
+      );
+    });
+  });
 });
 
 // ---------------------------------------------------------------------------
