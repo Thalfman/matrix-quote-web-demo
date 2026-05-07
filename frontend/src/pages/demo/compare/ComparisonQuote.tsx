@@ -130,7 +130,7 @@ export function ComparisonQuote() {
     if (!ready || !pool) return;
     setSubmitting(true);
     try {
-      const formValues = form.getValues();
+      const formValues = quoteFormSchema.parse(form.getValues());
       // D-04: legacy-compat shadow input for similar-projects matching.
       // visionRows[0]?.type and sum(row.count) keep nearestNeighbor distance honest while the model
       // remains single-vision-aware. A true vision-set similarity metric is deferred to v3.

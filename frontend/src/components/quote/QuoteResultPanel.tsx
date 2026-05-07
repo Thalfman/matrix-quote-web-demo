@@ -367,8 +367,17 @@ function YourInputsRecap({ input }: { input: QuoteFormValues }) {
 function yesNo(b: boolean): string {
   return b ? "Yes" : "No";
 }
-function fmtCount(n: number): string {
-  return Number.isFinite(n) ? n.toLocaleString() : "—";
+function toFiniteNumber(n: unknown): number | null {
+  if (typeof n === "number") return Number.isFinite(n) ? n : null;
+  if (typeof n === "string" && n.trim() !== "") {
+    const parsed = Number(n);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+  return null;
+}
+function fmtCount(n: unknown): string {
+  const parsed = toFiniteNumber(n);
+  return parsed == null ? "—" : parsed.toLocaleString();
 }
 /**
  * Reduce a trained-model vision_type label (e.g. "Cognex 2D", "3D Vision",
@@ -392,12 +401,14 @@ function formatVisionSystems(rows: QuoteFormValues["visionRows"]): string {
   if (!rows || rows.length === 0) return "—";
   return rows.map((r) => `${categorizeVisionType(r.type)} × ${fmtCount(r.count)}`).join("; ");
 }
-function fmtDecimal(n: number): string {
-  return Number.isFinite(n)
-    ? n.toLocaleString(undefined, { maximumFractionDigits: 1 })
+function fmtDecimal(n: unknown): string {
+  const parsed = toFiniteNumber(n);
+  return parsed != null
+    ? parsed.toLocaleString(undefined, { maximumFractionDigits: 1 })
     : "—";
 }
-function fmtMoney(n: number): string {
-  if (!Number.isFinite(n) || n <= 0) return "—";
-  return `$${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+function fmtMoney(n: unknown): string {
+  const parsed = toFiniteNumber(n);
+  if (parsed == null || parsed <= 0) return "—";
+  return `$${parsed.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
 }
