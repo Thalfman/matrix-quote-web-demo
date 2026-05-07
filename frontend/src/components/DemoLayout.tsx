@@ -6,10 +6,11 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 const ICON_STROKE = 1.75;
 
-type SubView = "quote" | "compare" | "find-similar" | "insights";
+type SubView = "quote" | "rom" | "compare" | "find-similar" | "insights";
 
 const COMPARE_SUB_VIEWS: { key: SubView; label: string }[] = [
   { key: "quote", label: "Quote" },
+  { key: "rom", label: "ROM" },
   { key: "compare", label: "Compare" },
   { key: "find-similar", label: "Find Similar" },
   { key: "insights", label: "Insights" },
@@ -17,13 +18,14 @@ const COMPARE_SUB_VIEWS: { key: SubView; label: string }[] = [
 
 const ML_SUB_VIEWS: { key: SubView; label: string }[] = [
   { key: "quote", label: "Quote" },
+  { key: "rom", label: "ROM" },
   { key: "compare", label: "Compare" },
   { key: "insights", label: "Insights" },
 ];
 
 /** Current sub-view within the active tool, or null on /, /other. */
 function subView(pathname: string): SubView | null {
-  const m = pathname.match(/^\/(?:compare|ml)\/(quote|compare|find-similar|insights)\b/);
+  const m = pathname.match(/^\/(?:compare|ml)\/(quote|rom|compare|find-similar|insights)\b/);
   return m ? (m[1] as SubView) : null;
 }
 

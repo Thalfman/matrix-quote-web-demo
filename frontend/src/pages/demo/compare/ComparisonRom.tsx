@@ -83,6 +83,11 @@ export function ComparisonRom() {
       : undefined;
   const { data: openedQuote } = useSavedQuote(fromQuoteId);
   const isRomQuote = openedQuote?.mode === "rom";
+  // Drop the re-save target only once we've confirmed it's a non-ROM record
+  // (forged-URL defence). During the loading window (openedQuote === undefined)
+  // we keep fromQuoteId so a fast-clicking user still appends a version to
+  // the intended quote — same behavior as the full-quote pages.
+  const isWrongMode = !!openedQuote && openedQuote.mode !== "rom";
 
   const metricsByTarget = useMemo(
     () =>
@@ -263,7 +268,7 @@ export function ComparisonRom() {
                 input={result.formValues}
                 rom={result.rom}
                 workspace="real"
-                quoteId={isRomQuote ? fromQuoteId : undefined}
+                quoteId={isWrongMode ? undefined : fromQuoteId}
                 existingName={isRomQuote ? openedQuote?.name : undefined}
                 status={isRomQuote ? openedQuote?.status : undefined}
                 restoredFromVersion={isRomQuote ? restoredFromVersion : undefined}
