@@ -68,6 +68,7 @@ export function QuoteResultPanel({
   restoredFromVersion?: number;
 }) {
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="space-y-6" id="quote-results">
       {/* Your inputs — recap so the user can see what they fed the model */}
       <div className="card p-5">
@@ -78,7 +79,12 @@ export function QuoteResultPanel({
       {/* Hero estimate */}
       <div className="card p-6">
         <div className="flex items-baseline justify-between">
-          <span className="eyebrow text-xs text-muted">Estimated hours</span>
+          <span className="eyebrow text-xs text-muted inline-flex items-center gap-1">
+            <span>Estimated hours</span>
+            <Tooltip term="Estimated hours" side="top">
+              <GlossaryHelpIcon ariaLabel="What is Estimated hours?" />
+            </Tooltip>
+          </span>
           <span
             className={`text-xs eyebrow px-2 py-0.5 rounded-sm ${CONFIDENCE_TONE[result.overallConfidence]}`}
           >
@@ -88,8 +94,13 @@ export function QuoteResultPanel({
         <div className="display-hero text-4xl text-ink tnum mt-2">
           {fmtHrs(result.estimateHours)} hrs
         </div>
-        <div className="text-sm text-muted mt-1">
-          Likely range {fmtHrs(result.likelyRangeLow)}–{fmtHrs(result.likelyRangeHigh)} hrs
+        <div className="text-sm text-muted mt-1 inline-flex items-center gap-1">
+          <span>
+            Likely range {fmtHrs(result.likelyRangeLow)}–{fmtHrs(result.likelyRangeHigh)} hrs
+          </span>
+          <Tooltip term="Confidence range" side="top">
+            <GlossaryHelpIcon ariaLabel="What is Confidence range?" />
+          </Tooltip>
         </div>
       </div>
 
@@ -159,34 +170,56 @@ export function QuoteResultPanel({
 
       {/* Per-category breakdown */}
       <div className="card p-5">
-        <div className="eyebrow text-xs text-muted mb-3">Hours by work category</div>
+        <div className="eyebrow text-xs text-muted mb-3 inline-flex items-center gap-1">
+          <span>Hours by work category</span>
+          <Tooltip term="Sales Bucket" side="top">
+            <GlossaryHelpIcon ariaLabel="What is Sales Bucket?" />
+          </Tooltip>
+        </div>
         <div className="space-y-3">
-          {result.perCategory.map((c) => (
-            <div key={c.label} className="space-y-0.5 text-sm">
-              <div className="text-ink">{c.label}</div>
-              <div className="flex items-baseline gap-3 text-muted">
-                <span className="text-ink tnum">
-                  {fmtHrs(c.estimateHours)} hrs
-                </span>
-                <span className="tnum">
-                  {fmtHrs(c.rangeLow)}–{fmtHrs(c.rangeHigh)}
-                </span>
-                <span
-                  className={`ml-auto text-xs eyebrow px-1.5 rounded-sm ${CONFIDENCE_TONE[c.confidence]}`}
-                  title={CONFIDENCE_LABEL[c.confidence]}
-                >
-                  {CONFIDENCE_SHORT[c.confidence]}
-                </span>
+          {result.perCategory.map((c) => {
+            const term = categoryLabelToGlossaryTerm(c.label);
+            return (
+              <div key={c.label} className="space-y-0.5 text-sm">
+                <div className="text-ink">
+                  {term ? (
+                    <span className="inline-flex items-center gap-1">
+                      <span>{c.label}</span>
+                      <Tooltip term={term} side="top">
+                        <GlossaryHelpIcon ariaLabel={`What is ${term}?`} />
+                      </Tooltip>
+                    </span>
+                  ) : (
+                    c.label
+                  )}
+                </div>
+                <div className="flex items-baseline gap-3 text-muted">
+                  <span className="text-ink tnum">
+                    {fmtHrs(c.estimateHours)} hrs
+                  </span>
+                  <span className="tnum">
+                    {fmtHrs(c.rangeLow)}–{fmtHrs(c.rangeHigh)}
+                  </span>
+                  <span
+                    className={`ml-auto text-xs eyebrow px-1.5 rounded-sm ${CONFIDENCE_TONE[c.confidence]}`}
+                    title={CONFIDENCE_LABEL[c.confidence]}
+                  >
+                    {CONFIDENCE_SHORT[c.confidence]}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
       {/* Supporting matches */}
       <div className="card p-5">
-        <div className="eyebrow text-xs text-muted mb-3">
-          {result.supportingMatches.label}
+        <div className="eyebrow text-xs text-muted mb-3 inline-flex items-center gap-1">
+          <span>{result.supportingMatches.label}</span>
+          <Tooltip term="Similar projects" side="top">
+            <GlossaryHelpIcon ariaLabel="What is Similar projects?" />
+          </Tooltip>
         </div>
         <div className="space-y-2">
           {result.supportingMatches.items.map((m) => (
@@ -228,7 +261,32 @@ export function QuoteResultPanel({
         Export PDF
       </button>
     </div>
+    </TooltipProvider>
   );
+}
+
+/**
+ * Resolve a per-category breakdown row label (`CATEGORY_LABEL` value, e.g.
+ * "Mechanical Engineering: primary", "Controls & PLC", "Travel") to a
+ * glossary key. Returns null when there's no entry — the row renders without
+ * a help icon. Mirrors the shape of `recapLabelToGlossaryTerm` below.
+ */
+function categoryLabelToGlossaryTerm(label: string): string | null {
+  if (label.startsWith("Mechanical Engineering")) return "Mechanical Engineering";
+  if (label.startsWith("Electrical Engineering")) return "Electrical Engineering";
+  const MAP: Record<string, string> = {
+    Robotics: "Robotics",
+    "Controls & PLC": "Controls & PLC",
+    "Build & assembly": "Build & assembly",
+    "Shipping & QC": "Shipping & QC",
+    Installation: "Installation",
+    Travel: "Travel",
+    Documentation: "Documentation",
+    "Project management": "Project management",
+  };
+  const candidate = MAP[label];
+  if (candidate && lookup(candidate)) return candidate;
+  return null;
 }
 
 // ---------------------------------------------------------------------------
