@@ -118,14 +118,16 @@ describe("QuoteResultPanel — multi-vision render (Phase 6 D-09/D-10/D-11)", ()
     expect(visionSystemsLabel.parentElement?.parentElement?.textContent).toContain("—");
     unmount();
 
-    // Populated rows render "Cognex 2D × 2; 3D Vision × 1".
+    // Populated rows render the category-only echo "2D × 2; 3D × 1" so the
+    // recap stays brand-free; the per-vision contribution card keeps the full
+    // type via rowLabel.
     renderWithProviders(
       <QuoteResultPanel
         result={BASE_RESULT}
         input={fv({ visionRows: [{ type: "Cognex 2D", count: 2 }, { type: "3D Vision", count: 1 }] })}
       />,
     );
-    expect(screen.getByText("Cognex 2D × 2; 3D Vision × 1")).toBeInTheDocument();
+    expect(screen.getByText("2D × 2; 3D × 1")).toBeInTheDocument();
   });
 
   it("does not render banned ML jargon (sanity check)", () => {

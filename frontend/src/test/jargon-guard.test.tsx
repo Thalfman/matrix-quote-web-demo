@@ -451,7 +451,11 @@ describe("jargon-guard (DATA-03 — Phase 6 surface coverage)", () => {
     );
     const body = document.body.textContent ?? "";
     expect(body).toMatch(/vision systems/i);
-    expect(body).toMatch(/Cognex 2D × 2/);
+    // Recap echoes the type category only ("2D × 2; 3D × 1") — the brand-stamp
+    // form ("Cognex 2D × 2") stays on the per-vision contribution rowLabel and
+    // the form picker, not the recap.
+    expect(body).toMatch(/2D × 2; 3D × 1/);
+    expect(body).not.toMatch(/Cognex 2D × 2/);
     assertNoBannedTokens("QuoteResultPanel (inputs-echo Phase 6)", body);
   });
 });

@@ -32,6 +32,7 @@ import {
   setStatus,
   subscribe,
   type SaveSavedQuoteArgs,
+  type StorageEvent,
 } from "@/lib/quoteStorage";
 import type {
   QuoteVersion,
@@ -61,22 +62,39 @@ const QUOTE_BY_ID = (id: string) => ["quotes", "byId", id] as const;
  * Internal: subscribe to the storage BroadcastChannel and invalidate every
  * `["quotes", ...]` query on any event. Mirrors T-05-09: we treat broadcasts
  * as cache-invalidate signals and re-read from IDB through the validated
- * storage path; we never read evt fields beyond the fact that an event
- * arrived.
+ * storage path; we use evt.id only as a query-key match — never as cache state.
  *
  * Used by both useSavedQuotes (list) and useSavedQuote (single) so a tab that
  * mounts only the detail page (deep link / bookmark to /quotes/:id) still
  * picks up cross-tab edits — UI-SPEC §"Cross-tab broadcast UI cue" promised
  * SavedQuotePage live updates.
+ *
+ * The list-only invalidation via the umbrella `["quotes"]` prefix proved
+ * unreliable in production for the detail page (the SavedQuotePage's
+ * version-history sidebar didn't refresh on cross-tab save). Splitting the
+ * invalidation into explicit list + per-id keys, and explicitly refetching
+ * the active byId observer, fixes the QA Item 2 regression.
+ *
+ * Pass `id` from `useSavedQuote(id)` so a same-record broadcast is force-
+ * refetched even if the cache observer is briefly inactive (route transition,
+ * mount race with the broadcaster).
  */
-function useStorageInvalidate(): void {
+function useStorageInvalidate(id?: string): void {
   const qc = useQueryClient();
   useEffect(() => {
-    const unsubscribe = subscribe(() => {
-      void qc.invalidateQueries({ queryKey: ["quotes"] });
+    const unsubscribe = subscribe((evt: StorageEvent) => {
+      void qc.invalidateQueries({ queryKey: QUOTES_QUERY_KEY });
+      if (evt.id) {
+        const key = QUOTE_BY_ID(evt.id);
+        void qc.invalidateQueries({ queryKey: key });
+        void qc.refetchQueries({ queryKey: key, type: "active" });
+      }
+      if (id && evt.id === id) {
+        void qc.refetchQueries({ queryKey: QUOTE_BY_ID(id) });
+      }
     });
     return unsubscribe;
-  }, [qc]);
+  }, [qc, id]);
 }
 
 /**
@@ -108,7 +126,7 @@ export function useSavedQuotes(): UseQueryResult<SavedQuote[]> {
 export function useSavedQuote(
   id: string | undefined,
 ): UseQueryResult<SavedQuote | null> {
-  useStorageInvalidate();
+  useStorageInvalidate(id);
   return useQuery<SavedQuote | null>({
     // IN-02 also addressed here: stable ["quotes", "byId", id|"__none__"]
     // shape avoids the cache-leaking ["quotes", "__noop__"] placeholder.

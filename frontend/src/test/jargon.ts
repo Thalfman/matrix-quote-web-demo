@@ -27,4 +27,5 @@ export const BANNED_TOKENS: readonly RegExp[] = [
   /\bquantile\b/i,
   /\bsklearn\b/i,
   /\bjoblib\b/i,
+  /\buncertainty\b/i,
 ];

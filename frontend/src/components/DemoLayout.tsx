@@ -200,6 +200,7 @@ export function DemoLayout() {
             </div>
             <SidebarLink to="/compare/quote" label="Quote" />
             <SidebarLink to="/compare/compare" label="Compare" />
+            <SidebarLink to="/compare/find-similar" label="Find Similar" />
             <SidebarLink to="/compare/insights" label="Business Insights" />
           </div>
 

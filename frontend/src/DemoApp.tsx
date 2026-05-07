@@ -19,6 +19,11 @@ const ComparisonInsights = lazy(() =>
     default: m.ComparisonInsights,
   })),
 );
+const CompareFindSimilar = lazy(() =>
+  import("@/pages/demo/compare/CompareFindSimilar").then((m) => ({
+    default: m.CompareFindSimilar,
+  })),
+);
 const MachineLearningQuote = lazy(() =>
   import("@/pages/demo/ml/MachineLearningQuote").then((m) => ({
     default: m.MachineLearningQuote,
@@ -66,6 +71,7 @@ export function DemoApp() {
           <Route path="compare/quote" element={<ComparisonQuote />} />
           <Route path="compare/compare" element={<ComparisonCompare />} />
           <Route path="compare/browse" element={<Navigate to="/compare/compare" replace />} />
+          <Route path="compare/find-similar" element={<CompareFindSimilar />} />
           <Route path="compare/insights" element={<ComparisonInsights />} />
 
           {/* Machine Learning Tool - Synthetic Data */}

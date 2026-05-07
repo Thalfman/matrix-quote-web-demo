@@ -117,6 +117,14 @@ describe("DemoLayout sidebar structure", () => {
     renderLayout();
     expect(screen.getByRole("link", { name: /^home$/i })).toBeInTheDocument();
   });
+
+  it("has a Find Similar link under Real Data only (no symmetric ML entry)", () => {
+    renderLayout();
+    const links = screen.getAllByRole("link");
+    const findSimilar = links.filter((l) => l.textContent === "Find Similar");
+    expect(findSimilar).toHaveLength(1);
+    expect((findSimilar[0] as HTMLAnchorElement).href).toContain("/compare/find-similar");
+  });
 });
 
 describe("DemoLayout mobile back button", () => {

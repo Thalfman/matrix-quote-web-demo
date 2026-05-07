@@ -18,6 +18,9 @@ vi.mock("@/pages/demo/compare/ComparisonCompare", () => ({
 vi.mock("@/pages/demo/compare/ComparisonInsights", () => ({
   ComparisonInsights: () => <h1>Business Insights (Compare)</h1>,
 }));
+vi.mock("@/pages/demo/compare/CompareFindSimilar", () => ({
+  CompareFindSimilar: () => <h1>Compare Find Similar</h1>,
+}));
 vi.mock("@/pages/demo/ml/MachineLearningQuote", () => ({
   MachineLearningQuote: () => <h1>Machine Learning Quote Tool</h1>,
 }));
@@ -136,6 +139,15 @@ describe("DemoApp direct routes", () => {
     await waitFor(() =>
       expect(
         screen.getByRole("heading", { name: /ml compare browse/i }),
+      ).toBeInTheDocument(),
+    );
+  });
+
+  it("/compare/find-similar renders the Find Similar page", async () => {
+    renderAt("/compare/find-similar");
+    await waitFor(() =>
+      expect(
+        screen.getByRole("heading", { name: /compare find similar/i }),
       ).toBeInTheDocument(),
     );
   });
