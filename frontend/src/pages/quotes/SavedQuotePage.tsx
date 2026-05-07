@@ -31,6 +31,7 @@ import { ArrowLeft } from "lucide-react";
 
 import { DeleteQuoteModal } from "@/components/quote/DeleteQuoteModal";
 import { QuoteResultPanel } from "@/components/quote/QuoteResultPanel";
+import { RomResultPanel } from "@/components/quote/RomResultPanel";
 import { StatusChip } from "@/components/quote/StatusChip";
 import { VersionHistoryList } from "@/components/quote/VersionHistoryList";
 import { useSavedQuote, useSetStatus } from "@/hooks/useSavedQuotes";
@@ -203,10 +204,21 @@ export function SavedQuotePage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div>
-          <QuoteResultPanel
-            result={latest.unifiedResult}
-            input={latest.formValues}
-          />
+          {latest.mode === "rom" ? (
+            // ROM-mode saved quotes get the preliminary chrome (RomBadge,
+            // "Why this is preliminary" copy, no top-drivers card) — saving
+            // does not persist RomMetadata (sanityFlag is computed at
+            // estimate time only), so we render without a `rom` prop.
+            <RomResultPanel
+              result={latest.unifiedResult}
+              input={latest.formValues}
+            />
+          ) : (
+            <QuoteResultPanel
+              result={latest.unifiedResult}
+              input={latest.formValues}
+            />
+          )}
         </div>
         <aside className="lg:sticky lg:top-6 self-start">
           <VersionHistoryList

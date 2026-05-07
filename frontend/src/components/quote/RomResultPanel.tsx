@@ -56,7 +56,11 @@ function fmtMoney(n: number): string {
 export interface RomResultPanelProps {
   result: UnifiedQuoteResult;
   input: QuoteFormValues;
-  rom: RomMetadata;
+  /** Optional. Present at estimate time (band widening / sanityFlag); absent
+   *  when rendering a saved ROM quote on the detail page where ROM metadata
+   *  was never persisted. The "preliminary" chrome and ROM badge stay; only
+   *  the sanity-divergence banner is gated on this. */
+  rom?: RomMetadata;
   workspace?: "real" | "synthetic";
   quoteId?: string;
   existingName?: string;
@@ -115,7 +119,7 @@ export function RomResultPanel({
       </div>
 
       {/* Sanity-check banner — only when divergence > 5× (D-15) */}
-      {rom.sanityFlag && (
+      {rom?.sanityFlag && (
         <div className="card p-4 text-sm text-ink" role="status">
           {SANITY_BANNER_COPY}
         </div>

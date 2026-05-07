@@ -84,6 +84,15 @@ vi.mock("@/components/quote/QuoteResultPanel", () => ({
   ),
 }));
 
+// Stub RomResultPanel — used on the detail page when latest.mode === "rom".
+vi.mock("@/components/quote/RomResultPanel", () => ({
+  RomResultPanel: ({ result }: { result: { estimateHours: number } }) => (
+    <div data-testid="rom-result-panel">
+      <span data-testid="rom-result-hours">{result.estimateHours}</span>
+    </div>
+  ),
+}));
+
 import { SavedQuotePage } from "./SavedQuotePage";
 
 // ---------------------------------------------------------------------------
@@ -319,6 +328,36 @@ describe("SavedQuotePage - estimate panel", () => {
     });
     renderWithProviders(<SavedQuotePage />);
     expect(screen.getByTestId("input-vision").textContent).toBe("2D×1");
+  });
+
+  it("renders RomResultPanel (preliminary chrome) when latest.mode === 'rom'", () => {
+    // ROM-mode saved quotes must render the ROM-specific panel — full-quote
+    // chrome (confidence chip / top-drivers) would mislead users into reading
+    // a preliminary estimate as a full estimate. Codex round-9 P2 fix.
+    const romVersion = makeVersion({
+      version: 1,
+      mode: "rom",
+      unifiedResult: { ...MINIMAL_UNIFIED_RESULT, estimateHours: 240 },
+    });
+    mockUseSavedQuote.mockReturnValueOnce({
+      data: makeSavedQuote({ mode: "rom", versions: [romVersion] }),
+      isLoading: false,
+    });
+    renderWithProviders(<SavedQuotePage />);
+    expect(screen.getByTestId("rom-result-panel")).toBeInTheDocument();
+    expect(screen.queryByTestId("quote-result-panel")).toBeNull();
+    expect(screen.getByTestId("rom-result-hours").textContent).toBe("240");
+  });
+
+  it("renders QuoteResultPanel (full chrome) when latest.mode === 'full'", () => {
+    const fullVersion = makeVersion({ version: 1, mode: "full" });
+    mockUseSavedQuote.mockReturnValueOnce({
+      data: makeSavedQuote({ mode: "full", versions: [fullVersion] }),
+      isLoading: false,
+    });
+    renderWithProviders(<SavedQuotePage />);
+    expect(screen.getByTestId("quote-result-panel")).toBeInTheDocument();
+    expect(screen.queryByTestId("rom-result-panel")).toBeNull();
   });
 });
 
