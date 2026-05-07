@@ -81,7 +81,8 @@ export function ComparisonRom() {
     Number.isInteger(parsedRestoreVersion) && parsedRestoreVersion > 0
       ? parsedRestoreVersion
       : undefined;
-  const { data: openedQuote } = useSavedQuote(fromQuoteId);
+  const { data: openedQuote, isFetched: openedQuoteFetched } =
+    useSavedQuote(fromQuoteId);
   // Resolve which saved version we're operating on so the ROM-mode guards
   // reflect *that* version's stamp, not the top-level/latest mode. Mixed
   // histories (top=full, v1=rom) are now reachable via per-version restore
@@ -101,6 +102,13 @@ export function ComparisonRom() {
   // we keep fromQuoteId so a fast-clicking user still appends a version to
   // the intended quote — same behavior as the full-quote pages.
   const isWrongMode = !!targetVersion && targetVersion.mode !== "rom";
+  // Stale/shared URL: ?fromQuote=<id> resolved to no record. Without this
+  // guard saveSavedQuote takes the update path and throws "no quote found".
+  // Wait for the query to settle before clearing so a fast-clicking user
+  // still gets the append-a-version path during the loading window.
+  const isMissingTarget =
+    !!fromQuoteId && openedQuoteFetched && !openedQuote;
+  const dropQuoteId = isWrongMode || isMissingTarget;
   // Persist lineage only when the URL param actually resolved to a real
   // version. A stale `?restoreVersion=99` falls back to latest for hydration,
   // and stamping 99 on save would record a broken ancestry pointer.
@@ -282,7 +290,7 @@ export function ComparisonRom() {
                 input={result.formValues}
                 rom={result.rom}
                 workspace="real"
-                quoteId={isWrongMode ? undefined : fromQuoteId}
+                quoteId={dropQuoteId ? undefined : fromQuoteId}
                 existingName={isRomQuote ? openedQuote?.name : undefined}
                 status={isRomQuote ? openedQuote?.status : undefined}
                 restoredFromVersion={isRomQuote ? matchedRestoredFromVersion : undefined}
