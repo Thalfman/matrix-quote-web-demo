@@ -17,9 +17,11 @@
  * outside this browser's IndexedDB (no cross-origin storage). On parse failure
  * we render the not-found state.
  *
- * Routing:
- *   - Open in Quote tool: workspace==="real" → /compare/quote?fromQuote={id}
- *                         workspace==="synthetic" → /ml/quote?fromQuote={id}
+ * Routing (Phase 5 default; Phase 7 D-20 ROM branch):
+ *   - Open in Quote tool: workspace==="real"  + mode==="full" → /compare/quote?fromQuote={id}
+ *                         workspace==="synthetic" + mode==="full" → /ml/quote?fromQuote={id}
+ *                         workspace==="real"  + mode==="rom"  → /compare/rom?fromQuote={id}
+ *                         workspace==="synthetic" + mode==="rom"  → /ml/rom?fromQuote={id}
  *   - Restore vN: navigates to the same path with &restoreVersion=N appended,
  *     so Plan 09's QuoteForm reader rehydrates with that version's inputs.
  */
@@ -29,10 +31,11 @@ import { ArrowLeft } from "lucide-react";
 
 import { DeleteQuoteModal } from "@/components/quote/DeleteQuoteModal";
 import { QuoteResultPanel } from "@/components/quote/QuoteResultPanel";
+import { RomResultPanel } from "@/components/quote/RomResultPanel";
 import { StatusChip } from "@/components/quote/StatusChip";
 import { VersionHistoryList } from "@/components/quote/VersionHistoryList";
 import { useSavedQuote, useSetStatus } from "@/hooks/useSavedQuotes";
-import type { Workspace } from "@/lib/savedQuoteSchema";
+import type { QuoteMode, Workspace } from "@/lib/savedQuoteSchema";
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -42,18 +45,31 @@ import type { Workspace } from "@/lib/savedQuoteSchema";
  * Compute the Quote-tool URL for a saved quote, optionally with a restoreVersion
  * query param so the form rehydrates with that version's inputs (D-06).
  *
- * Real workspace → /compare/quote (Compare tool's Quote tab)
- * Synthetic workspace → /ml/quote (Synthetic Data Quote tool)
+ * Phase 7 D-20: ROM quotes route back to /compare/rom or /ml/rom on re-open.
+ * Full quotes preserve the existing Phase 5 routing.
+ *
+ *   workspace="real"      + mode="rom"  → /compare/rom?fromQuote={id}
+ *   workspace="real"      + mode="full" → /compare/quote?fromQuote={id}
+ *   workspace="synthetic" + mode="rom"  → /ml/rom?fromQuote={id}
+ *   workspace="synthetic" + mode="full" → /ml/quote?fromQuote={id}
  */
 function quoteToolPath(
   workspace: Workspace,
   id: string,
+  mode: QuoteMode,
   version?: number,
 ): string {
-  const base = workspace === "real" ? "/compare/quote" : "/ml/quote";
+  const segment =
+    mode === "rom"
+      ? workspace === "real"
+        ? "/compare/rom"
+        : "/ml/rom"
+      : workspace === "real"
+        ? "/compare/quote"
+        : "/ml/quote";
   const params = new URLSearchParams({ fromQuote: id });
   if (version !== undefined) params.set("restoreVersion", String(version));
-  return `${base}?${params.toString()}`;
+  return `${segment}?${params.toString()}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -108,7 +124,7 @@ export function SavedQuotePage() {
 
   // Storage convention: newest version is appended LAST in versions[].
   const latest = data.versions[data.versions.length - 1];
-  const linkHref = quoteToolPath(data.workspace, data.id);
+  const linkHref = quoteToolPath(data.workspace, data.id, data.mode);
 
   // D-06: Restore is a fork. We navigate to the Quote tool with both
   // fromQuote and restoreVersion in the URL; QuoteForm's reader (and the
@@ -116,8 +132,17 @@ export function SavedQuotePage() {
   // with that version's inputs and the next save commits as v(N+1) with
   // restoredFromVersion: N. No pre-navigate IDB round-trip — the form
   // hydration path already reads from IDB.
+  //
+  // Route with the selected version's own mode (per-version stamp from D-19),
+  // not the top-level/latest data.mode. A mixed-mode history (v1 full, v2 rom)
+  // would otherwise route v1 restore through the ROM tool and silently drop
+  // its full-quote fields on re-save. Falls back to data.mode when the version
+  // can't be resolved (defensive — shouldn't happen since the caller picks
+  // from the same versions array).
   const handleRestore = (version: number) => {
-    navigate(quoteToolPath(data.workspace, data.id, version));
+    const targetVersion = data.versions.find((v) => v.version === version);
+    const targetMode: QuoteMode = targetVersion?.mode ?? data.mode;
+    navigate(quoteToolPath(data.workspace, data.id, targetMode, version));
   };
 
   return (
@@ -179,10 +204,21 @@ export function SavedQuotePage() {
 
       <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
         <div>
-          <QuoteResultPanel
-            result={latest.unifiedResult}
-            input={latest.formValues}
-          />
+          {latest.mode === "rom" ? (
+            // ROM-mode saved quotes get the preliminary chrome (RomBadge,
+            // "Why this is preliminary" copy, no top-drivers card) — saving
+            // does not persist RomMetadata (sanityFlag is computed at
+            // estimate time only), so we render without a `rom` prop.
+            <RomResultPanel
+              result={latest.unifiedResult}
+              input={latest.formValues}
+            />
+          ) : (
+            <QuoteResultPanel
+              result={latest.unifiedResult}
+              input={latest.formValues}
+            />
+          )}
         </div>
         <aside className="lg:sticky lg:top-6 self-start">
           <VersionHistoryList

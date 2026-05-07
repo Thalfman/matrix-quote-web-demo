@@ -248,3 +248,65 @@ describe("SaveQuoteButton — onSaved navigation", () => {
     expect(mockNavigate).toHaveBeenCalledWith("/quotes/saved-id-abc");
   });
 });
+
+// ---------------------------------------------------------------------------
+// Phase 7 — D-19: mode prop pass-through
+// ---------------------------------------------------------------------------
+
+describe("SaveQuoteButton — Phase 7 mode prop (D-19)", () => {
+  it("forwards mode: 'rom' through the dialog payload", () => {
+    renderWithProviders(
+      <SaveQuoteButton
+        workspace="real"
+        formValues={makeFormValues()}
+        unifiedResult={FIXTURE_RESULT}
+        mode="rom"
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^save quote$/i }));
+    const payload = hoisted.capturedDialogProps?.payload as Record<
+      string,
+      unknown
+    >;
+    expect(payload.mode).toBe("rom");
+  });
+
+  it("dialog payload mode is undefined when no mode prop is supplied", () => {
+    renderWithProviders(
+      <SaveQuoteButton
+        workspace="real"
+        formValues={makeFormValues()}
+        unifiedResult={FIXTURE_RESULT}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^save quote$/i }));
+    const payload = hoisted.capturedDialogProps?.payload as Record<
+      string,
+      unknown
+    >;
+    expect(payload.mode).toBeUndefined();
+  });
+
+  it("when mode === 'rom', suggestedName contains the literal ' ROM ' token (D-17)", () => {
+    renderWithProviders(
+      <SaveQuoteButton
+        workspace="real"
+        formValues={makeFormValues({
+          stations_count: 1,
+          has_controls: true,
+          has_robotics: false,
+          servo_axes: 0,
+          visionRows: [],
+        })}
+        unifiedResult={FIXTURE_RESULT}
+        mode="rom"
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /^save quote$/i }));
+    const payload = hoisted.capturedDialogProps?.payload as Record<
+      string,
+      unknown
+    >;
+    expect(payload.suggestedName).toMatch(/ ROM /);
+  });
+});

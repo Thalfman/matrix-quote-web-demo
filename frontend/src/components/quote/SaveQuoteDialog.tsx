@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { useSaveQuote, useSetStatus } from "@/hooks/useSavedQuotes";
 import {
   savedQuoteNameSchema,
+  type QuoteMode,
   type SavedQuote,
   type WorkflowStatus,
   type Workspace,
@@ -47,6 +48,9 @@ export interface SaveQuoteDialogProps {
     suggestedName: string;
     /** Existing name when editing (overrides suggestedName for re-save). */
     existingName?: string;
+    /** D-19: ROM vs full quote shape — pure data-layer pass-through. The
+     *  dialog UI itself is unchanged from Phase 5 (no visible mode control). */
+    mode?: QuoteMode;
   };
   onSaved?: (saved: SavedQuote) => void;
 }
@@ -126,6 +130,7 @@ export function SaveQuoteDialog({
         unifiedResult: payload.unifiedResult,
         compareInputs: payload.compareInputs,
         restoredFromVersion: payload.restoredFromVersion,
+        mode: payload.mode,
       });
 
       // D-10: only show "Mark as revised?" assist when committing v2+ AND status

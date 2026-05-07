@@ -99,7 +99,12 @@ Backlog requirements:
   2. The ROM-quote result is visually distinguished from a full-input quote — labeled as preliminary in plain non-ML language, and rendered with a visibly wider confidence band that conveys the lower input fidelity.
   3. A non-technical reviewer looking at a ROM result and a full-input result side-by-side can tell which is which without being explained the difference.
   4. ROM quotes are savable and reopenable through the Phase 5 persistence flow, and they retain their ROM-vs-full distinction on reopen.
-**Plans**: TBD
+**Plans**: 5 plans
+  - [x] 07-01-schema-and-primitives-PLAN.md — Add mode flag to savedQuoteSchema + quoteStorage, ROM token in buildAutoSuggestedName, RomBadge primitive + test, romFormSchema (D-03 / D-07 / D-17 / D-19)
+  - [x] 07-02-rom-estimator-PLAN.md — TS-side estimateRom (single predictQuote + 1.75x band widening + 0.0008 sanity heuristic) + tests (D-04 / D-05 / D-09 / D-15)
+  - [x] 07-03-form-and-result-panel-PLAN.md — RomForm (4-field) + RomResultPanel (hero+RomBadge / Why-preliminary D-13 / sanity banner D-15 / combined-totals row) + tests including SC-3 differential render (D-02 / D-06 / D-08 / D-12 / D-13 / D-15 / D-16)
+  - [x] 07-04-pages-and-routes-PLAN.md — ComparisonRom + MachineLearningRom pages, /compare/rom + /ml/rom routes, sidebar entries (D-01 / D-14 / D-20 hydration)
+  - [x] 07-05-list-and-roundtrip-PLAN.md — QuoteRow ROM-badge render, SavedQuotePage re-open routing, jargon-guard extension, Phase5Fixtures mode field, SC-4 round-trip integration tests (D-11 / D-18 / D-19 / D-20 / SC-4)
 **UI hint**: yes
 **Phase notes**:
 - ROM-02 is the customer-trust copy + visual rule. It enforces the v1.0-validated jargon-guard standard: the "preliminary" framing must be plain English, no ML terms (no "uncertainty", no "low signal", no "wide CI"). Jargon-guard scans must cover any new ROM-mode strings.
@@ -127,7 +132,7 @@ The following requirements are scoped but deferred. They become roadmap phases w
 |-------|----------------|--------|-----------|
 | 5. Quote Persistence | 9/9 | Shipped — PR #24 (merged) | 2026-05-05 |
 | 6. Multi-vision per project | 4/4 | Verified — DATA-04 + DATA-06 closed | 2026-05-05 |
-| 7. ROM-quote mode | 0/? | Not started | - |
+| 7. ROM-quote mode | 0/5 | Planned (5 plans, 4 waves) | - |
 
 ---
 

@@ -537,6 +537,213 @@ describe("quoteStorage", () => {
     ).rejects.toThrow();
   });
 
+  // ---------------------------------------------------------------------
+  // Phase 7 — D-03 / D-19: optional mode threading through saveSavedQuote
+  // ---------------------------------------------------------------------
+
+  it("saveSavedQuote with mode: 'rom' on a brand-new record stamps top-level + version mode 'rom'", async () => {
+    const mod = await import("./quoteStorage");
+    const out = await mod.saveSavedQuote({
+      name: "ROM Alpha",
+      workspace: "real",
+      formValues: makeFormValues(),
+      unifiedResult: makeUnifiedResult(),
+      mode: "rom",
+    });
+    expect(out.mode).toBe("rom");
+    expect(out.versions[0].mode).toBe("rom");
+  });
+
+  it("saveSavedQuote without mode arg on a brand-new record defaults BOTH levels to 'full'", async () => {
+    const mod = await import("./quoteStorage");
+    const out = await mod.saveSavedQuote({
+      name: "Full Bravo",
+      workspace: "real",
+      formValues: makeFormValues(),
+      unifiedResult: makeUnifiedResult(),
+    });
+    expect(out.mode).toBe("full");
+    expect(out.versions[0].mode).toBe("full");
+  });
+
+  it("saveSavedQuote on UPDATE without args.mode preserves existing.mode and stamps new version with that mode", async () => {
+    const mod = await import("./quoteStorage");
+    // Brand-new ROM quote.
+    const initial = await mod.saveSavedQuote({
+      name: "Charlie ROM",
+      workspace: "real",
+      formValues: makeFormValues({ stations_count: 1 }),
+      unifiedResult: makeUnifiedResult(),
+      mode: "rom",
+    });
+    expect(initial.mode).toBe("rom");
+
+    // Update without args.mode — should preserve "rom" everywhere.
+    const updated = await mod.saveSavedQuote({
+      id: initial.id,
+      name: "Charlie ROM",
+      workspace: "real",
+      formValues: makeFormValues({ stations_count: 5 }),
+      unifiedResult: makeUnifiedResult(),
+    });
+    expect(updated.mode).toBe("rom");
+    expect(updated.versions).toHaveLength(2);
+    expect(updated.versions[0].mode).toBe("rom");
+    expect(updated.versions[1].mode).toBe("rom");
+  });
+
+  it("saveSavedQuote on UPDATE with args.mode that DIFFERS from existing.mode honestly updates both top-level and the new version", async () => {
+    const mod = await import("./quoteStorage");
+    // Brand-new ROM quote.
+    const initial = await mod.saveSavedQuote({
+      name: "Delta cross-mode",
+      workspace: "real",
+      formValues: makeFormValues({ stations_count: 1 }),
+      unifiedResult: makeUnifiedResult(),
+      mode: "rom",
+    });
+
+    // Update with mode flip to "full" — top level becomes full; new version is
+    // stamped full; the old (v1) version's mode stays "rom" (per-version
+    // history is immutable).
+    const updated = await mod.saveSavedQuote({
+      id: initial.id,
+      name: "Delta cross-mode",
+      workspace: "real",
+      formValues: makeFormValues({ stations_count: 7 }),
+      unifiedResult: makeUnifiedResult(),
+      mode: "full",
+    });
+    expect(updated.mode).toBe("full");
+    expect(updated.versions).toHaveLength(2);
+    expect(updated.versions[0].mode).toBe("rom");
+    expect(updated.versions[1].mode).toBe("full");
+  });
+
+  it("saveSavedQuote on UPDATE with mode flip but identical inputs/result still inflates a version (mode delta is a real change)", async () => {
+    const mod = await import("./quoteStorage");
+    const fv = makeFormValues({ stations_count: 4 });
+    const ur = makeUnifiedResult();
+    // Brand-new full quote.
+    const initial = await mod.saveSavedQuote({
+      name: "Echo mode-only",
+      workspace: "real",
+      formValues: fv,
+      unifiedResult: ur,
+      mode: "full",
+    });
+    expect(initial.mode).toBe("full");
+    expect(initial.versions).toHaveLength(1);
+
+    // Re-save with identical inputs/unifiedResult but different mode. Without
+    // the mode-aware diff, the version array would not grow but top-level mode
+    // WOULD bump — leaving record.mode !== versions[last].mode (internally
+    // inconsistent: per-version restore and top-level "Open in tool" disagree).
+    const updated = await mod.saveSavedQuote({
+      id: initial.id,
+      name: "Echo mode-only",
+      workspace: "real",
+      formValues: fv,
+      unifiedResult: ur,
+      mode: "rom",
+    });
+    expect(updated.mode).toBe("rom");
+    expect(updated.versions).toHaveLength(2);
+    expect(updated.versions[0].mode).toBe("full");
+    expect(updated.versions[1].mode).toBe("rom");
+  });
+
+  it("saveSavedQuote on UPDATE with explicit mode='full' on a top-level-rom record stamps the NEW version 'full' (does not fall back to existing.mode)", async () => {
+    const mod = await import("./quoteStorage");
+    // Brand-new ROM quote at the top level.
+    const initial = await mod.saveSavedQuote({
+      name: "Golf cross-tool",
+      workspace: "real",
+      formValues: makeFormValues({ stations_count: 1 }),
+      unifiedResult: makeUnifiedResult(),
+      mode: "rom",
+    });
+    expect(initial.mode).toBe("rom");
+
+    // Simulate the per-version-restore-then-save-from-full-tool path:
+    // QuoteResultPanel passes `mode="full"` explicitly so the new version
+    // is stamped from the calling tool, not the top-level existing.mode.
+    const updated = await mod.saveSavedQuote({
+      id: initial.id,
+      name: "Golf cross-tool",
+      workspace: "real",
+      formValues: makeFormValues({ stations_count: 9 }),
+      unifiedResult: makeUnifiedResult(),
+      mode: "full",
+    });
+    // New version honestly stamped from caller; v1 history immutable.
+    expect(updated.versions).toHaveLength(2);
+    expect(updated.versions[0].mode).toBe("rom");
+    expect(updated.versions[1].mode).toBe("full");
+    expect(updated.mode).toBe("full");
+  });
+
+  it("saveSavedQuote on UPDATE with explicit mode that EQUALS existing.mode and identical inputs is still a no-op (no version inflation)", async () => {
+    const mod = await import("./quoteStorage");
+    const fv = makeFormValues({ stations_count: 2 });
+    const ur = makeUnifiedResult();
+    const initial = await mod.saveSavedQuote({
+      name: "Foxtrot no-op",
+      workspace: "real",
+      formValues: fv,
+      unifiedResult: ur,
+      mode: "rom",
+    });
+    expect(initial.versions).toHaveLength(1);
+
+    // Same mode passed explicitly — must not inflate. Guards against the
+    // legacy-record case (defaulted-on-read mode becoming explicit on save).
+    const resaved = await mod.saveSavedQuote({
+      id: initial.id,
+      name: "Foxtrot no-op",
+      workspace: "real",
+      formValues: fv,
+      unifiedResult: ur,
+      mode: "rom",
+    });
+    expect(resaved.versions).toHaveLength(1);
+  });
+
+  it("a v2 record persisted WITHOUT a mode field round-trips through getSavedQuote with mode === 'full' (D-03 default-on-read)", async () => {
+    const mod = await import("./quoteStorage");
+    await mod.ensureDbReady();
+    // Inject a Phase 5 / Phase 6 era record (no mode) bypassing the public API.
+    const { openDB } = await import("idb");
+    const db = await openDB("matrix-quotes", 2);
+    await db.put("quotes", {
+      id: "33333333-3333-4333-8333-333333333333",
+      schemaVersion: 2,
+      name: "Legacy Phase 5 Record",
+      workspace: "real",
+      status: "draft",
+      createdAt: "2026-04-15T12:00:00.000Z",
+      updatedAt: "2026-04-15T12:00:00.000Z",
+      versions: [
+        {
+          version: 1,
+          savedAt: "2026-04-15T12:00:00.000Z",
+          statusAtTime: "draft",
+          formValues: makeFormValues(),
+          unifiedResult: makeUnifiedResult(),
+        },
+      ],
+      salesBucket: "ME",
+      visionLabel: "No vision",
+      materialsCost: 0,
+    });
+    db.close();
+
+    const fetched = await mod.getSavedQuote("33333333-3333-4333-8333-333333333333");
+    expect(fetched).not.toBeNull();
+    expect(fetched!.mode).toBe("full");
+    expect(fetched!.versions[0].mode).toBe("full");
+  });
+
   it("listSavedQuotes drops malformed/future-schema records (WR-02; T-05-05 even enforcement)", async () => {
     const mod = await import("./quoteStorage");
     // Save one valid record through the public API.

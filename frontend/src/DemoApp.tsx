@@ -9,6 +9,11 @@ const ComparisonQuote = lazy(() =>
     default: m.ComparisonQuote,
   })),
 );
+const ComparisonRom = lazy(() =>
+  import("@/pages/demo/compare/ComparisonRom").then((m) => ({
+    default: m.ComparisonRom,
+  })),
+);
 const ComparisonCompare = lazy(() =>
   import("@/pages/demo/compare/ComparisonCompare").then((m) => ({
     default: m.ComparisonCompare,
@@ -27,6 +32,11 @@ const CompareFindSimilar = lazy(() =>
 const MachineLearningQuote = lazy(() =>
   import("@/pages/demo/ml/MachineLearningQuote").then((m) => ({
     default: m.MachineLearningQuote,
+  })),
+);
+const MachineLearningRom = lazy(() =>
+  import("@/pages/demo/ml/MachineLearningRom").then((m) => ({
+    default: m.MachineLearningRom,
   })),
 );
 const MachineLearningInsights = lazy(() =>
@@ -69,6 +79,7 @@ export function DemoApp() {
           {/* Comparison Tool - Real Data */}
           <Route path="compare" element={<Navigate to="/compare/quote" replace />} />
           <Route path="compare/quote" element={<ComparisonQuote />} />
+          <Route path="compare/rom" element={<ComparisonRom />} />
           <Route path="compare/compare" element={<ComparisonCompare />} />
           <Route path="compare/browse" element={<Navigate to="/compare/compare" replace />} />
           <Route path="compare/find-similar" element={<CompareFindSimilar />} />
@@ -77,6 +88,7 @@ export function DemoApp() {
           {/* Machine Learning Tool - Synthetic Data */}
           <Route path="ml" element={<Navigate to="/ml/quote" replace />} />
           <Route path="ml/quote" element={<MachineLearningQuote />} />
+          <Route path="ml/rom" element={<MachineLearningRom />} />
           <Route path="ml/compare" element={<MachineLearningCompare />} />
           <Route path="ml/insights" element={<MachineLearningInsights />} />
 

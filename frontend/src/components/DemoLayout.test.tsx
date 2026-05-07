@@ -195,20 +195,20 @@ describe("DemoLayout mobile sub-view tabs", () => {
     expect(within(header).queryByRole("navigation", { name: /sub-view/i })).toBeNull();
   });
 
-  it("renders Quote / Compare / Find Similar / Insights tabs on /compare/*", () => {
+  it("renders Quote / ROM / Compare / Find Similar / Insights tabs on /compare/*", () => {
     renderLayout("/compare/quote");
     const header = screen.getByTestId("mobile-header");
     const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
     const labels = within(subNav).getAllByRole("link").map((l) => l.textContent);
-    expect(labels).toEqual(["Quote", "Compare", "Find Similar", "Insights"]);
+    expect(labels).toEqual(["Quote", "ROM", "Compare", "Find Similar", "Insights"]);
   });
 
-  it("renders Quote / Compare / Insights tabs on /ml/* (no Find Similar — real-data only)", () => {
+  it("renders Quote / ROM / Compare / Insights tabs on /ml/* (no Find Similar — real-data only)", () => {
     renderLayout("/ml/quote");
     const header = screen.getByTestId("mobile-header");
     const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
     const labels = within(subNav).getAllByRole("link").map((l) => l.textContent);
-    expect(labels).toEqual(["Quote", "Compare", "Insights"]);
+    expect(labels).toEqual(["Quote", "ROM", "Compare", "Insights"]);
   });
 
   it("points every tab at the current tool prefix (/ml on /ml/insights)", () => {
@@ -217,7 +217,24 @@ describe("DemoLayout mobile sub-view tabs", () => {
     const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
     const links = within(subNav).getAllByRole("link") as HTMLAnchorElement[];
     const hrefs = links.map((l) => l.getAttribute("href"));
-    expect(hrefs).toEqual(["/ml/quote", "/ml/compare", "/ml/insights"]);
+    expect(hrefs).toEqual(["/ml/quote", "/ml/rom", "/ml/compare", "/ml/insights"]);
+  });
+
+  it("recognizes /compare/rom and highlights the ROM tab", () => {
+    renderLayout("/compare/rom");
+    const header = screen.getByTestId("mobile-header");
+    const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
+    const rom = within(subNav).getByRole("link", { name: "ROM" });
+    expect(rom.className).toContain("bg-teal");
+    expect(rom.getAttribute("aria-current")).toBe("page");
+  });
+
+  it("preserves ROM context when switching tools (/compare/rom → ML stays on /ml/rom)", () => {
+    renderLayout("/compare/rom");
+    const header = screen.getByTestId("mobile-header");
+    const switcher = within(header).getByRole("navigation", { name: /switch tool/i });
+    const mlSegment = within(switcher).getByRole("link", { name: "ML" }) as HTMLAnchorElement;
+    expect(mlSegment.getAttribute("href")).toBe("/ml/rom");
   });
 
   it("falls back to /ml/quote when crossing tools from /compare/find-similar (ML has no Find Similar)", () => {

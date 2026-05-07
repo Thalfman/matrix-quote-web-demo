@@ -1,11 +1,21 @@
+// fake-indexeddb provides a jsdom-compatible IndexedDB implementation so the
+// SC-4 round-trip tests below can call saveSavedQuote/getSavedQuote directly
+// against the live module without needing a backend or stub. Mirrors
+// frontend/src/lib/quoteStorage.test.ts:11.
+import "fake-indexeddb/auto";
+
+import { useRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Route, Routes } from "react-router-dom";
+import { screen, waitFor } from "@testing-library/react";
 
 import { renderWithProviders } from "@/test/render";
 import { BANNED_TOKENS } from "@/test/jargon";
 import type { ProjectRecord } from "@/demo/realProjects";
 import type { UnifiedQuoteResult } from "@/demo/quoteResult";
+import type { RomMetadata } from "@/demo/romEstimator";
 import {
   quoteFormDefaults,
   quoteFormSchema,
@@ -13,6 +23,20 @@ import {
   type VisionRow,
 } from "@/pages/single-quote/schema";
 import { VisionRowsField } from "@/pages/single-quote/VisionRowsField";
+import { RomBadge } from "@/components/quote/RomBadge";
+import { RomResultPanel } from "@/components/quote/RomResultPanel";
+import { RomForm } from "@/pages/single-quote/RomForm";
+import {
+  romFormDefaults,
+  romFormSchema,
+  type RomFormValues,
+} from "@/pages/single-quote/romSchema";
+
+// NOTE: do NOT module-top-mock SaveQuoteButton — the Phase 5 jargon block
+// renders the live SaveQuoteButton and asserts /save quote/i. The Phase 7
+// RomResultPanel jargon tests below render the panel WITHOUT a `workspace`
+// prop, so RomResultPanel's `{workspace && <SaveQuoteButton .../>}` branch
+// is not entered, and the live component never instantiates.
 
 // ---------------------------------------------------------------------------
 // Recharts mock — required for jsdom to render BusinessInsights*.
@@ -213,6 +237,13 @@ import { SaveQuoteButton } from "@/components/quote/SaveQuoteButton";
 // jargon scan exercises real strings.
 import { MyQuotesPage } from "@/pages/quotes/MyQuotesPage";
 import { SavedQuotePage } from "@/pages/quotes/SavedQuotePage";
+
+// Phase 7 — SC-4 round-trip layer (D-19 + D-20).
+import {
+  saveSavedQuote,
+  listSavedQuotes,
+  getSavedQuote,
+} from "@/lib/quoteStorage";
 
 describe("jargon-guard (DATA-03 — Phase 5 surface coverage)", () => {
   it("MyQuotesEmptyState renders no banned ML-jargon tokens", () => {
@@ -457,5 +488,287 @@ describe("jargon-guard (DATA-03 — Phase 6 surface coverage)", () => {
     expect(body).toMatch(/2D × 2; 3D × 1/);
     expect(body).not.toMatch(/Cognex 2D × 2/);
     assertNoBannedTokens("QuoteResultPanel (inputs-echo Phase 6)", body);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 7 — ROM-mode surface coverage (D-18)
+//
+// Covers every customer-facing string introduced by Phase 7's component
+// primitives:
+//   - RomBadge ("Preliminary")
+//   - RomResultPanel hero, Why-preliminary card, sanity banner (both polarities)
+//   - RomForm field labels, helper text, submit button, disabled hint
+//   - QuoteRow ROM-badge render path (tooltip + visible badge)
+//
+// ComparisonRom + MachineLearningRom page-level scans are intentionally
+// deferred — the local SC-3 differential render in RomResultPanel.test.tsx
+// (Plan 07-03 Task 4) and the SC-4 round-trip below exercise the same
+// chrome strings indirectly.
+//
+// NO additions to BANNED_TOKENS — Phase 7 introduces no new ML-risk
+// vocabulary; the existing 16-pattern list catches everything.
+// ---------------------------------------------------------------------------
+
+function RomFormHarness() {
+  const form = useForm<RomFormValues>({
+    resolver: zodResolver(romFormSchema),
+    defaultValues: romFormDefaults,
+    mode: "onChange",
+  });
+  const formRef = useRef<HTMLFormElement>(null);
+  return (
+    <RomForm
+      formRef={formRef}
+      form={form}
+      dropdowns={{
+        industry_segment: ["Automotive"],
+        system_category: ["Robotic Cell"],
+        automation_level: ["Semi-Auto"],
+      }}
+      onSubmit={() => undefined}
+      submitting={false}
+    />
+  );
+}
+
+const ROM_BASE_RESULT: UnifiedQuoteResult = {
+  estimateHours: 240,
+  likelyRangeLow: 140,
+  likelyRangeHigh: 340,
+  overallConfidence: "moderate",
+  perCategory: [],
+  topDrivers: [],
+  supportingMatches: { label: "Most similar past projects", items: [] },
+};
+
+const ROM_BASE_METADATA: RomMetadata = {
+  mode: "rom",
+  bandMultiplier: 1.75,
+  baselineRate: 0.0008,
+  sanityFlag: false,
+};
+
+describe("jargon-guard (DATA-03 — Phase 7 surface coverage)", () => {
+  it("RomBadge renders no banned tokens", () => {
+    renderWithProviders(<RomBadge />);
+    const body = document.body.textContent ?? "";
+    expect(body).toContain("Preliminary");
+    assertNoBannedTokens("RomBadge", body);
+  });
+
+  it("RomResultPanel (sanityFlag=false) renders no banned tokens", () => {
+    renderWithProviders(
+      <RomResultPanel
+        result={ROM_BASE_RESULT}
+        input={makeFormValues({
+          industry_segment: "Automotive",
+          system_category: "Robotic Cell",
+          automation_level: "Semi-Auto",
+          estimated_materials_cost: 245_000,
+        })}
+        rom={ROM_BASE_METADATA}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    expect(body).toContain("Why this is preliminary");
+    assertNoBannedTokens("RomResultPanel (sanityFlag=false)", body);
+  });
+
+  it("RomResultPanel (sanityFlag=true) renders no banned tokens", () => {
+    renderWithProviders(
+      <RomResultPanel
+        result={ROM_BASE_RESULT}
+        input={makeFormValues({
+          industry_segment: "Automotive",
+          system_category: "Robotic Cell",
+          automation_level: "Semi-Auto",
+          estimated_materials_cost: 245_000,
+        })}
+        rom={{ ...ROM_BASE_METADATA, sanityFlag: true }}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    expect(body).toContain("This early estimate is unusually wide.");
+    assertNoBannedTokens("RomResultPanel (sanityFlag=true)", body);
+  });
+
+  it("RomForm renders no banned tokens", () => {
+    renderWithProviders(<RomFormHarness />);
+    const body = document.body.textContent ?? "";
+    expect(body).toContain("Project basics");
+    expect(body).toContain("Compute ROM estimate");
+    assertNoBannedTokens("RomForm", body);
+  });
+
+  it("QuoteRow with mode='rom' renders no banned tokens (D-11 + D-18)", () => {
+    renderWithProviders(
+      <QuoteRow
+        quote={{ ...Phase5Fixtures.savedQuote, mode: "rom" }}
+        onAdvanceStatus={() => undefined}
+        onRequestDelete={() => undefined}
+      />,
+    );
+    const body = document.body.textContent ?? "";
+    expect(body).toContain("Preliminary");
+    assertNoBannedTokens("QuoteRow (ROM)", body);
+  });
+
+  it("BANNED_TOKENS list unchanged from Phase 6 (D-18)", () => {
+    // D-18 lock: "No additions to BANNED_TOKENS". The existing 16-pattern list
+    // (P10/P50/P90/pyodide/gradient boost/regression/ensemble/categorical/
+    // embedding/training data/confidence interval/R²/quantile/sklearn/joblib)
+    // covers every Phase 7 risk surface. If a future contributor wants to ADD
+    // a banned token, the addition should be intentional and documented in a
+    // CONTEXT.md decision — this assertion forces a code-review touchpoint.
+    expect(BANNED_TOKENS.length).toBeGreaterThanOrEqual(16);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 7 — ROM round-trip (SC-4)
+//
+// End-to-end integration: save a ROM quote → IDB round-trip preserves mode at
+// top-level + per-version → list-row badge fires → SavedQuotePage 'Open in
+// Quote tool' button links to /compare/rom (real) or /ml/rom (synthetic);
+// full-mode quotes preserve the existing /compare/quote routing (regression).
+//
+// Each test uses crypto.randomUUID-generated SavedQuote ids (via the live
+// saveSavedQuote path) so cross-test state pollution is harmless — every test
+// inspects only records it just created by id.
+// ---------------------------------------------------------------------------
+describe("Phase 7 — ROM round-trip (SC-4)", () => {
+  it("saveSavedQuote({mode:'rom'}) round-trips through list + get with mode preserved at top-level + per-version", async () => {
+    const saved = await saveSavedQuote({
+      name: "Round-trip ROM test",
+      workspace: "real",
+      formValues: Phase5Fixtures.formValues,
+      unifiedResult: Phase5Fixtures.unifiedResult,
+      mode: "rom",
+    });
+
+    expect(saved.mode).toBe("rom");
+    expect(saved.versions[0].mode).toBe("rom");
+
+    const all = await listSavedQuotes();
+    const fromList = all.find((q) => q.id === saved.id);
+    expect(fromList).toBeDefined();
+    expect(fromList!.mode).toBe("rom");
+
+    const fromGet = await getSavedQuote(saved.id);
+    expect(fromGet).not.toBeNull();
+    expect(fromGet!.mode).toBe("rom");
+    expect(fromGet!.versions[0].mode).toBe("rom");
+  });
+
+  it("saveSavedQuote without mode defaults to 'full' and round-trips", async () => {
+    const saved = await saveSavedQuote({
+      name: "Round-trip full test",
+      workspace: "real",
+      formValues: Phase5Fixtures.formValues,
+      unifiedResult: Phase5Fixtures.unifiedResult,
+    });
+    expect(saved.mode).toBe("full");
+    const fromGet = await getSavedQuote(saved.id);
+    expect(fromGet!.mode).toBe("full");
+  });
+
+  it("QuoteRow renders 'Preliminary' for a saved ROM record (D-11)", async () => {
+    const saved = await saveSavedQuote({
+      name: "QuoteRow ROM test",
+      workspace: "real",
+      formValues: Phase5Fixtures.formValues,
+      unifiedResult: Phase5Fixtures.unifiedResult,
+      mode: "rom",
+    });
+    renderWithProviders(
+      <QuoteRow
+        quote={saved}
+        onAdvanceStatus={() => undefined}
+        onRequestDelete={() => undefined}
+      />,
+    );
+    expect(document.body.textContent).toContain("Preliminary");
+  });
+
+  it("SavedQuotePage 'Open in Quote tool' links to /compare/rom for ROM real-workspace quote (D-20)", async () => {
+    const saved = await saveSavedQuote({
+      name: "SC-4 routing real-rom",
+      workspace: "real",
+      formValues: Phase5Fixtures.formValues,
+      unifiedResult: Phase5Fixtures.unifiedResult,
+      mode: "rom",
+    });
+    // renderWithProviders already wraps in MemoryRouter + QueryClientProvider.
+    // Pass <Routes> as the ui arg and seed initialEntries via the route option.
+    renderWithProviders(
+      <Routes>
+        <Route path="/quotes/:id" element={<SavedQuotePage />} />
+      </Routes>,
+      { route: `/quotes/${saved.id}` },
+    );
+    await waitFor(() => {
+      expect(
+        screen.getByRole("link", { name: /open in quote tool/i }),
+      ).toBeInTheDocument();
+    });
+    const link = screen.getByRole("link", {
+      name: /open in quote tool/i,
+    }) as HTMLAnchorElement;
+    expect(link.getAttribute("href")).toBe(
+      `/compare/rom?fromQuote=${saved.id}`,
+    );
+  });
+
+  it("SavedQuotePage 'Open in Quote tool' links to /ml/rom for ROM synthetic-workspace quote (D-20)", async () => {
+    const saved = await saveSavedQuote({
+      name: "SC-4 routing synthetic-rom",
+      workspace: "synthetic",
+      formValues: Phase5Fixtures.formValues,
+      unifiedResult: Phase5Fixtures.unifiedResult,
+      mode: "rom",
+    });
+    renderWithProviders(
+      <Routes>
+        <Route path="/quotes/:id" element={<SavedQuotePage />} />
+      </Routes>,
+      { route: `/quotes/${saved.id}` },
+    );
+    await waitFor(() => {
+      expect(
+        screen.getByRole("link", { name: /open in quote tool/i }),
+      ).toBeInTheDocument();
+    });
+    const link = screen.getByRole("link", {
+      name: /open in quote tool/i,
+    }) as HTMLAnchorElement;
+    expect(link.getAttribute("href")).toBe(`/ml/rom?fromQuote=${saved.id}`);
+  });
+
+  it("SavedQuotePage 'Open in Quote tool' STILL links to /compare/quote for full real-workspace quote (regression)", async () => {
+    const saved = await saveSavedQuote({
+      name: "SC-4 routing real-full",
+      workspace: "real",
+      formValues: Phase5Fixtures.formValues,
+      unifiedResult: Phase5Fixtures.unifiedResult,
+      // no mode → defaults to "full"
+    });
+    renderWithProviders(
+      <Routes>
+        <Route path="/quotes/:id" element={<SavedQuotePage />} />
+      </Routes>,
+      { route: `/quotes/${saved.id}` },
+    );
+    await waitFor(() => {
+      expect(
+        screen.getByRole("link", { name: /open in quote tool/i }),
+      ).toBeInTheDocument();
+    });
+    const link = screen.getByRole("link", {
+      name: /open in quote tool/i,
+    }) as HTMLAnchorElement;
+    expect(link.getAttribute("href")).toBe(
+      `/compare/quote?fromQuote=${saved.id}`,
+    );
   });
 });

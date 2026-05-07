@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v2.0
 milestone_name: — Workflow fit
-status: in_progress
-last_updated: "2026-05-05T23:30:00.000Z"
-last_activity: 2026-05-05
+status: executing
+last_updated: "2026-05-06T22:08:12.291Z"
+last_activity: 2026-05-06
 progress:
   total_phases: 3
-  completed_phases: 2
-  total_plans: 13
-  completed_plans: 13
-  percent: 67
+  completed_phases: 3
+  total_plans: 18
+  completed_plans: 18
+  percent: 100
 ---
 
 # STATE
@@ -23,22 +23,26 @@ progress:
 - **Project code:** MQW
 - **Project title:** Matrix Quote Web
 - **Path:** `C:\Users\thalf\OneDrive\Documents\Matrix\matrix-quote-web-demo`
-- **Branch:** `feat/06-multi-vision`
+- **Branch:** `main`
 - **Repo type:** brownfield, static-only Vite/React SPA on Vercel CDN
 
-- **Milestone:** v2.0 — Workflow fit (started 2026-05-05; roadmap finalized)
-- **Phase:** Phase 6 — Multi-vision per project (executed + verified 2026-05-05)
-- **Plan:** 4 plans across 3 waves complete (06-01 schema/migration ✅ → 06-02 aggregator ✅ + 06-03 form picker ✅ → 06-04 wiring + result panel + jargon-guard + round-trip ✅)
-- **Status:** Phase 6 verified — gsd-verifier PASSED 4/4 success criteria; gsd-code-review found 1 BLOCKER + 5 WARNINGs, all resolved in 6 atomic fix commits; whole-repo gates green (typecheck clean, vitest 937/937 / 101 files, lint clean, build succeeds); architectural invariants honored (no `core/` touch, no `_PREDICT_SHIM` change); 4 human spot-checks captured in `06-VERIFICATION.md` for pre-demo confirmation (non-gating); ready for `/gsd-ship 6`
+- **Milestone:** v2.0 — Workflow fit (started 2026-05-05; **all 3 phases complete 2026-05-06**; ready for `/gsd-secure-phase 7` then `/gsd-ship 7` then `/gsd-complete-milestone 2.0`)
+- **Phase:** Phase 7 — ROM-quote mode ✅ verified PASS 2026-05-06 (4/4 SC, 21/21 D-NN, vitest 1028/1028)
+- **Plan:** all 5 plans complete (07-01..07-05)
+- **Status:** Phase 7 complete — ready to ship
 - **In scope for v2.0:** PERSIST-01..06 (Phase 5 — quote persistence + workflow status + version history), DATA-04 + DATA-06 (Phase 6 — multi-vision incl. per-vision drivers breakdown), ROM-01 + ROM-02 (Phase 7 — ROM mode)
 - **Deferred from v2.0:** BENCH-01 (Manager-spreadsheet benchmark — optional, no firm slot)
-- **Last activity:** 2026-05-05
+- **Last activity:** 2026-05-06
 - **Previously shipped:** v1.0 ✅ 2026-05-05 (10/10 v1 requirements complete) — see `.planning/milestones/v1.0-ROADMAP.md` and `.planning/MILESTONES.md`
 
 ## Recent Activity
 
 | Date | Event |
 |---|---|
+| 2026-05-06 | `/gsd-execute-phase 7` → all 5 plans (07-01..07-05) executed across 4 waves on `main` (branching_strategy: none); 5 worktree merge commits + 4 tracking commits + 5 SUMMARY commits + 1 verification commit; **gsd-verifier PASSED 4/4 ROADMAP success criteria SC-1..SC-4 + 21/21 D-NN locked decisions** (`07-VERIFICATION.md`); final state — typecheck clean, lint clean (--max-warnings 0), vitest 1028/1028 (+48 over Phase 6 baseline of 980), build 9.92s; static-SPA invariants ALL hold (no `core/` touch, no `_PREDICT_SHIM` change, `QUOTE_DB_VERSION === 2` unchanged, no backend); ROM tool reachable from sidebar in both Real Data and Synthetic Data workspaces (`/compare/rom`, `/ml/rom`); SC-4 round-trip tests pass through fake-indexeddb. **v2.0 milestone now 100% complete (3 of 3 phases)**; ready for `/gsd-secure-phase 7` then `/gsd-ship 7` |
+| 2026-05-06 | `/gsd-plan-phase 7` → 5 plans (07-01..07-05) across 4 waves authored on commit `125f034`; coarse decomposition along schema-primitives / pure estimator / form-and-result composition / pages-routes / list-and-roundtrip; all 21 D-NN decisions traced through plan steps |
+| 2026-05-06 | `/gsd-ui-phase 7` (autonomous, user directive *"Just do whatever Ben's comments state"*) → `07-UI-SPEC.md` written by gsd-ui-researcher with 21 locked D-NN decisions, every row anchored to Ben S2 verbatim / ROADMAP SC-1..SC-4 / Phase 5 + 6 prior decisions; gsd-ui-checker PASSED 6/6 dimensions + 8/8 phase-7-specific checks; 3 non-blocking FLAG recommendations to surface to planner (component count 13 borderline, sanity-rate magic number, "ROM" token in saved-quote name); committed `7d2e8f1`; ready for `/gsd-plan-phase 7` |
+| 2026-05-06 | PR #27 merged to `main` (Phase 6, feat/06-multi-vision → main, merge commit `d07bda1`) including post-verification fix `4f0a293` (visionRows vocabulary alignment so SingleQuote no longer drops user vision rows); local feat/06-multi-vision branch deleted; lesson captured in memory `feedback_transformer_contract_audit.md` (audit ALL callers of shared transformers when contract changes) |
 | 2026-05-05 | `/gsd-execute-phase 6` → all 4 plans (06-01..06-04) executed across 3 waves on `feat/06-multi-vision`; 22 atomic feature/test/docs commits + 6 review-fix commits + 1 lint-cleanup commit (29 total since plan-phase HEAD); gsd-code-review found 1 BLOCKER + 5 WARNINGs (BL-01 missed D-04 wire-up in CompareFindSimilarTab, WR-01..05 spec violations) → gsd-code-fixer resolved all in 6 atomic commits with 2 added regression tests; gsd-verifier PASSED 4/4 ROADMAP success criteria; final state — typecheck clean, vitest 937/937 (+47 tests over Phase 5 baseline), lint clean, build succeeds, no `core/` touch, no `_PREDICT_SHIM` change; v2.0 milestone now 67% complete (2 of 3 phases) |
 | 2026-05-05 | `/gsd-plan-phase 6` → 4 plans (06-01..06-04) across 3 waves authored; `06-PATTERNS.md` written by gsd-pattern-mapper (14 file targets mapped to analogs); gsd-plan-checker iteration 1 → 2 BLOCKERS + 4 WARNINGS (D-04 shadow input dropped + 06-04 internal contradiction); planner revision pass restored `AggregatorArgs.inputForMatching` contract through 06-02 → 06-04; gsd-plan-checker iteration 2 → **VERIFICATION PASSED**; all 18 CONTEXT.md decisions traced; DATA-04 + DATA-06 covered; ready for `/gsd-execute-phase 6` |
 | 2026-05-05 | `/gsd-discuss-phase 6` → `06-CONTEXT.md` + `06-DISCUSSION-LOG.md` written; **18 implementation decisions locked (D-01..D-18)**; user delegated entire decision space with directive *"Pick the closest solution to Ben's comment"*; every decision grounded in Ben Bertsche 2026-05-01 §U2 verbatim (`.planning/feedback/2026-05-01-ben-bertsche-review.md:123-133`); headline calls: vision row = `{type: "2D"\|"3D", count, label?}`, **delta-from-baseline TS-side aggregation in new `frontend/src/demo/multiVisionAggregator.ts`** (no `core/` touch, no `_PREDICT_SHIM` change, no retrain), **stacked per-vision cards** in QuoteResultPanel breakdown, **schemaVersion 1 → 2 hard cutover** with `onupgradeneeded` + defensive on-read migrator; Compare tool stays single-row v2 shape; ready for `/gsd-plan-phase 6` |

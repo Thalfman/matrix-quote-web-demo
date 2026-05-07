@@ -84,6 +84,15 @@ vi.mock("@/components/quote/QuoteResultPanel", () => ({
   ),
 }));
 
+// Stub RomResultPanel — used on the detail page when latest.mode === "rom".
+vi.mock("@/components/quote/RomResultPanel", () => ({
+  RomResultPanel: ({ result }: { result: { estimateHours: number } }) => (
+    <div data-testid="rom-result-panel">
+      <span data-testid="rom-result-hours">{result.estimateHours}</span>
+    </div>
+  ),
+}));
+
 import { SavedQuotePage } from "./SavedQuotePage";
 
 // ---------------------------------------------------------------------------
@@ -115,6 +124,7 @@ function makeVersion(over: Partial<QuoteVersion> = {}): QuoteVersion {
     statusAtTime: "draft",
     formValues: makeFormValues(),
     unifiedResult: MINIMAL_UNIFIED_RESULT,
+    mode: "full",
     ...over,
   };
 }
@@ -132,6 +142,7 @@ function makeSavedQuote(over: Partial<SavedQuote> = {}): SavedQuote {
     salesBucket: "ME",
     visionLabel: "Vision",
     materialsCost: 245000,
+    mode: "full",
     ...over,
   };
 }
@@ -318,6 +329,36 @@ describe("SavedQuotePage - estimate panel", () => {
     renderWithProviders(<SavedQuotePage />);
     expect(screen.getByTestId("input-vision").textContent).toBe("2D×1");
   });
+
+  it("renders RomResultPanel (preliminary chrome) when latest.mode === 'rom'", () => {
+    // ROM-mode saved quotes must render the ROM-specific panel — full-quote
+    // chrome (confidence chip / top-drivers) would mislead users into reading
+    // a preliminary estimate as a full estimate. Codex round-9 P2 fix.
+    const romVersion = makeVersion({
+      version: 1,
+      mode: "rom",
+      unifiedResult: { ...MINIMAL_UNIFIED_RESULT, estimateHours: 240 },
+    });
+    mockUseSavedQuote.mockReturnValueOnce({
+      data: makeSavedQuote({ mode: "rom", versions: [romVersion] }),
+      isLoading: false,
+    });
+    renderWithProviders(<SavedQuotePage />);
+    expect(screen.getByTestId("rom-result-panel")).toBeInTheDocument();
+    expect(screen.queryByTestId("quote-result-panel")).toBeNull();
+    expect(screen.getByTestId("rom-result-hours").textContent).toBe("240");
+  });
+
+  it("renders QuoteResultPanel (full chrome) when latest.mode === 'full'", () => {
+    const fullVersion = makeVersion({ version: 1, mode: "full" });
+    mockUseSavedQuote.mockReturnValueOnce({
+      data: makeSavedQuote({ mode: "full", versions: [fullVersion] }),
+      isLoading: false,
+    });
+    renderWithProviders(<SavedQuotePage />);
+    expect(screen.getByTestId("quote-result-panel")).toBeInTheDocument();
+    expect(screen.queryByTestId("rom-result-panel")).toBeNull();
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -382,6 +423,36 @@ describe("SavedQuotePage - version history sidebar", () => {
     await vi.waitFor(() => {
       expect(mockNavigate).toHaveBeenCalledWith(
         "/ml/quote?fromQuote=test-id-123&restoreVersion=2",
+      );
+    });
+  });
+
+  it("Restore routes by per-version mode, not the top-level latest mode (mixed-mode history)", async () => {
+    // Mixed-mode history: v1 = full quote, v2 = ROM. Top-level mode is "rom"
+    // (latest stamp). Restoring v1 must route to /compare/quote (full tool),
+    // NOT /compare/rom — otherwise v1's full-quote fields are dropped on re-save.
+    const v1Full = makeVersion({ version: 1, mode: "full" });
+    const v2Rom = makeVersion({
+      version: 2,
+      mode: "rom",
+      savedAt: "2026-05-06T12:00:00.000Z",
+    });
+    mockUseSavedQuote.mockReturnValueOnce({
+      data: makeSavedQuote({
+        versions: [v1Full, v2Rom],
+        workspace: "real",
+        mode: "rom",
+      }),
+      isLoading: false,
+    });
+    renderWithProviders(<SavedQuotePage />);
+    // VersionHistoryList sorts newest-first → second listitem is v1.
+    const v1Row = screen.getAllByRole("listitem")[1];
+    const restore = within(v1Row).getByRole("button", { name: /Restore/i });
+    fireEvent.click(restore);
+    await vi.waitFor(() => {
+      expect(mockNavigate).toHaveBeenCalledWith(
+        "/compare/quote?fromQuote=test-id-123&restoreVersion=1",
       );
     });
   });

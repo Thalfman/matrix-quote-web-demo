@@ -49,6 +49,7 @@ function makeVersion(over: Partial<QuoteVersion> = {}): QuoteVersion {
     statusAtTime: "draft",
     formValues: makeFormValues(),
     unifiedResult: MINIMAL_UNIFIED_RESULT,
+    mode: "full",
     ...over,
   };
 }

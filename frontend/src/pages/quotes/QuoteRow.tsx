@@ -19,6 +19,7 @@ import type { KeyboardEvent, MouseEvent } from "react";
 import { Trash2 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
+import { RomBadge } from "@/components/quote/RomBadge";
 import { StatusChip } from "@/components/quote/StatusChip";
 import { WorkspacePill } from "@/components/quote/WorkspacePill";
 import { cn } from "@/lib/utils";
@@ -105,6 +106,12 @@ export function QuoteRow({
       <div onClick={stopRowEvent} onKeyDown={stopRowEvent}>
         <StatusChip status={quote.status} onAdvance={handleAdvanceStatus} />
       </div>
+
+      {quote.mode === "rom" && (
+        <span title="This is a ROM (rough order of magnitude) quote.">
+          <RomBadge />
+        </span>
+      )}
 
       <WorkspacePill workspace={quote.workspace} />
 

@@ -17,6 +17,7 @@ import { SaveQuoteDialog } from "@/components/quote/SaveQuoteDialog";
 import { cn } from "@/lib/utils";
 import {
   buildAutoSuggestedName,
+  type QuoteMode,
   type SavedQuote,
   type WorkflowStatus,
   type Workspace,
@@ -41,6 +42,10 @@ export interface SaveQuoteButtonProps {
   restoredFromVersion?: number;
   /** Compare-side payload (D-13). */
   compareInputs?: { humanQuotedByBucket: Record<string, number> };
+  /** D-19: ROM vs full quote shape. Threaded into the saved record so the
+   *  list-row badge and re-open routing can distinguish them. Omit for
+   *  full-mode quotes (defaults to "full" downstream). */
+  mode?: QuoteMode;
   /** Visual variant: full-width primary in QuoteResultPanel slot, compact pill in compare bar. */
   variant?: "primary" | "compact";
 }
@@ -58,6 +63,7 @@ export function SaveQuoteButton({
   status,
   restoredFromVersion,
   compareInputs,
+  mode,
   variant = "primary",
 }: SaveQuoteButtonProps) {
   const [open, setOpen] = useState(false);
@@ -65,6 +71,7 @@ export function SaveQuoteButton({
   const suggestedName = buildAutoSuggestedName(
     formValues,
     unifiedResult.estimateHours,
+    mode,
   );
 
   return (
@@ -96,6 +103,7 @@ export function SaveQuoteButton({
           restoredFromVersion,
           suggestedName,
           existingName,
+          mode,
         }}
         onSaved={(saved: SavedQuote) => {
           navigate(`/quotes/${saved.id}`);
