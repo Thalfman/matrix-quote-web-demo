@@ -74,12 +74,8 @@ const QUOTE_BY_ID = (id: string) => ["quotes", "byId", id] as const;
  * version-history sidebar didn't refresh on cross-tab save). Splitting the
  * invalidation into explicit list + per-id keys, and explicitly refetching
  * the active byId observer, fixes the QA Item 2 regression.
- *
- * Pass `id` from `useSavedQuote(id)` so a same-record broadcast is force-
- * refetched even if the cache observer is briefly inactive (route transition,
- * mount race with the broadcaster).
  */
-function useStorageInvalidate(id?: string): void {
+function useStorageInvalidate(): void {
   const qc = useQueryClient();
   useEffect(() => {
     const unsubscribe = subscribe((evt: StorageEvent) => {
@@ -89,12 +85,9 @@ function useStorageInvalidate(id?: string): void {
         void qc.invalidateQueries({ queryKey: key });
         void qc.refetchQueries({ queryKey: key, type: "active" });
       }
-      if (id && evt.id === id) {
-        void qc.refetchQueries({ queryKey: QUOTE_BY_ID(id) });
-      }
     });
     return unsubscribe;
-  }, [qc, id]);
+  }, [qc]);
 }
 
 /**
@@ -126,7 +119,7 @@ export function useSavedQuotes(): UseQueryResult<SavedQuote[]> {
 export function useSavedQuote(
   id: string | undefined,
 ): UseQueryResult<SavedQuote | null> {
-  useStorageInvalidate(id);
+  useStorageInvalidate();
   return useQuery<SavedQuote | null>({
     // IN-02 also addressed here: stable ["quotes", "byId", id|"__none__"]
     // shape avoids the cache-leaking ["quotes", "__noop__"] placeholder.
