@@ -84,12 +84,25 @@ export function MachineLearningRom() {
       ? parsedRestoreVersion
       : undefined;
   const { data: openedQuote } = useSavedQuote(fromQuoteId);
-  const isRomQuote = openedQuote?.mode === "rom";
+  // Resolve which saved version we're operating on so the ROM-mode guards
+  // reflect *that* version's stamp, not the top-level/latest mode. Mixed
+  // histories (top=full, v1=rom) are now reachable via per-version restore
+  // (round-3 SavedQuotePage fix); top-level checks would break the restore
+  // flow for the older ROM version.
+  const targetVersion = useMemo(() => {
+    if (!openedQuote || openedQuote.versions.length === 0) return undefined;
+    if (restoredFromVersion !== undefined) {
+      const found = openedQuote.versions.find((vv) => vv.version === restoredFromVersion);
+      if (found) return found;
+    }
+    return openedQuote.versions[openedQuote.versions.length - 1];
+  }, [openedQuote, restoredFromVersion]);
+  const isRomQuote = targetVersion?.mode === "rom";
   // Drop the re-save target only once we've confirmed it's a non-ROM record
-  // (forged-URL defence). During the loading window (openedQuote === undefined)
+  // (forged-URL defence). During the loading window (targetVersion undefined)
   // we keep fromQuoteId so a fast-clicking user still appends a version to
   // the intended quote — same behavior as the full-quote pages.
-  const isWrongMode = !!openedQuote && openedQuote.mode !== "rom";
+  const isWrongMode = !!targetVersion && targetVersion.mode !== "rom";
 
   const metricsByTarget = useMemo(
     () =>
@@ -130,32 +143,21 @@ export function MachineLearningRom() {
     if (Object.keys(patch).length) form.reset({ ...current, ...patch });
   }, [dropdowns, form]);
 
-  // D-20: hydrate from saved quote when openedQuote arrives. Only hydrate if
-  // the saved quote is mode === "rom" — defensive against forged URLs that
-  // would otherwise stuff a full quote's values into the ROM form.
-  // When `restoreVersion=N` is present, hydrate from that specific version
-  // (D-06 fork-on-restore); fall back to latest when N is missing or unmatched.
-  // Per-version mode guard: in mixed-mode histories a forged
-  // `?restoreVersion=N` could point at a full-mode version inside an
-  // otherwise-ROM record. SavedQuotePage routes by per-version mode
-  // (round-3 fix); this is defence-in-depth for crafted URLs.
+  // D-20: hydrate from saved quote when targetVersion resolves. The guard
+  // (targetVersion.mode === "rom") gates by *per-version* mode so mixed
+  // histories restore correctly: a top-level-full record with v1 stamped
+  // "rom" hydrates v1 here, even though the latest version is full. This
+  // is the symmetric companion to the round-3 SavedQuotePage routing fix.
   useEffect(() => {
-    if (!openedQuote) return;
-    if (openedQuote.mode === "rom" && openedQuote.versions.length > 0) {
-      const target =
-        (restoredFromVersion !== undefined
-          ? openedQuote.versions.find((vv) => vv.version === restoredFromVersion)
-          : undefined) ?? openedQuote.versions[openedQuote.versions.length - 1];
-      if (target.mode !== "rom") return;
-      const v = target.formValues;
-      form.reset({
-        industry_segment: v.industry_segment,
-        system_category: v.system_category,
-        automation_level: v.automation_level,
-        estimated_materials_cost: v.estimated_materials_cost ?? 0,
-      });
-    }
-  }, [openedQuote, restoredFromVersion, form]);
+    if (!targetVersion || targetVersion.mode !== "rom") return;
+    const v = targetVersion.formValues;
+    form.reset({
+      industry_segment: v.industry_segment,
+      system_category: v.system_category,
+      automation_level: v.automation_level,
+      estimated_materials_cost: v.estimated_materials_cost ?? 0,
+    });
+  }, [targetVersion, form]);
 
   useEffect(() => {
     const unsub = subscribe((s) => {
