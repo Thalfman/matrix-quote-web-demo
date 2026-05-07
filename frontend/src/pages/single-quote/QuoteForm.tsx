@@ -209,7 +209,7 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
       <Section
         step="04"
         title="Product & process"
-        description="Familiarity, complexity, and product characteristics"
+        description="Familiarity, certainty, and product characteristics"
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
           <Controller
@@ -243,8 +243,18 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
             control={control}
             name="process_uncertainty_score"
             render={({ field }) => (
-              <Field label="Process complexity (1–5)">
-                <Slider value={field.value} onChange={(e) => field.onChange(Number(e.currentTarget.value))} />
+              // UI label is "Process certainty (1–5), 5 = very certain". The
+              // model feature name stays `process_uncertainty_score` (locked
+              // into the trained joblib bundle in core/), so we invert at the
+              // input boundary: displayed certainty = 6 − stored uncertainty.
+              <Field label="Process certainty (1–5), 5 = very certain">
+                <Slider
+                  name={field.name}
+                  value={6 - field.value}
+                  onChange={(e) =>
+                    field.onChange(6 - Number(e.currentTarget.value))
+                  }
+                />
               </Field>
             )}
           />

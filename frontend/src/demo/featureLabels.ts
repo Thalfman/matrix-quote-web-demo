@@ -28,7 +28,10 @@ const NUM_LABELS: Record<string, string> = {
   has_tricky_packaging: "Tricky packaging",
 
   // Process complexity (3)
-  process_uncertainty_score: "Process complexity",
+  // UI label flipped: model feature is uncertainty (positive coefficient on
+  // hours), but customers see it framed as certainty. Direction is inverted
+  // below in humanFeatureLabel — high certainty drives hours DOWN.
+  process_uncertainty_score: "Process certainty",
   changeover_time_min: "Changeover time",
   custom_pct: "Custom content percentage",
 
@@ -73,7 +76,12 @@ export function humanFeatureLabel(
   _input: Record<string, unknown>,
 ): { label: string; direction: "increases" | "decreases" } {
   if (NUM_LABELS[rawName]) {
-    return { label: NUM_LABELS[rawName], direction: "increases" };
+    // Special-case: feature stored as `process_uncertainty_score` (model
+    // contract), but the UI flips it to "Process certainty". Polarity
+    // therefore inverts — high certainty pushes hours DOWN.
+    const direction =
+      rawName === "process_uncertainty_score" ? "decreases" : "increases";
+    return { label: NUM_LABELS[rawName], direction };
   }
 
   // One-hot encoded names: "industry_segment_Aerospace" → prefix = "industry_segment"

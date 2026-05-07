@@ -282,7 +282,9 @@ const SECTIONS: ReadonlyArray<{
       ["Product familiarity (1–5)", (v) => fmtCount(v.product_familiarity_score)],
       ["Product rigidity (1–5)", (v) => fmtCount(v.product_rigidity)],
       ["Bulk rigidity (1–5)", (v) => fmtCount(v.bulk_rigidity_score)],
-      ["Process complexity (1–5)", (v) => fmtCount(v.process_uncertainty_score)],
+      // UI flips uncertainty → certainty (5 = very certain). Stored field
+      // name stays `process_uncertainty_score` so the model contract is unchanged.
+      ["Process certainty (1–5)", (v) => fmtCount(6 - v.process_uncertainty_score)],
       ["Changeover time (min)", (v) => fmtCount(v.changeover_time_min)],
       ["Product deformable", (v) => yesNo(v.is_product_deformable)],
       ["Bulk product", (v) => yesNo(v.is_bulk_product)],

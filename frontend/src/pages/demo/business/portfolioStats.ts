@@ -146,7 +146,10 @@ type RiskFactor = {
 };
 
 const RISK_FACTORS: RiskFactor[] = [
-  { factor: "process_uncertainty_score", label: "Process complexity" },
+  // Stored field is `process_uncertainty_score`; surfaced as "Process
+  // certainty" (5 = very certain). Sign is flipped via interpretAsRisk so
+  // the meaning text reads in certainty orientation.
+  { factor: "process_uncertainty_score", label: "Process certainty", interpretAsRisk: true },
   { factor: "custom_pct",                label: "Custom content %" },
   { factor: "product_familiarity_score", label: "Product familiarity", interpretAsRisk: true },
   { factor: "has_tricky_packaging",      label: "Tricky packaging" },
