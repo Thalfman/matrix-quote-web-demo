@@ -195,8 +195,16 @@ describe("DemoLayout mobile sub-view tabs", () => {
     expect(within(header).queryByRole("navigation", { name: /sub-view/i })).toBeNull();
   });
 
-  it("renders Quote / Compare / Insights tabs on /compare/*", () => {
+  it("renders Quote / Compare / Find Similar / Insights tabs on /compare/*", () => {
     renderLayout("/compare/quote");
+    const header = screen.getByTestId("mobile-header");
+    const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
+    const labels = within(subNav).getAllByRole("link").map((l) => l.textContent);
+    expect(labels).toEqual(["Quote", "Compare", "Find Similar", "Insights"]);
+  });
+
+  it("renders Quote / Compare / Insights tabs on /ml/* (no Find Similar — real-data only)", () => {
+    renderLayout("/ml/quote");
     const header = screen.getByTestId("mobile-header");
     const subNav = within(header).getByRole("navigation", { name: /sub-view/i });
     const labels = within(subNav).getAllByRole("link").map((l) => l.textContent);
@@ -210,6 +218,14 @@ describe("DemoLayout mobile sub-view tabs", () => {
     const links = within(subNav).getAllByRole("link") as HTMLAnchorElement[];
     const hrefs = links.map((l) => l.getAttribute("href"));
     expect(hrefs).toEqual(["/ml/quote", "/ml/compare", "/ml/insights"]);
+  });
+
+  it("falls back to /ml/quote when crossing tools from /compare/find-similar (ML has no Find Similar)", () => {
+    renderLayout("/compare/find-similar");
+    const header = screen.getByTestId("mobile-header");
+    const switcher = within(header).getByRole("navigation", { name: /switch tool/i });
+    const mlSegment = within(switcher).getByRole("link", { name: "ML" }) as HTMLAnchorElement;
+    expect(mlSegment.getAttribute("href")).toBe("/ml/quote");
   });
 
   it("highlights only the current sub-view tab", () => {

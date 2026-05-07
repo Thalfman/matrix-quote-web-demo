@@ -6,9 +6,16 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 
 const ICON_STROKE = 1.75;
 
-type SubView = "quote" | "compare" | "insights";
+type SubView = "quote" | "compare" | "find-similar" | "insights";
 
-const SUB_VIEWS: { key: SubView; label: string }[] = [
+const COMPARE_SUB_VIEWS: { key: SubView; label: string }[] = [
+  { key: "quote", label: "Quote" },
+  { key: "compare", label: "Compare" },
+  { key: "find-similar", label: "Find Similar" },
+  { key: "insights", label: "Insights" },
+];
+
+const ML_SUB_VIEWS: { key: SubView; label: string }[] = [
   { key: "quote", label: "Quote" },
   { key: "compare", label: "Compare" },
   { key: "insights", label: "Insights" },
@@ -16,7 +23,7 @@ const SUB_VIEWS: { key: SubView; label: string }[] = [
 
 /** Current sub-view within the active tool, or null on /, /other. */
 function subView(pathname: string): SubView | null {
-  const m = pathname.match(/^\/(?:compare|ml)\/(quote|compare|insights)\b/);
+  const m = pathname.match(/^\/(?:compare|ml)\/(quote|compare|find-similar|insights)\b/);
   return m ? (m[1] as SubView) : null;
 }
 
@@ -65,6 +72,9 @@ function MobileToolSwitch({
   currentSub: SubView | null;
 }) {
   const sub = currentSub ?? "quote";
+  // ML has no Find Similar sub-view; fall back to Quote when crossing tools
+  // from /compare/find-similar so the ML segment stays a valid route.
+  const mlSub: SubView = sub === "find-similar" ? "quote" : sub;
   const segmentBase =
     "inline-flex items-center justify-center px-3 py-2 md:py-1.5 text-sm eyebrow rounded-sm" +
     " transition-colors duration-150 ease-out focus-visible:outline-none" +
@@ -92,7 +102,7 @@ function MobileToolSwitch({
           Compare
         </NavLink>
         <NavLink
-          to={`/ml/${sub}`}
+          to={`/ml/${mlSub}`}
           className={cn(
             segmentBase,
             mlActive
@@ -109,8 +119,9 @@ function MobileToolSwitch({
 }
 
 /**
- * MobileSubViewTabs - Quote / Compare / Insights tabs for the active tool.
- * Rendered on every mobile route where a tool is selected.
+ * MobileSubViewTabs - sub-view tabs for the active tool. Compare exposes
+ * Quote / Compare / Find Similar / Insights; ML exposes Quote / Compare /
+ * Insights (no Find Similar — the feature is real-data-only).
  */
 function MobileSubViewTabs({
   toolPrefix,
@@ -119,12 +130,13 @@ function MobileSubViewTabs({
   toolPrefix: "/compare" | "/ml";
   currentSub: SubView | null;
 }) {
+  const subViews = toolPrefix === "/compare" ? COMPARE_SUB_VIEWS : ML_SUB_VIEWS;
   return (
     <nav
       aria-label="Sub-view"
       className="flex items-center gap-1.5 overflow-x-auto"
     >
-      {SUB_VIEWS.map(({ key, label }) => {
+      {subViews.map(({ key, label }) => {
         const isActive = currentSub === key;
         return (
           <NavLink
