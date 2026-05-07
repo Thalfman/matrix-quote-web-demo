@@ -62,6 +62,32 @@ describe("Tooltip wrapper (UX-03)", () => {
     );
   });
 
+  it("renders glossary definition when trigger is clicked", async () => {
+    renderWithProviders(<Mounted term="System Category" />);
+    fireEvent.click(screen.getByTestId("trigger"));
+    await waitFor(() =>
+      expect(
+        screen.getAllByText(/A grouping of projects by the kind of system delivered\./i).length,
+      ).toBeGreaterThan(0),
+    );
+  });
+
+  it("renders glossary definition when the shared help icon is clicked", async () => {
+    renderWithProviders(
+      <TooltipProvider delayDuration={0}>
+        <Tooltip term="System Category">
+          <GlossaryHelpIcon ariaLabel="What is System Category?" />
+        </Tooltip>
+      </TooltipProvider>,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /What is System Category\?/i }));
+    await waitFor(() =>
+      expect(
+        screen.getAllByText(/A grouping of projects by the kind of system delivered\./i).length,
+      ).toBeGreaterThan(0),
+    );
+  });
+
   it("hides content on blur", async () => {
     renderWithProviders(<Mounted term="System Category" />);
     const trigger = screen.getByTestId("trigger");

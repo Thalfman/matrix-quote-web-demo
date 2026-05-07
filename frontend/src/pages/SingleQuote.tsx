@@ -82,7 +82,7 @@ export function SingleQuote() {
   }
 
   async function handleSubmit(quoted: Partial<Record<SalesBucket, number>>) {
-    const values = form.getValues();
+    const values = quoteFormSchema.parse(form.getValues());
     const payload = transformToQuoteInput(values);
     try {
       const res = await mutate.mutateAsync(payload);
@@ -102,6 +102,7 @@ export function SingleQuote() {
 
   const onSaveScenario = async () => {
     if (!result) return;
+    const values = quoteFormSchema.parse(form.getValues());
     const name = prompt("Name this scenario", `Scenario ${scenarios.length + 1}`);
     if (!name) return;
     const projectName = prompt("Project name", "") ?? "";
@@ -110,7 +111,7 @@ export function SingleQuote() {
       await save.mutateAsync({
         name,
         project_name: projectName,
-        inputs: transformToQuoteInput(form.getValues()),
+        inputs: transformToQuoteInput(values),
         prediction: result.prediction,
         quoted_hours_by_bucket: quotedHoursByBucket as Record<string, number>,
       });
@@ -121,7 +122,7 @@ export function SingleQuote() {
           id: crypto.randomUUID(),
           name,
           createdAt: new Date().toISOString(),
-          inputs: transformToQuoteInput(form.getValues()),
+          inputs: transformToQuoteInput(values),
           result,
           quotedHoursByBucket,
         },
@@ -134,6 +135,7 @@ export function SingleQuote() {
 
   const onExportPdf = async () => {
     if (!result) return;
+    const values = quoteFormSchema.parse(form.getValues());
     const projectName = prompt("Project name for the PDF", "") ?? "";
     if (!projectName) return;
     try {
@@ -141,7 +143,7 @@ export function SingleQuote() {
         name: "Draft",
         project_name: projectName,
         created_by: ensureDisplayName(),
-        inputs: transformToQuoteInput(form.getValues()),
+        inputs: transformToQuoteInput(values),
         prediction: result.prediction,
       });
     } catch {

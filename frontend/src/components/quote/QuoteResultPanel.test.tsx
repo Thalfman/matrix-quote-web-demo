@@ -312,6 +312,23 @@ describe("QuoteResultPanel — Your inputs recap (UX-01)", () => {
     expect(screen.getByText("17")).toBeInTheDocument();
   });
 
+  it("echoes number-like runtime strings from live uncontrolled inputs", () => {
+    const input = {
+      ...makeFormValues(),
+      stations_count: "51" as unknown as number,
+      robot_count: "37" as unknown as number,
+      fixture_sets: "29" as unknown as number,
+      estimated_materials_cost: "250000" as unknown as number,
+    };
+    renderWithProviders(
+      <QuoteResultPanel result={HIGH_CONFIDENCE_RESULT} input={input} />,
+    );
+    expect(screen.getByText("51")).toBeInTheDocument();
+    expect(screen.getByText("37")).toBeInTheDocument();
+    expect(screen.getByText("29")).toBeInTheDocument();
+    expect(screen.getByText("$250,000")).toBeInTheDocument();
+  });
+
   it("formats materials cost with $ prefix and grouping", () => {
     renderWithProviders(
       <QuoteResultPanel

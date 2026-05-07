@@ -26,7 +26,7 @@
  */
 import * as TooltipPrimitive from "@radix-ui/react-tooltip";
 import { HelpCircle } from "lucide-react";
-import { ReactNode, forwardRef } from "react";
+import { ComponentPropsWithoutRef, ReactNode, forwardRef, useState } from "react";
 
 import { lookup } from "@/lib/glossary";
 
@@ -64,13 +64,20 @@ export function Tooltip({
   delayDuration,
   children,
 }: TooltipProps) {
+  const [open, setOpen] = useState(false);
   const resolved =
     content ??
     (term ? lookup(term)?.definition ?? FALLBACK_DEFINITION : FALLBACK_DEFINITION);
 
   return (
-    <TooltipPrimitive.Root delayDuration={delayDuration}>
-      <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
+    <TooltipPrimitive.Root
+      delayDuration={delayDuration}
+      open={open}
+      onOpenChange={setOpen}
+    >
+      <TooltipPrimitive.Trigger asChild onClick={() => setOpen(true)}>
+        {children}
+      </TooltipPrimitive.Trigger>
       <TooltipPrimitive.Portal>
         <TooltipPrimitive.Content
           side={side}
@@ -109,10 +116,14 @@ export function Tooltip({
  */
 export const GlossaryHelpIcon = forwardRef<
   HTMLButtonElement,
-  { ariaLabel: string; className?: string }
->(function GlossaryHelpIcon({ ariaLabel, className }, ref) {
+  { ariaLabel: string; className?: string } & Omit<
+    ComponentPropsWithoutRef<"button">,
+    "aria-label"
+  >
+>(function GlossaryHelpIcon({ ariaLabel, className, ...props }, ref) {
   return (
     <button
+      {...props}
       ref={ref}
       type="button"
       aria-label={ariaLabel}
