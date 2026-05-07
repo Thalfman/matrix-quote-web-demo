@@ -146,7 +146,7 @@ type RiskFactor = {
 };
 
 const RISK_FACTORS: RiskFactor[] = [
-  { factor: "process_uncertainty_score", label: "Process uncertainty" },
+  { factor: "process_uncertainty_score", label: "Process complexity" },
   { factor: "custom_pct",                label: "Custom content %" },
   { factor: "product_familiarity_score", label: "Product familiarity", interpretAsRisk: true },
   { factor: "has_tricky_packaging",      label: "Tricky packaging" },

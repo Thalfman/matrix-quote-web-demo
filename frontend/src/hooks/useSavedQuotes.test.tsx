@@ -400,6 +400,33 @@ describe("useSavedQuotes — cross-tab BroadcastChannel sync", () => {
     );
   });
 
+  it("useSavedQuote(id) refetches when broadcast.id matches even without a list hook mounted (QA Item 2)", async () => {
+    const id = "11111111-1111-4111-8111-111111111111";
+    const v1 = makeSavedQuote({ name: "Detail v1" });
+    const v2 = makeSavedQuote({ name: "Detail v2", updatedAt: "2026-05-05T15:00:00.000Z" });
+    mockGetSavedQuote.mockResolvedValueOnce(v1);
+
+    const { result } = renderHook(() => useSavedQuote(id), { wrapper: makeWrapper() });
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.name).toBe("Detail v1");
+    expect(mockGetSavedQuote).toHaveBeenCalledTimes(1);
+
+    mockGetSavedQuote.mockResolvedValue(v2);
+
+    await act(async () => {
+      subscriberRef.current!({
+        type: "save",
+        id,
+        updatedAt: "2026-05-05T15:00:00.000Z",
+      });
+    });
+
+    await waitFor(() =>
+      expect(mockGetSavedQuote.mock.calls.length).toBeGreaterThanOrEqual(2),
+    );
+    await waitFor(() => expect(result.current.data?.name).toBe("Detail v2"));
+  });
+
   it("delete broadcast also invalidates the list (covers ['quotes'] umbrella key)", async () => {
     mockListSavedQuotes.mockResolvedValue([makeSavedQuote()]);
 

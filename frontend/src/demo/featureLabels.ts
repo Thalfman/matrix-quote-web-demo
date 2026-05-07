@@ -28,7 +28,7 @@ const NUM_LABELS: Record<string, string> = {
   has_tricky_packaging: "Tricky packaging",
 
   // Process complexity (3)
-  process_uncertainty_score: "Process uncertainty",
+  process_uncertainty_score: "Process complexity",
   changeover_time_min: "Changeover time",
   custom_pct: "Custom content percentage",
 

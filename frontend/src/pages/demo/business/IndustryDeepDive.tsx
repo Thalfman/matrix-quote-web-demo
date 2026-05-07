@@ -134,10 +134,10 @@ export function IndustryDeepDive({ detail }: { detail: IndustryDetail }) {
               meta="0 = unfamiliar · 5 = routine"
             />
             <ScoreBar
-              label="Process uncertainty"
+              label="Process complexity"
               value={detail.avgProcessUncertainty}
               max={5}
-              meta="0 = certain · 5 = uncertain"
+              meta="0 = simple · 5 = complex"
             />
             <ScoreBar
               label="Custom content"

@@ -282,7 +282,7 @@ const SECTIONS: ReadonlyArray<{
       ["Product familiarity (1–5)", (v) => fmtCount(v.product_familiarity_score)],
       ["Product rigidity (1–5)", (v) => fmtCount(v.product_rigidity)],
       ["Bulk rigidity (1–5)", (v) => fmtCount(v.bulk_rigidity_score)],
-      ["Process uncertainty (1–5)", (v) => fmtCount(v.process_uncertainty_score)],
+      ["Process complexity (1–5)", (v) => fmtCount(v.process_uncertainty_score)],
       ["Changeover time (min)", (v) => fmtCount(v.changeover_time_min)],
       ["Product deformable", (v) => yesNo(v.is_product_deformable)],
       ["Bulk product", (v) => yesNo(v.is_bulk_product)],
@@ -368,13 +368,26 @@ function fmtCount(n: number): string {
   return Number.isFinite(n) ? n.toLocaleString() : "—";
 }
 /**
+ * Reduce a trained-model vision_type label (e.g. "Cognex 2D", "3D Vision",
+ * "Keyence IV3") to a short generic category for the inputs-echo block.
+ * The full vocabulary stays on the form / per-vision contribution card —
+ * the recap only needs the dimension or model token, not the brand.
+ */
+function categorizeVisionType(type: string): string {
+  if (/\b3D\b/i.test(type)) return "3D";
+  if (/\b2D\b/i.test(type)) return "2D";
+  const parts = type.trim().split(/\s+/);
+  return parts[parts.length - 1] || type;
+}
+
+/**
  * Format multi-vision rows for the inputs-echo block (D-11). Empty rows render
  * as the em-dash "—"; non-empty rows render as `"2D × 2; 3D × 1"`. Plain
  * counts and the multiplication sign — no jargon.
  */
 function formatVisionSystems(rows: QuoteFormValues["visionRows"]): string {
   if (!rows || rows.length === 0) return "—";
-  return rows.map((r) => `${r.type} × ${fmtCount(r.count)}`).join("; ");
+  return rows.map((r) => `${categorizeVisionType(r.type)} × ${fmtCount(r.count)}`).join("; ");
 }
 function fmtDecimal(n: number): string {
   return Number.isFinite(n)
