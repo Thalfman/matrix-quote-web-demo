@@ -138,7 +138,7 @@ export function IndustryDeepDive({ detail }: { detail: IndustryDetail }) {
               value={
                 detail.avgProcessUncertainty == null
                   ? null
-                  : 6 - detail.avgProcessUncertainty
+                  : Math.max(1, Math.min(5, 6 - detail.avgProcessUncertainty))
               }
               max={5}
               meta="1 = low certainty · 5 = very certain"
