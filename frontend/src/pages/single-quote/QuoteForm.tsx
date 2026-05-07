@@ -59,7 +59,14 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
     };
   }, [fromQuoteId, restoreVersion, form]);
 
+  const hasInvalidQuotedHours =
+    compareOpen &&
+    Object.entries(rawQuotedHours).some(
+      ([bucket, raw]) => raw.trim() !== "" && quotedHours[bucket] === undefined,
+    );
+
   const fire = handleSubmit(() => {
+    if (hasInvalidQuotedHours) return;
     const cleaned = Object.fromEntries(
       Object.entries(quotedHours).filter(
         (entry): entry is [string, number] =>
@@ -400,7 +407,7 @@ export function QuoteForm({ dropdowns, submitting, onSubmit, form, formRef }: Pr
       <div className="flex items-center gap-3 pt-2 mt-8">
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || hasInvalidQuotedHours}
           className="inline-flex items-center gap-2 px-6 py-3 bg-ink text-white text-sm font-medium rounded-sm hover:bg-ink2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? "Estimating…" : "Regenerate estimate"}

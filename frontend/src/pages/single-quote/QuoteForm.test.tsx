@@ -165,18 +165,17 @@ describe("QuoteForm — compare to your quoted hours panel (BUG-01)", () => {
     expect(payload.ME).toBe(2000);
   });
 
-  it("excludes invalid (non-numeric) buckets from submit payload", async () => {
+  it("does not submit while a quoted-hours field is invalid", () => {
     const onSubmit = vi.fn();
     renderWithProviders(<Harness onSubmit={onSubmit} />);
     openComparePanel();
     const meInput = screen.getByLabelText(/^ME quoted hours$/i) as HTMLInputElement;
     fireEvent.change(meInput, { target: { value: "abc" } });
-    fireEvent.click(
-      screen.getByRole("button", { name: /regenerate estimate/i }),
-    );
-    await waitFor(() => expect(onSubmit).toHaveBeenCalled());
-    const payload = onSubmit.mock.calls[0][0] as Record<string, number>;
-    expect(payload.ME).toBeUndefined();
+    const submit = screen.getByRole("button", { name: /regenerate estimate/i });
+    expect(submit).toBeDisabled();
+    fireEvent.click(submit);
+    expect(onSubmit).not.toHaveBeenCalled();
+    expect(meInput.value).toBe("abc");
   });
 
   it("excludes empty buckets from submit payload", async () => {

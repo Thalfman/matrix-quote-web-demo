@@ -130,7 +130,7 @@ export function MachineLearningQuoteTool() {
 
   const handleSubmit = async () => {
     if (!ready) return;
-    const values = form.getValues();
+    const values = quoteFormSchema.parse(form.getValues());
     setSubmitting(true);
     try {
       // D-04: legacy-compat shadow input for similar-projects matching.
