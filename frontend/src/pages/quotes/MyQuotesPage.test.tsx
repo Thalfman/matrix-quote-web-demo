@@ -97,6 +97,7 @@ function makeVersion(over: Partial<QuoteVersion> = {}): QuoteVersion {
     statusAtTime: "draft",
     formValues: makeFormValues(),
     unifiedResult: PRODUCTION_UNIFIED_FIXTURE,
+    mode: "full",
     ...over,
   };
 }
@@ -114,6 +115,7 @@ function makeQuote(over: Partial<SavedQuote> = {}): SavedQuote {
     salesBucket: "ME",
     visionLabel: "Vision",
     materialsCost: 245000,
+    mode: "full",
     ...over,
   };
 }

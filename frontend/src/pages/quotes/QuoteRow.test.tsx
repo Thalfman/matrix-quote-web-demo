@@ -69,6 +69,7 @@ function makeVersion(over: Partial<QuoteVersion> = {}): QuoteVersion {
     statusAtTime: "draft",
     formValues: makeFormValues(),
     unifiedResult: PRODUCTION_UNIFIED_FIXTURE,
+    mode: "full",
     ...over,
   };
 }
@@ -86,6 +87,7 @@ function makeQuote(over: Partial<SavedQuote> = {}): SavedQuote {
     salesBucket: "ME",
     visionLabel: "Vision",
     materialsCost: 245000,
+    mode: "full",
     ...over,
   };
 }
@@ -365,6 +367,49 @@ describe("QuoteRow - delete icon click stops propagation", () => {
 // ---------------------------------------------------------------------------
 // QuoteRow - container layout / a11y
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// QuoteRow - ROM-badge render path (D-11)
+// ---------------------------------------------------------------------------
+
+describe("QuoteRow ROM-badge render path (D-11)", () => {
+  it("renders 'Preliminary' badge when quote.mode === 'rom'", () => {
+    renderWithProviders(
+      <QuoteRow
+        quote={makeQuote({ mode: "rom" })}
+        onAdvanceStatus={vi.fn()}
+        onRequestDelete={vi.fn()}
+      />,
+    );
+    expect(document.body.textContent).toContain("Preliminary");
+  });
+
+  it("does NOT render 'Preliminary' badge when quote.mode === 'full'", () => {
+    renderWithProviders(
+      <QuoteRow
+        quote={makeQuote({ mode: "full" })}
+        onAdvanceStatus={vi.fn()}
+        onRequestDelete={vi.fn()}
+      />,
+    );
+    expect(document.body.textContent).not.toContain("Preliminary");
+  });
+
+  it("attaches tooltip title for ROM rows", () => {
+    renderWithProviders(
+      <QuoteRow
+        quote={makeQuote({ mode: "rom" })}
+        onAdvanceStatus={vi.fn()}
+        onRequestDelete={vi.fn()}
+      />,
+    );
+    // The <span title="..."> wrapper around <RomBadge />.
+    const tooltipNode = document.querySelector(
+      'span[title="This is a ROM (rough order of magnitude) quote."]',
+    );
+    expect(tooltipNode).not.toBeNull();
+  });
+});
 
 describe("QuoteRow - container layout", () => {
   it("row container exposes role='button' and the open-saved-quote aria-label", () => {

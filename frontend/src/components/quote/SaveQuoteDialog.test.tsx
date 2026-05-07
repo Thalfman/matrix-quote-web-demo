@@ -53,6 +53,7 @@ function makePayload(over: Partial<{
   unifiedResult: UnifiedQuoteResult;
   suggestedName: string;
   existingName?: string;
+  mode?: "rom" | "full";
 }> = {}) {
   return {
     workspace: "real" as const,
@@ -371,6 +372,40 @@ describe("SaveQuoteDialog - submit failure", () => {
 // ---------------------------------------------------------------------------
 // Revised-assist click invokes useSetStatus
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Phase 7 — D-19: mode threads through to saveQuote.mutateAsync
+// ---------------------------------------------------------------------------
+
+describe("SaveQuoteDialog — Phase 7 mode threading (D-19)", () => {
+  it("threads payload.mode === 'rom' into saveQuote.mutateAsync", async () => {
+    mockSaveMutateAsync.mockResolvedValueOnce(makeSavedQuote());
+    renderWithProviders(
+      <SaveQuoteDialog
+        open
+        onClose={vi.fn()}
+        payload={makePayload({ mode: "rom" })}
+      />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /save quote/i }));
+    await waitFor(() => expect(mockSaveMutateAsync).toHaveBeenCalledTimes(1));
+    expect(mockSaveMutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ mode: "rom" }),
+    );
+  });
+
+  it("threads mode: undefined when payload.mode is not provided", async () => {
+    mockSaveMutateAsync.mockResolvedValueOnce(makeSavedQuote());
+    renderWithProviders(
+      <SaveQuoteDialog open onClose={vi.fn()} payload={makePayload()} />,
+    );
+    fireEvent.click(screen.getByRole("button", { name: /save quote/i }));
+    await waitFor(() => expect(mockSaveMutateAsync).toHaveBeenCalledTimes(1));
+    expect(mockSaveMutateAsync).toHaveBeenCalledWith(
+      expect.objectContaining({ mode: undefined }),
+    );
+  });
+});
 
 describe("SaveQuoteDialog - revised assist", () => {
   it("clicking the 'Mark as revised?' action invokes useSetStatus.mutateAsync", async () => {

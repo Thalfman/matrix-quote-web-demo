@@ -69,6 +69,8 @@ const savedQuote: SavedQuote = {
   status: "draft",
   createdAt: "2026-04-15T12:00:00.000Z",
   updatedAt: "2026-05-05T12:00:00.000Z",
+  // Phase 7 D-03: legacy Phase 5 / Phase 6 fixtures are full-mode quotes.
+  mode: "full",
   versions: [
     {
       version: 1,
@@ -76,6 +78,7 @@ const savedQuote: SavedQuote = {
       statusAtTime: "draft",
       formValues,
       unifiedResult: unifiedResult as QuoteVersion["unifiedResult"],
+      mode: "full",
     },
     {
       version: 2,
@@ -86,6 +89,7 @@ const savedQuote: SavedQuote = {
         ...unifiedResult,
         estimateHours: 880,
       } as QuoteVersion["unifiedResult"],
+      mode: "full",
     },
   ],
   salesBucket: "ME",

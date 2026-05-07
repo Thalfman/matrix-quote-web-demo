@@ -116,11 +116,13 @@ function makeSavedQuote(over: Partial<SavedQuote> = {}): SavedQuote {
           topDrivers: [],
           supportingMatches: { label: "Most similar past projects", items: [] },
         },
+        mode: "full",
       },
     ],
     salesBucket: "ME",
     visionLabel: "No vision",
     materialsCost: 0,
+    mode: "full",
     ...over,
   };
 }

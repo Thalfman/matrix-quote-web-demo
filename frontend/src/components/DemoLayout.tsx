@@ -211,6 +211,7 @@ export function DemoLayout() {
               Real Data
             </div>
             <SidebarLink to="/compare/quote" label="Quote" />
+            <SidebarLink to="/compare/rom" label="Real-Data ROM" />
             <SidebarLink to="/compare/compare" label="Compare" />
             <SidebarLink to="/compare/find-similar" label="Find Similar" />
             <SidebarLink to="/compare/insights" label="Business Insights" />
@@ -231,6 +232,7 @@ export function DemoLayout() {
               Synthetic Data
             </div>
             <SidebarLink to="/ml/quote" label="Quote" />
+            <SidebarLink to="/ml/rom" label="Synthetic-Data ROM" />
             <SidebarLink to="/ml/compare" label="Compare" />
             <SidebarLink to="/ml/insights" label="Business Insights" />
           </div>

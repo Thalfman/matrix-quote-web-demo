@@ -18,6 +18,7 @@ import { openDB, type IDBPDatabase } from "idb";
 
 import {
   savedQuoteSchema,
+  type QuoteMode,
   type QuoteVersion,
   type SavedQuote,
   type WorkflowStatus,
@@ -63,6 +64,9 @@ export interface SaveSavedQuoteArgs {
   compareInputs?: { humanQuotedByBucket: Record<string, number> };
   /** Set by the restore-fork flow (D-06) so v(N+1) records its lineage. */
   restoredFromVersion?: number;
+  /** D-03 / D-19: ROM vs full quote shape. Optional; defaults to "full"
+   *  on brand-new records and preserves existing on update when omitted. */
+  mode?: QuoteMode;
 }
 
 // ---------------------------------------------------------------------------
@@ -328,9 +332,19 @@ export async function saveSavedQuote(args: SaveSavedQuoteArgs): Promise<SavedQuo
     // inflation. Use a structural deep-equal so reordered keys don't trigger
     // a spurious "changed" verdict (key-order-sensitive JSON.stringify is
     // fragile under future zod-parse passes that may sort keys).
+    //
+    // Note (D-19): mode is intentionally NOT included in the deepEqual chain.
+    // The UI today never crosses ROM↔full mid-record; folding mode into the
+    // diff would inflate versions on a no-op re-save where the only "change"
+    // is a defaulted-on-read mode field becoming explicit.
     const inputsChanged =
       !deepEqual(lastVersion.formValues, args.formValues) ||
       !deepEqual(lastVersion.unifiedResult, args.unifiedResult);
+
+    // D-19: preserve existing mode when args.mode is omitted; honestly stamp
+    // the new version's mode from args.mode. existing.mode is always defined
+    // post-parse because savedQuoteSchema applies .default("full").
+    const effectiveMode: QuoteMode = args.mode ?? existing.mode;
 
     const versions: QuoteVersion[] = inputsChanged
       ? [
@@ -341,6 +355,7 @@ export async function saveSavedQuote(args: SaveSavedQuoteArgs): Promise<SavedQuo
             statusAtTime: args.status ?? existing.status,
             formValues: args.formValues,
             unifiedResult: args.unifiedResult as QuoteVersion["unifiedResult"],
+            mode: effectiveMode,
             ...(args.restoredFromVersion !== undefined && {
               restoredFromVersion: args.restoredFromVersion,
             }),
@@ -354,13 +369,16 @@ export async function saveSavedQuote(args: SaveSavedQuoteArgs): Promise<SavedQuo
       name: args.name.trim(),
       status: args.status ?? existing.status,
       updatedAt: now,
+      mode: effectiveMode,
       versions,
       salesBucket: deriveSalesBucketFromValues(args.formValues),
       visionLabel: deriveVisionLabel(args.formValues),
       materialsCost: args.formValues.estimated_materials_cost ?? 0,
     };
   } else {
-    // Brand-new quote — create v1.
+    // Brand-new quote — create v1. D-19: default to "full" when args.mode
+    // is omitted; mirror the same value into the per-version mode stamp.
+    const effectiveMode: QuoteMode = args.mode ?? "full";
     record = {
       id: crypto.randomUUID(),
       schemaVersion: 2,
@@ -369,6 +387,7 @@ export async function saveSavedQuote(args: SaveSavedQuoteArgs): Promise<SavedQuo
       status: args.status ?? "draft",
       createdAt: now,
       updatedAt: now,
+      mode: effectiveMode,
       versions: [
         {
           version: 1,
@@ -376,6 +395,7 @@ export async function saveSavedQuote(args: SaveSavedQuoteArgs): Promise<SavedQuo
           statusAtTime: args.status ?? "draft",
           formValues: args.formValues,
           unifiedResult: args.unifiedResult as QuoteVersion["unifiedResult"],
+          mode: effectiveMode,
           ...(args.compareInputs && { compareInputs: args.compareInputs }),
         },
       ],

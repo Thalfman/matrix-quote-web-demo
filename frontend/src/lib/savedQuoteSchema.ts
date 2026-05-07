@@ -22,6 +22,12 @@ import { quoteFormSchema, type QuoteFormValues } from "@/pages/single-quote/sche
 /** Bertsche-verbatim workflow status states (D-08). Order matters — chip cycle. */
 export const STATUS_CYCLE = ["draft", "sent", "won", "lost", "revised"] as const;
 
+/** Quote shape mode (D-03). "rom" = ROM-quote (Phase 7); "full" = full-input quote.
+ *  Optional on read; missing or undefined defaults to "full" for backward-compat
+ *  with every Phase 5 / Phase 6 saved record. */
+export const QUOTE_MODE_VALUES = ["rom", "full"] as const;
+export type QuoteMode = (typeof QUOTE_MODE_VALUES)[number];
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -106,6 +112,9 @@ export const quoteVersionSchema = z.object({
       humanQuotedByBucket: z.record(z.string(), z.number()),
     })
     .optional(),
+  /** D-03 / D-19: ROM vs full quote shape, per version. Optional on read;
+   *  defaults to "full" for legacy v2 records that pre-date Phase 7. */
+  mode: z.enum(QUOTE_MODE_VALUES).optional().default("full"),
 });
 
 /** A persisted saved quote. Keyed by id (UUID v4). */
@@ -122,6 +131,10 @@ export const savedQuoteSchema = z.object({
   salesBucket: z.string(),
   visionLabel: z.string(),
   materialsCost: z.number(),
+  /** D-03 / D-19: ROM vs full quote shape, denormalized at the top level for
+   *  list-row rendering (mirrors salesBucket/visionLabel/materialsCost). Optional
+   *  on read; defaults to "full" for legacy v2 records that pre-date Phase 7. */
+  mode: z.enum(QUOTE_MODE_VALUES).optional().default("full"),
 });
 
 export type SavedQuote = z.infer<typeof savedQuoteSchema>;
@@ -225,18 +238,27 @@ export function deriveSalesBucket(values: QuoteFormValues): string {
 }
 
 /**
- * Format: "{salesBucket} {hourLabel} · {visionLabel} · {ISODate}".
+ * Format: "{salesBucket}[ ROM] {hourLabel} · {visionLabel} · {ISODate}".
  * Capped at 80 chars; vision label is truncated first if needed, date intact.
  *
+ * Phase 7 / D-17: when mode === "rom", insert the literal token " ROM" between
+ * the salesBucket and the hour label. The canonical D-17 example is
+ * "ME ROM 240h · No vision · 2026-05-06". The literal "ROM" is acceptable in
+ * the saved-quote name (it's industry vernacular Ben himself used; the user
+ * can edit on save) and is NOT in BANNED_TOKENS.
+ *
  * Examples:
- *   "ME 800h · Vision · 2026-05-05"
- *   "EE 240h · No vision · 2026-05-05"
+ *   "ME 800h · Vision · 2026-05-05"          (mode: "full" / undefined)
+ *   "EE 240h · No vision · 2026-05-05"       (mode: "full" / undefined)
+ *   "ME ROM 240h · No vision · 2026-05-06"   (mode: "rom")
  */
 export function buildAutoSuggestedName(
   values: QuoteFormValues,
   estimatedHours: number,
+  mode?: QuoteMode,
 ): string {
   const bucket = deriveSalesBucket(values);
+  const romToken = mode === "rom" ? " ROM" : "";
   const hours = `${Math.round(estimatedHours).toLocaleString("en-US")}h`;
   const visionLabel =
     !values.visionRows || values.visionRows.length === 0
@@ -245,11 +267,11 @@ export function buildAutoSuggestedName(
           .map((r) => `${r.type}×${r.count}`)
           .join("+");
   const date = new Date().toISOString().slice(0, 10);
-  const candidate = `${bucket} ${hours} · ${visionLabel} · ${date}`;
+  const candidate = `${bucket}${romToken} ${hours} · ${visionLabel} · ${date}`;
   if (candidate.length <= 80) return candidate;
 
   const overrun = candidate.length - 80;
   const truncatedLen = Math.max(0, visionLabel.length - overrun - 1);
   const truncatedVision = visionLabel.slice(0, truncatedLen) + "…";
-  return `${bucket} ${hours} · ${truncatedVision} · ${date}`;
+  return `${bucket}${romToken} ${hours} · ${truncatedVision} · ${date}`;
 }

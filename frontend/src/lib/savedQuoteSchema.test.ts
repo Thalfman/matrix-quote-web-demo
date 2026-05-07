@@ -12,6 +12,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  QUOTE_MODE_VALUES,
   STATUS_CYCLE,
   buildAutoSuggestedName,
   deriveSalesBucket,
@@ -98,6 +99,7 @@ function makeVersion(over: Partial<QuoteVersion> = {}): QuoteVersion {
     statusAtTime: "draft",
     formValues: makeFormValues(),
     unifiedResult: PRODUCTION_UNIFIED_FIXTURE,
+    mode: "full",
     ...over,
   };
 }
@@ -115,6 +117,7 @@ function makeSavedQuote(over: Partial<SavedQuote> = {}): SavedQuote {
     salesBucket: "ME",
     visionLabel: "No vision",
     materialsCost: 0,
+    mode: "full",
     ...over,
   };
 }
@@ -408,5 +411,148 @@ describe("unifiedQuoteResultSchema — W8 passthrough fidelity", () => {
       supportingMatches: { items: Array<{ extraScore?: number }> };
     };
     expect(parsed.supportingMatches.items[0].extraScore).toBe(0.42);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 7 — D-03 / D-19: optional `mode` field on top-level + per-version
+// ---------------------------------------------------------------------------
+
+describe("savedQuoteSchema — Phase 7 mode flag (D-03, D-19)", () => {
+  it("QUOTE_MODE_VALUES is exactly ['rom', 'full']", () => {
+    expect([...QUOTE_MODE_VALUES]).toEqual(["rom", "full"]);
+  });
+
+  it("parses a v2 record WITHOUT a mode field — defaults to 'full' at top level + per version", () => {
+    const out = savedQuoteSchema.parse(makeSavedQuote());
+    expect(out.mode).toBe("full");
+    expect(out.versions[0].mode).toBe("full");
+  });
+
+  it("round-trips mode: 'rom' at both top level AND versions[0]", () => {
+    const out = savedQuoteSchema.parse(
+      makeSavedQuote({
+        mode: "rom",
+        versions: [makeVersion({ mode: "rom" })],
+      }),
+    );
+    expect(out.mode).toBe("rom");
+    expect(out.versions[0].mode).toBe("rom");
+  });
+
+  it("round-trips mode: 'full' explicitly", () => {
+    const out = savedQuoteSchema.parse(
+      makeSavedQuote({
+        mode: "full",
+        versions: [makeVersion({ mode: "full" })],
+      }),
+    );
+    expect(out.mode).toBe("full");
+    expect(out.versions[0].mode).toBe("full");
+  });
+
+  it("rejects invalid mode at top level (capitalized 'ROM')", () => {
+    expect(() =>
+      savedQuoteSchema.parse(makeSavedQuote({ mode: "ROM" as never })),
+    ).toThrow();
+  });
+
+  it("rejects invalid mode at top level ('preliminary')", () => {
+    expect(() =>
+      savedQuoteSchema.parse(makeSavedQuote({ mode: "preliminary" as never })),
+    ).toThrow();
+  });
+
+  it("rejects invalid mode at version level", () => {
+    expect(() =>
+      quoteVersionSchema.parse(makeVersion({ mode: "ROM" as never })),
+    ).toThrow();
+  });
+
+  it("does NOT bump schemaVersion (literal stays at 2)", () => {
+    // Belt-and-suspenders — D-03 forbids the schemaVersion bump. A v2 record
+    // with mode: "rom" must still parse cleanly.
+    const out = savedQuoteSchema.parse(
+      makeSavedQuote({
+        schemaVersion: 2,
+        mode: "rom",
+        versions: [makeVersion({ mode: "rom" })],
+      }),
+    );
+    expect(out.schemaVersion).toBe(2);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Phase 7 — D-17: buildAutoSuggestedName accepts optional `mode` and inserts
+// the literal " ROM" token between salesBucket and the hour label.
+// ---------------------------------------------------------------------------
+
+describe("buildAutoSuggestedName — Phase 7 ROM token (D-17)", () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-05-06T12:00:00.000Z"));
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("does NOT insert ' ROM ' when called with mode === 'full' (default)", () => {
+    const values = makeFormValues({
+      stations_count: 1,
+      has_controls: true,
+      has_robotics: false,
+      servo_axes: 0,
+      visionRows: [],
+    });
+    const name = buildAutoSuggestedName(values, 240, "full");
+    expect(name).not.toMatch(/ ROM /);
+    expect(name).toBe("ME 240h · No vision · 2026-05-06");
+  });
+
+  it("does NOT insert ' ROM ' when mode argument is omitted (default behaviour)", () => {
+    const values = makeFormValues({
+      stations_count: 1,
+      has_controls: true,
+      has_robotics: false,
+      servo_axes: 0,
+      visionRows: [],
+    });
+    const name = buildAutoSuggestedName(values, 240);
+    expect(name).not.toMatch(/ ROM /);
+  });
+
+  it("inserts ' ROM ' between bucket and hour token when mode === 'rom' (D-17 verbatim example)", () => {
+    const values = makeFormValues({
+      stations_count: 1,
+      has_controls: true,
+      has_robotics: false,
+      servo_axes: 0,
+      visionRows: [],
+    });
+    const name = buildAutoSuggestedName(values, 240, "rom");
+    // D-17 canonical example string verbatim.
+    expect(name).toBe("ME ROM 240h · No vision · 2026-05-06");
+    expect(name).toMatch(/^(ME|EE|ME\+EE|Quote) ROM \d+h · /);
+  });
+
+  it("ROM-mode 80-char cap truncates the vision label first, never the date", () => {
+    const visionRows = Array.from({ length: 10 }, () => ({
+      type: "Cognex 2D",
+      count: 9999,
+    }));
+    const values = makeFormValues({
+      has_controls: true,
+      stations_count: 1,
+      visionRows,
+    });
+    const out = buildAutoSuggestedName(values, 100, "rom");
+    expect(out.length).toBeLessThanOrEqual(80);
+    expect(out.endsWith("2026-05-06")).toBe(true);
+    // Bucket may be ME / EE / ME+EE / Quote depending on the fixture's signals.
+    // What matters for D-17 is that the literal " ROM " token appears between
+    // the bucket and the hour label.
+    expect(out).toMatch(/^(ME|EE|ME\+EE|Quote) ROM \d+h · /);
   });
 });
