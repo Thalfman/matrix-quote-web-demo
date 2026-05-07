@@ -250,7 +250,16 @@ function deepEqual(a: unknown, b: unknown): boolean {
   return true;
 }
 
-function deriveSalesBucketFromValues(values: QuoteFormValues): string {
+function deriveSalesBucketFromValues(
+  values: QuoteFormValues,
+  mode?: QuoteMode,
+): string {
+  // ROM input doesn't carry has_controls/has_robotics/stations_count as user
+  // intent — they're locked on by default for the trained model. Treating the
+  // defaulted flags as user signal collapsed every ROM record to "ME+EE";
+  // returning "Quote" honestly signals "bucket undetermined". Mirrors the
+  // public deriveSalesBucket helper in savedQuoteSchema.ts.
+  if (mode === "rom") return "Quote";
   const hasME = values.stations_count > 0 || values.has_controls;
   const hasEE = values.has_robotics || values.servo_axes > 0;
   if (hasME && hasEE) return "ME+EE";
@@ -373,7 +382,7 @@ export async function saveSavedQuote(args: SaveSavedQuoteArgs): Promise<SavedQuo
       updatedAt: now,
       mode: effectiveMode,
       versions,
-      salesBucket: deriveSalesBucketFromValues(args.formValues),
+      salesBucket: deriveSalesBucketFromValues(args.formValues, effectiveMode),
       visionLabel: deriveVisionLabel(args.formValues),
       materialsCost: args.formValues.estimated_materials_cost ?? 0,
     };
@@ -401,7 +410,7 @@ export async function saveSavedQuote(args: SaveSavedQuoteArgs): Promise<SavedQuo
           ...(args.compareInputs && { compareInputs: args.compareInputs }),
         },
       ],
-      salesBucket: deriveSalesBucketFromValues(args.formValues),
+      salesBucket: deriveSalesBucketFromValues(args.formValues, effectiveMode),
       visionLabel: deriveVisionLabel(args.formValues),
       materialsCost: args.formValues.estimated_materials_cost ?? 0,
     };

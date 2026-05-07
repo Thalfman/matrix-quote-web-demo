@@ -356,6 +356,33 @@ describe("deriveSalesBucket", () => {
     });
     expect(deriveSalesBucket(values)).toBe("Quote");
   });
+
+  it("ROM mode returns 'Quote' regardless of has_controls/has_robotics defaults", () => {
+    // ROM input only carries 4 fields; has_controls/has_robotics/stations_count
+    // are *defaulted on* for the trained model. Reading those defaulted flags
+    // as user signal collapsed every ROM record to "ME+EE". In ROM mode the
+    // bucket is honestly undetermined → "Quote".
+    const values = makeFormValues({
+      has_controls: true,
+      has_robotics: true,
+      stations_count: 5,
+      servo_axes: 3,
+    });
+    expect(deriveSalesBucket(values)).toBe("ME+EE");
+    expect(deriveSalesBucket(values, "rom")).toBe("Quote");
+  });
+
+  it("ROM mode bucket flows into buildAutoSuggestedName (no ME+EE prefix)", () => {
+    const values = makeFormValues({
+      has_controls: true,
+      has_robotics: true,
+      stations_count: 4,
+    });
+    const fullName = buildAutoSuggestedName(values, 240, "full");
+    const romName = buildAutoSuggestedName(values, 240, "rom");
+    expect(fullName).toMatch(/^ME\+EE /);
+    expect(romName).toMatch(/^Quote ROM /);
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -523,7 +550,12 @@ describe("buildAutoSuggestedName — Phase 7 ROM token (D-17)", () => {
     expect(name).not.toMatch(/ ROM /);
   });
 
-  it("inserts ' ROM ' between bucket and hour token when mode === 'rom' (D-17 verbatim example)", () => {
+  it("inserts ' ROM ' between bucket and hour token when mode === 'rom'", () => {
+    // The original D-17 example pinned bucket="ME" by reading defaulted
+    // has_controls/stations_count flags, but those flags aren't user intent
+    // in ROM mode — they're locked on for the trained model. The Phase-7
+    // round-8 review corrected this: ROM bucket is honestly "Quote"
+    // ("undetermined") so a per-call ROM name reads "Quote ROM …".
     const values = makeFormValues({
       stations_count: 1,
       has_controls: true,
@@ -532,9 +564,8 @@ describe("buildAutoSuggestedName — Phase 7 ROM token (D-17)", () => {
       visionRows: [],
     });
     const name = buildAutoSuggestedName(values, 240, "rom");
-    // D-17 canonical example string verbatim.
-    expect(name).toBe("ME ROM 240h · No vision · 2026-05-06");
-    expect(name).toMatch(/^(ME|EE|ME\+EE|Quote) ROM \d+h · /);
+    expect(name).toBe("Quote ROM 240h · No vision · 2026-05-06");
+    expect(name).toMatch(/^Quote ROM \d+h · /);
   });
 
   it("ROM-mode 80-char cap truncates the vision label first, never the date", () => {

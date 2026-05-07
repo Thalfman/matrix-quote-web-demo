@@ -227,8 +227,21 @@ export function transformToFormValues(input: QuoteInput): QuoteFormValues {
  * Heuristic sales-bucket label. The form does not carry a sales_bucket column
  * today; we synthesize ME / EE / ME+EE / Quote from controls and robotics
  * signals (Claude's discretion per CONTEXT D-XX, stable per call).
+ *
+ * Phase 7 / D-19 ROM mode: ROM input only carries 4 fields (industry_segment,
+ * system_category, automation_level, estimated_materials_cost) and the hidden
+ * has_controls/has_robotics flags are *locked on by default* so the trained
+ * model produces a sensible point estimate (see romSchema.ts D-04). Reading
+ * those defaulted flags as if they were user intent collapsed every ROM
+ * estimate to "ME+EE" regardless of what the user actually picked. In ROM
+ * mode we return the generic "Quote" — an honest "bucket undetermined"
+ * signal — instead of pretending to know ME/EE.
  */
-export function deriveSalesBucket(values: QuoteFormValues): string {
+export function deriveSalesBucket(
+  values: QuoteFormValues,
+  mode?: QuoteMode,
+): string {
+  if (mode === "rom") return "Quote";
   const hasME = values.stations_count > 0 || values.has_controls;
   const hasEE = values.has_robotics || values.servo_axes > 0;
   if (hasME && hasEE) return "ME+EE";
@@ -257,7 +270,7 @@ export function buildAutoSuggestedName(
   estimatedHours: number,
   mode?: QuoteMode,
 ): string {
-  const bucket = deriveSalesBucket(values);
+  const bucket = deriveSalesBucket(values, mode);
   const romToken = mode === "rom" ? " ROM" : "";
   const hours = `${Math.round(estimatedHours).toLocaleString("en-US")}h`;
   const visionLabel =

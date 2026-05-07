@@ -74,7 +74,7 @@ export function RomResultPanel({
   status,
   restoredFromVersion,
 }: RomResultPanelProps) {
-  const salesBucket = deriveSalesBucket(input);
+  const salesBucket = deriveSalesBucket(input, "rom");
 
   return (
     <div className="space-y-6" id="quote-results">

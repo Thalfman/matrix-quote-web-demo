@@ -168,8 +168,12 @@ describe("RomResultPanel", () => {
       />,
     );
     const body = document.body.textContent ?? "";
-    // quoteFormDefaults: has_controls:true + has_robotics:true → "ME+EE".
-    expect(body).toMatch(/ME\+EE/);
+    // ROM mode → bucket is the honest "Quote" (not "ME+EE"). ROM input does
+    // not carry has_controls/has_robotics/stations_count as user intent —
+    // those flags are locked on by default for the trained model, so reading
+    // them as ME/EE signal previously collapsed every ROM record to "ME+EE".
+    expect(body).toMatch(/Quote/);
+    expect(body).not.toMatch(/ME\+EE/);
     expect(body).toMatch(/240/); // estimateHours
     expect(body).toMatch(/140/); // likelyRangeLow
     expect(body).toMatch(/340/); // likelyRangeHigh
