@@ -213,6 +213,7 @@ export function QuoteResultPanel({
           existingName={existingName}
           status={status}
           restoredFromVersion={restoredFromVersion}
+          mode="full"
           variant="primary"
         />
       )}

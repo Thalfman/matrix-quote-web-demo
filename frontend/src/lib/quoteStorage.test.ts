@@ -653,6 +653,36 @@ describe("quoteStorage", () => {
     expect(updated.versions[1].mode).toBe("rom");
   });
 
+  it("saveSavedQuote on UPDATE with explicit mode='full' on a top-level-rom record stamps the NEW version 'full' (does not fall back to existing.mode)", async () => {
+    const mod = await import("./quoteStorage");
+    // Brand-new ROM quote at the top level.
+    const initial = await mod.saveSavedQuote({
+      name: "Golf cross-tool",
+      workspace: "real",
+      formValues: makeFormValues({ stations_count: 1 }),
+      unifiedResult: makeUnifiedResult(),
+      mode: "rom",
+    });
+    expect(initial.mode).toBe("rom");
+
+    // Simulate the per-version-restore-then-save-from-full-tool path:
+    // QuoteResultPanel passes `mode="full"` explicitly so the new version
+    // is stamped from the calling tool, not the top-level existing.mode.
+    const updated = await mod.saveSavedQuote({
+      id: initial.id,
+      name: "Golf cross-tool",
+      workspace: "real",
+      formValues: makeFormValues({ stations_count: 9 }),
+      unifiedResult: makeUnifiedResult(),
+      mode: "full",
+    });
+    // New version honestly stamped from caller; v1 history immutable.
+    expect(updated.versions).toHaveLength(2);
+    expect(updated.versions[0].mode).toBe("rom");
+    expect(updated.versions[1].mode).toBe("full");
+    expect(updated.mode).toBe("full");
+  });
+
   it("saveSavedQuote on UPDATE with explicit mode that EQUALS existing.mode and identical inputs is still a no-op (no version inflation)", async () => {
     const mod = await import("./quoteStorage");
     const fv = makeFormValues({ stations_count: 2 });
