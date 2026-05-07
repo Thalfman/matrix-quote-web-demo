@@ -332,19 +332,21 @@ export async function saveSavedQuote(args: SaveSavedQuoteArgs): Promise<SavedQuo
     // inflation. Use a structural deep-equal so reordered keys don't trigger
     // a spurious "changed" verdict (key-order-sensitive JSON.stringify is
     // fragile under future zod-parse passes that may sort keys).
-    //
-    // Note (D-19): mode is intentionally NOT included in the deepEqual chain.
-    // The UI today never crosses ROM↔full mid-record; folding mode into the
-    // diff would inflate versions on a no-op re-save where the only "change"
-    // is a defaulted-on-read mode field becoming explicit.
-    const inputsChanged =
-      !deepEqual(lastVersion.formValues, args.formValues) ||
-      !deepEqual(lastVersion.unifiedResult, args.unifiedResult);
 
     // D-19: preserve existing mode when args.mode is omitted; honestly stamp
     // the new version's mode from args.mode. existing.mode is always defined
     // post-parse because savedQuoteSchema applies .default("full").
     const effectiveMode: QuoteMode = args.mode ?? existing.mode;
+    // A mode delta is itself a real change — without inflating a version we'd
+    // bump top-level `record.mode` while leaving `versions[last].mode` stale,
+    // so a per-version restore and a top-level "Open in Quote tool" would
+    // disagree on which tool to route to. Only the explicit-vs-implicit no-op
+    // (lastVersion.mode === effectiveMode) is treated as a no-op.
+    const modeChanged = lastVersion.mode !== effectiveMode;
+    const inputsChanged =
+      modeChanged ||
+      !deepEqual(lastVersion.formValues, args.formValues) ||
+      !deepEqual(lastVersion.unifiedResult, args.unifiedResult);
 
     const versions: QuoteVersion[] = inputsChanged
       ? [

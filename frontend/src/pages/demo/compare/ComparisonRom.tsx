@@ -134,6 +134,11 @@ export function ComparisonRom() {
   // guard means a forged URL cannot stuff a full quote into the ROM form).
   // When `restoreVersion=N` is present, hydrate from that specific version
   // (D-06 fork-on-restore); fall back to latest when N is missing or unmatched.
+  // Per-version mode guard: in mixed-mode histories a forged
+  // `?restoreVersion=N` could point at a full-mode version inside an
+  // otherwise-ROM record, so validate the resolved target's stamp before
+  // calling form.reset. SavedQuotePage now routes by per-version mode
+  // (round-3 fix); this is defence-in-depth for crafted URLs.
   useEffect(() => {
     if (!openedQuote) return;
     if (openedQuote.mode === "rom" && openedQuote.versions.length > 0) {
@@ -141,6 +146,7 @@ export function ComparisonRom() {
         (restoredFromVersion !== undefined
           ? openedQuote.versions.find((vv) => vv.version === restoredFromVersion)
           : undefined) ?? openedQuote.versions[openedQuote.versions.length - 1];
+      if (target.mode !== "rom") return;
       const v = target.formValues;
       form.reset({
         industry_segment: v.industry_segment,

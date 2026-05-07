@@ -620,6 +620,65 @@ describe("quoteStorage", () => {
     expect(updated.versions[1].mode).toBe("full");
   });
 
+  it("saveSavedQuote on UPDATE with mode flip but identical inputs/result still inflates a version (mode delta is a real change)", async () => {
+    const mod = await import("./quoteStorage");
+    const fv = makeFormValues({ stations_count: 4 });
+    const ur = makeUnifiedResult();
+    // Brand-new full quote.
+    const initial = await mod.saveSavedQuote({
+      name: "Echo mode-only",
+      workspace: "real",
+      formValues: fv,
+      unifiedResult: ur,
+      mode: "full",
+    });
+    expect(initial.mode).toBe("full");
+    expect(initial.versions).toHaveLength(1);
+
+    // Re-save with identical inputs/unifiedResult but different mode. Without
+    // the mode-aware diff, the version array would not grow but top-level mode
+    // WOULD bump — leaving record.mode !== versions[last].mode (internally
+    // inconsistent: per-version restore and top-level "Open in tool" disagree).
+    const updated = await mod.saveSavedQuote({
+      id: initial.id,
+      name: "Echo mode-only",
+      workspace: "real",
+      formValues: fv,
+      unifiedResult: ur,
+      mode: "rom",
+    });
+    expect(updated.mode).toBe("rom");
+    expect(updated.versions).toHaveLength(2);
+    expect(updated.versions[0].mode).toBe("full");
+    expect(updated.versions[1].mode).toBe("rom");
+  });
+
+  it("saveSavedQuote on UPDATE with explicit mode that EQUALS existing.mode and identical inputs is still a no-op (no version inflation)", async () => {
+    const mod = await import("./quoteStorage");
+    const fv = makeFormValues({ stations_count: 2 });
+    const ur = makeUnifiedResult();
+    const initial = await mod.saveSavedQuote({
+      name: "Foxtrot no-op",
+      workspace: "real",
+      formValues: fv,
+      unifiedResult: ur,
+      mode: "rom",
+    });
+    expect(initial.versions).toHaveLength(1);
+
+    // Same mode passed explicitly — must not inflate. Guards against the
+    // legacy-record case (defaulted-on-read mode becoming explicit on save).
+    const resaved = await mod.saveSavedQuote({
+      id: initial.id,
+      name: "Foxtrot no-op",
+      workspace: "real",
+      formValues: fv,
+      unifiedResult: ur,
+      mode: "rom",
+    });
+    expect(resaved.versions).toHaveLength(1);
+  });
+
   it("a v2 record persisted WITHOUT a mode field round-trips through getSavedQuote with mode === 'full' (D-03 default-on-read)", async () => {
     const mod = await import("./quoteStorage");
     await mod.ensureDbReady();
