@@ -101,6 +101,14 @@ export function ComparisonRom() {
   // we keep fromQuoteId so a fast-clicking user still appends a version to
   // the intended quote — same behavior as the full-quote pages.
   const isWrongMode = !!targetVersion && targetVersion.mode !== "rom";
+  // Persist lineage only when the URL param actually resolved to a real
+  // version. A stale `?restoreVersion=99` falls back to latest for hydration,
+  // and stamping 99 on save would record a broken ancestry pointer.
+  const matchedRestoredFromVersion =
+    restoredFromVersion !== undefined &&
+    targetVersion?.version === restoredFromVersion
+      ? restoredFromVersion
+      : undefined;
 
   const metricsByTarget = useMemo(
     () =>
@@ -277,7 +285,7 @@ export function ComparisonRom() {
                 quoteId={isWrongMode ? undefined : fromQuoteId}
                 existingName={isRomQuote ? openedQuote?.name : undefined}
                 status={isRomQuote ? openedQuote?.status : undefined}
-                restoredFromVersion={isRomQuote ? restoredFromVersion : undefined}
+                restoredFromVersion={isRomQuote ? matchedRestoredFromVersion : undefined}
               />
             )}
           </aside>
