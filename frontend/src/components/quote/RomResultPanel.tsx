@@ -19,6 +19,7 @@ import { Download, Info } from "lucide-react";
 
 import { RomBadge } from "@/components/quote/RomBadge";
 import { SaveQuoteButton } from "@/components/quote/SaveQuoteButton";
+import { Tooltip, TooltipProvider, GlossaryHelpIcon } from "@/components/Tooltip";
 import type { UnifiedQuoteResult } from "@/demo/quoteResult";
 import type { RomMetadata } from "@/demo/romEstimator";
 import { deriveSalesBucket } from "@/lib/savedQuoteSchema";
@@ -81,6 +82,7 @@ export function RomResultPanel({
   const salesBucket = deriveSalesBucket(input, "rom");
 
   return (
+    <TooltipProvider delayDuration={200}>
     <div className="space-y-6" id="quote-results">
       {/* Your inputs — only the four ROM fields */}
       <div className="card p-5">
@@ -91,14 +93,28 @@ export function RomResultPanel({
       {/* Hero — RomBadge instead of confidence chip (D-08) */}
       <div className="card p-6">
         <div className="flex items-baseline justify-between">
-          <span className="eyebrow text-xs text-muted">Estimated hours</span>
-          <RomBadge />
+          <span className="eyebrow text-xs text-muted inline-flex items-center gap-1">
+            <span>Estimated hours</span>
+            <Tooltip term="Estimated hours" side="top">
+              <GlossaryHelpIcon ariaLabel="What is Estimated hours?" />
+            </Tooltip>
+          </span>
+          <Tooltip term="ROM quote" side="top">
+            <span tabIndex={0} role="button" aria-label="What is ROM quote?">
+              <RomBadge />
+            </span>
+          </Tooltip>
         </div>
         <div className="display-hero text-4xl text-ink tnum mt-2">
           {fmtHrs(result.estimateHours)} hrs
         </div>
-        <div className="text-sm text-muted mt-1">
-          Likely range {fmtHrs(result.likelyRangeLow)}–{fmtHrs(result.likelyRangeHigh)} hrs
+        <div className="text-sm text-muted mt-1 inline-flex items-center gap-1">
+          <span>
+            Likely range {fmtHrs(result.likelyRangeLow)}–{fmtHrs(result.likelyRangeHigh)} hrs
+          </span>
+          <Tooltip term="Confidence range" side="top">
+            <GlossaryHelpIcon ariaLabel="What is Confidence range?" />
+          </Tooltip>
         </div>
       </div>
 
@@ -127,8 +143,11 @@ export function RomResultPanel({
 
       {/* Combined-totals row — REPLACES per-category H/M/L (D-06) */}
       <div className="card p-5">
-        <div className="eyebrow text-xs text-muted mb-3">
-          Hours by work category
+        <div className="eyebrow text-xs text-muted mb-3 inline-flex items-center gap-1">
+          <span>Hours by work category</span>
+          <Tooltip term="Sales Bucket" side="top">
+            <GlossaryHelpIcon ariaLabel="What is Sales Bucket?" />
+          </Tooltip>
         </div>
         <div className="text-sm text-ink">
           <span className="font-medium">{salesBucket}</span>:{" "}
@@ -140,8 +159,11 @@ export function RomResultPanel({
 
       {/* Supporting matches — REMAIN unchanged */}
       <div className="card p-5">
-        <div className="eyebrow text-xs text-muted mb-3">
-          {result.supportingMatches.label}
+        <div className="eyebrow text-xs text-muted mb-3 inline-flex items-center gap-1">
+          <span>{result.supportingMatches.label}</span>
+          <Tooltip term="Similar projects" side="top">
+            <GlossaryHelpIcon ariaLabel="What is Similar projects?" />
+          </Tooltip>
         </div>
         <div className="space-y-2">
           {result.supportingMatches.items.map((m) => (
@@ -183,6 +205,7 @@ export function RomResultPanel({
         Export PDF
       </button>
     </div>
+    </TooltipProvider>
   );
 }
 
